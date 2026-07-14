@@ -6214,7 +6214,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.3.4';
+const DASHBOARD_VERSION = '0.3.5';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -7339,6 +7339,21 @@ function wzRender() {
             <input id="wz-qa-ent" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_039 (solo per toggle/script/scena)" style="margin-bottom:8px; font-family:monospace;">
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddQA()">＋ Aggiungi azione</button>
           </div>
+        </details>` : ''}${WIZ.sections['home'] !== false ? `
+        <details class="ed-acc"><summary class="ed-acc-head">🔔 Quadro Avvisi <span class="ed-acc-n">${(GRUPPI_MONITORAGGIO['win']||[]).length + (GRUPPI_MONITORAGGIO['batt']||[]).length}</span></summary>
+          <div class="ed-acc-body">
+            <div class="ed-slot-lbl" style="margin-bottom:4px;">Sensori di apertura (porte/finestre) e batterie monitorati nella Home.</div>
+            ${['win','batt'].map(grp => (GRUPPI_MONITORAGGIO[grp]||[]).map(id => {
+                const nm = cdCfg('cd_avvisi_names_extra')[id] || AVVISI_NAMES[id] || id;
+                return `<div class="ed-row"><div style="font-size:15px;">${grp==='win'?'🚪':'🔋'}</div><div class="ed-row-main"><div class="ed-row-new">${nm}</div><div class="ed-row-old mono">${id}</div></div><div class="ed-del" onclick="wzDelAvviso('${grp}','${id}')">🗑️</div></div>`;
+            }).join('')).join('')}
+            <div style="display:flex; gap:8px; margin-bottom:8px; margin-top:6px;">
+              <select id="wz-av-grp" class="wz-input" style="margin-bottom:0; flex:0 0 46%;"><option value="win">🚪 Apertura</option><option value="batt">🔋 Batteria</option></select>
+              <input id="wz-av-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome (es. Finestra Studio)">
+            </div>
+            <input id="wz-av-ent" class="wz-input mono" list="wz-entity-list" placeholder="binary_sensor.finestra_studio_contact" style="margin-bottom:8px; font-family:monospace;">
+            <button class="ed-btn-add" style="width:100%;" onclick="wzAddAvviso()">＋ Aggiungi al Quadro Avvisi</button>
+          </div>
         </details>` : ''}${WIZ.sections['temp'] !== false ? `
         <details class="ed-acc"><summary class="ed-acc-head">🌡️ Stanze (temperature) <span class="ed-acc-n">${(WIZ.stanze||[]).length}</span></summary>
           <div class="ed-acc-body">
@@ -7372,40 +7387,7 @@ function wzRender() {
             </div>
           </div>
         </details>` : ''}${WIZ.sections['security'] !== false ? `
-        <details class="ed-acc"><summary class="ed-acc-head">⚡ Azioni rapide (Home) <span class="ed-acc-n">${getQuickActions().length} azioni</span></summary>
-        <div class="ed-acc-body">
-          <div class="ed-list">${getQuickActions().map((a, i) => {
-            const b = a.type === 'builtin' ? CD_QA_BUILTINS[a.builtin] : null;
-            return `<div class="ed-row">
-              <div style="font-size:16px; flex-shrink:0;">${a.icon || (b && b.icon) || '⚡'}</div>
-              <div class="ed-row-main">
-                <div class="ed-row-new">${a.name || (b && b.name) || '?'}</div>
-                <div class="ed-row-old mono">${a.type === 'builtin' ? 'popup nativo: ' + a.builtin : a.type + ' · ' + (a.entity||'')}</div>
-              </div>
-              <div class="ed-del" onclick="edDelQA(${i})">🗑️</div>
-            </div>`;
-          }).join('')}</div>
-          <div class="ed-form">
-            <div class="ed-form-row">
-              <select id="ed-qa-type" class="ed-input" style="flex:0 0 40%;">
-                <option value="toggle">🔀 Toggle entità</option>
-                <option value="script">📜 Script</option>
-                <option value="scene">🎬 Scena</option>
-                <option value="builtin_luci">💡 Popup Luci</option>
-                <option value="builtin_clima">❄️ Popup Clima</option>
-                <option value="builtin_antifurto">🛡️ Popup Antifurto</option>
-                <option value="builtin_lavatrice">🧺 Popup Lavatrice</option>
-              </select>
-              <input id="ed-qa-icon" class="ed-input ed-icon-input" placeholder="⚡" maxlength="4">
-              <input id="ed-qa-name" class="ed-input" placeholder="Nome azione" style="flex:1;">
-            </div>
-            <input id="ed-qa-ent" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_039 / dm.core_022 / scene.x (non serve per i popup)">
-            <input id="ed-qa-confirm" class="ed-input" placeholder="Messaggio di conferma (facoltativo, es. Sei sicuro?)">
-            <button class="ed-btn-add" onclick="edAddQA()">＋ Aggiungi azione rapida</button>
-          </div>
-        </div>
-      </details>
-      <details class="ed-acc"><summary class="ed-acc-head">📹 Telecamere <span class="ed-acc-n">${(WIZ.cameras||[]).length}</span></summary>
+        <details class="ed-acc"><summary class="ed-acc-head">📹 Telecamere <span class="ed-acc-n">${(WIZ.cameras||[]).length}</span></summary>
           <div class="ed-acc-body">
             ${(WIZ.cameras||[]).map((cam, i) => `<div class="ed-row"><div class="ed-row-main"><div class="ed-row-new">${cam.name}</div><div class="ed-row-old mono">${cam.entity}</div></div><div class="ed-del" onclick="WIZ.cameras.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
             <input id="wz-cam-name" class="wz-input" placeholder="Nome (es. Giardino)" style="margin-bottom:8px;">
@@ -7542,6 +7524,39 @@ function wzAddQA() {
     wzRender();
 }
 
+
+function wzAddAvviso() {
+    const grp = document.getElementById('wz-av-grp').value;
+    const name = (document.getElementById('wz-av-name').value || '').trim();
+    const ent = (document.getElementById('wz-av-ent').value || '').trim();
+    if (!ent.includes('.')) { alert('Inserisci una entità valida'); return; }
+    const extG = cdCfg('cd_gruppi_extra');
+    if (!extG[grp]) extG[grp] = [];
+    if (!extG[grp].includes(ent)) extG[grp].push(ent);
+    localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
+    if (name) {
+        const extN = cdCfg('cd_avvisi_names_extra');
+        extN[ent] = name;
+        localStorage.setItem('cd_avvisi_names_extra', JSON.stringify(extN));
+    }
+    if (GRUPPI_MONITORAGGIO[grp] && !GRUPPI_MONITORAGGIO[grp].includes(ent)) GRUPPI_MONITORAGGIO[grp].push(ent);
+    wzRender();
+}
+function wzDelAvviso(grp, id) {
+    const extG = cdCfg('cd_gruppi_extra');
+    if (extG[grp] && extG[grp].includes(id)) {
+        extG[grp] = extG[grp].filter(x => x !== id);
+        if (!extG[grp].length) delete extG[grp];
+        localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
+    } else {
+        const rem = cdCfg('cd_gruppi_removed');
+        if (!rem[grp]) rem[grp] = [];
+        if (!rem[grp].includes(id)) rem[grp].push(id);
+        localStorage.setItem('cd_gruppi_removed', JSON.stringify(rem));
+    }
+    if (GRUPPI_MONITORAGGIO[grp]) GRUPPI_MONITORAGGIO[grp] = GRUPPI_MONITORAGGIO[grp].filter(x => x !== id);
+    wzRender();
+}
 function wzAddStanza() {
     const icon = (document.getElementById('wz-st-icon').value || '🏠').trim();
     const name = (document.getElementById('wz-st-name').value || '').trim();
@@ -7784,6 +7799,39 @@ function editorRenderSezioni() {
             <input id="ed-st-temp" list="ed-entity-list" class="ed-input mono" placeholder="sensor.temperatura_x (temperatura)">
             <input id="ed-st-hum" list="ed-entity-list" class="ed-input mono" placeholder="sensor.umidita_x (facoltativo — auto se vuoto)">
             <button class="ed-btn-add" onclick="edAddStanza()">＋ Aggiungi stanza</button>
+          </div>
+        </div>
+      </details>
+        <details class="ed-acc"><summary class="ed-acc-head">⚡ Azioni rapide (Home) <span class="ed-acc-n">${getQuickActions().length} azioni</span></summary>
+        <div class="ed-acc-body">
+          <div class="ed-list">${getQuickActions().map((a, i) => {
+            const b = a.type === 'builtin' ? CD_QA_BUILTINS[a.builtin] : null;
+            return `<div class="ed-row">
+              <div style="font-size:16px; flex-shrink:0;">${a.icon || (b && b.icon) || '⚡'}</div>
+              <div class="ed-row-main">
+                <div class="ed-row-new">${a.name || (b && b.name) || '?'}</div>
+                <div class="ed-row-old mono">${a.type === 'builtin' ? 'popup nativo: ' + a.builtin : a.type + ' · ' + (a.entity||'')}</div>
+              </div>
+              <div class="ed-del" onclick="edDelQA(${i})">🗑️</div>
+            </div>`;
+          }).join('')}</div>
+          <div class="ed-form">
+            <div class="ed-form-row">
+              <select id="ed-qa-type" class="ed-input" style="flex:0 0 40%;">
+                <option value="toggle">🔀 Toggle entità</option>
+                <option value="script">📜 Script</option>
+                <option value="scene">🎬 Scena</option>
+                <option value="builtin_luci">💡 Popup Luci</option>
+                <option value="builtin_clima">❄️ Popup Clima</option>
+                <option value="builtin_antifurto">🛡️ Popup Antifurto</option>
+                <option value="builtin_lavatrice">🧺 Popup Lavatrice</option>
+              </select>
+              <input id="ed-qa-icon" class="ed-input ed-icon-input" placeholder="⚡" maxlength="4">
+              <input id="ed-qa-name" class="ed-input" placeholder="Nome azione" style="flex:1;">
+            </div>
+            <input id="ed-qa-ent" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_039 / dm.core_022 / scene.x (non serve per i popup)">
+            <input id="ed-qa-confirm" class="ed-input" placeholder="Messaggio di conferma (facoltativo, es. Sei sicuro?)">
+            <button class="ed-btn-add" onclick="edAddQA()">＋ Aggiungi azione rapida</button>
           </div>
         </div>
       </details>

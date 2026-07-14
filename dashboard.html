@@ -155,6 +155,7 @@ header { display: flex; align-items: center; justify-content: space-between; mar
 
 .tabs { display: flex; gap: 10px; margin-bottom: 35px; overflow-x: auto; padding: 10px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; scrollbar-width: none; box-shadow: var(--shadow-sculpted); }
 .tabs::-webkit-scrollbar { display: none; }
+.tab.cd-section-off { display: none !important; }
 .tab { flex: 1; min-width: 115px; padding: 16px 10px; border: none; background: transparent; color: var(--text-dim); font-weight: 800; font-size: 13px; border-radius: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition); white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px;}
 .tab:hover { background: rgba(22,163,74,0.06); color: var(--green-dark); transform: translateY(-3px); }
 .tab.active { color: #fff; background: linear-gradient(135deg, var(--green-dark), var(--green)); box-shadow: 0 10px 25px rgba(var(--green-rgb),0.35); transform: translateY(-4px); }
@@ -3549,7 +3550,7 @@ async function refreshActiveDeviceTelemetry() {
 
 
 /* ════════════════════════════════════════════════
-   SEZIONE EV — Dashboard Premium Redesign
+   SEZIONE EV — Dashboard
    ════════════════════════════════════════════════ */
 
 /* ── Hero Card (immagine + batteria) ── */
@@ -4807,7 +4808,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
 
     <!-- v245: container per le pillole di stato (caldaia + antifurto, affiancate) -->
     <div class="dashboard-pills-row" id="dashboard-pills-row">
-      <!-- v244: Pillola caldaia accesa (visibile solo se dm.clima_interruttore_caldaia è ON) -->
+      <!-- v244: Pillola caldaia accesa (visibile solo se switch.caldaia è ON) -->
       <div id="caldaia-banner" class="status-pill caldaia-banner" onclick="apriQuickClimaCaldo()">
         <span class="caldaia-banner-icon">🔥</span>
         <span class="caldaia-banner-text">Caldaia accesa</span>
@@ -5625,7 +5626,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
           </div>
           <span id="txt-chiave" style="display:none">CHIUSA</span>
         </div>
-        <div class="syn-pump" id="syn-p-ricircolo" style="left: 88%; top: 50%;" onclick="toggle('dm.clima_pompa_di_ricircolo')">
+        <div class="syn-pump" id="syn-p-ricircolo" style="left: 88%; top: 50%;" onclick="toggle('dm.core_037')">
         </div>
       </div>
       
@@ -5646,13 +5647,13 @@ html[data-theme="dark"] header { background: var(--card-glass); }
 
       <div class="b-controls-grid">
         <div class="b-btn" id="b-c-pompasol" onclick="toggle('dm.boiler_pompa_solare')" style="--c-rgb: 234,88,12;"><div class="icon"><span class="spin-active">🔄</span></div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-ricircolo" onclick="toggle('dm.clima_pompa_di_ricircolo')" style="--c-rgb: 124,58,237;"><div class="icon"><span class="spin-active">🔁</span></div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-ricircolo" onclick="toggle('dm.core_037')" style="--c-rgb: 124,58,237;"><div class="icon"><span class="spin-active">🔁</span></div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-centralina" onclick="toggle('dm.boiler_centralina_solare_termico')" style="--c-rgb: 245,158,11;"><div class="icon">⚙️</div><div class="lbl">Centralina</div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-solare" onclick="toggle('dm.boiler_interruttore_solare_termico')" style="--c-rgb: 245,158,11;"><div class="icon">♨️</div><div class="lbl">Ctrl Solare</div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-valvola" onclick="toggle('valve.chiave_solare_termico')" style="--c-rgb: 6,182,212;"><div class="icon">🎛️</div><div class="lbl">Valvola</div><div class="state">CHIUSA</div></div>
         <div class="b-btn" id="b-c-boiler" onclick="toggle('dm.boiler_interruttore_boiler')" style="--c-rgb: 30,64,175;"><div class="icon">🌊</div><div class="lbl">Boiler</div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-pdc" onclick="toggle('dm.clima_pompa_di_calore')" style="--c-rgb: 124,58,237;"><div class="icon">🌬️</div><div class="lbl">PdC</div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-boost" onclick="toggle('dm.clima_boost_pompa_di_calore')" style="--c-rgb: 236,72,153;"><div class="icon">🚀</div><div class="lbl">Boost</div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-pdc" onclick="toggle('dm.core_036')" style="--c-rgb: 124,58,237;"><div class="icon">🌬️</div><div class="lbl">PdC</div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-boost" onclick="toggle('dm.core_034')" style="--c-rgb: 236,72,153;"><div class="icon">🚀</div><div class="lbl">Boost</div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-sicurezza" onclick="toggle('dm.boiler_valvola_di_sicurezza')" style="--c-rgb: 225,29,72;"><div class="icon"><span class="blink-active">🔒</span></div><div class="lbl">V. Sicurezza</div><div class="state">CHIUSA</div></div>
       </div>
     </div>
@@ -6213,7 +6214,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.3.1';
+const DASHBOARD_VERSION = '0.3.2';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6299,6 +6300,10 @@ const SUBLOADS_CONFIG = {
 
 /* ═══ v256: APPLICATORE CONFIG UTENTE ═══
    Applica window.DASHBOARD_CONFIG (da config.js): branding, luci custom, sezioni on/off, entità. */
+function cdOnReady(fn) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+    else fn();
+}
 (function applyUserConfig() {
     const C = window.DASHBOARD_CONFIG || {};
     // v256: il wizard UI (localStorage/baked) ha priorità sul config.js
@@ -6309,7 +6314,7 @@ const SUBLOADS_CONFIG = {
     // ── Branding: titolo pagina + header ──
     if (brand.title) {
         document.title = brand.title + ' — Smart Home';
-        document.addEventListener('DOMContentLoaded', () => {
+        cdOnReady(() => {
             const h1 = document.querySelector('header h1');
             if (h1) h1.textContent = brand.title;
             const p = document.querySelector('header h1 + p');
@@ -6329,12 +6334,12 @@ const SUBLOADS_CONFIG = {
     }
     // ── Sezioni on/off: nasconde tab della nav + pagina ──
     if (sect) {
-        document.addEventListener('DOMContentLoaded', () => {
+        cdOnReady(() => {
             Object.entries(sect).forEach(([sec, enabled]) => {
                 if (enabled !== false) return;
                 const tab = document.querySelector(`.tab[data-tab="${sec}"]`);
                 const page = document.getElementById('page-' + sec);
-                if (tab) tab.style.display = 'none';
+                if (tab) tab.classList.add('cd-section-off');
                 if (page) page.remove();
             });
         });
@@ -6630,7 +6635,7 @@ async function connect() {
             renderQuickClima();
           }
           // Switch termici → re-render pannello stato (visibile solo in modalità caldo)
-          if (eid === 'dm.clima_interruttore_caldaia' || eid === 'dm.clima_termocamino' || eid === 'dm.clima_aspiratore_canna_fumaria') {
+          if (eid === 'switch.caldaia' || eid === 'dm.core_038' || eid === 'dm.core_033') {
             if (currentClimaMode === 'caldo') renderThermalPanel();
           }
         }
@@ -7217,6 +7222,8 @@ function apriSetupWizard() {
     WIZ = {
         step: 1,
         token: conn.token || (typeof LONG_LIVED_TOKEN !== 'undefined' ? LONG_LIVED_TOKEN : '') || '',
+        remoteUrl: conn.remote_url || '',
+        remoteUrl: conn.remote_url || '',
         title: brand.title || 'Casa Mia',
         subtitle: brand.subtitle || 'Smart Home Dashboard',
         sections: Object.keys(sect||{}).length ? sect : { home:true, energy:true, ev:true, boiler:true, clima:true, temp:true, security:true, server:true },
@@ -7224,6 +7231,8 @@ function apriSetupWizard() {
         entities: {},
         cameras: getCameras().slice(),
         climaUnits: getClimaUnits().slice(),
+        stanze: getStanze().slice(),
+        stanze: getStanze().slice(),
         quickActions: getQuickActions().slice(),
         sectionNames: cdCfg('cd_section_names') || {},
         evImage: (function(){ const v = cdCfg('cd_ev_image'); return (typeof v === 'string' ? v : (v && v.url) || ''); })()
@@ -7249,6 +7258,8 @@ function wzRender() {
         2. Tab <b>Sicurezza</b> → in fondo <b>"Token di accesso a lunga scadenza"</b><br>
         3. <b>Crea token</b>, dagli un nome (es. "Dashboard") e copialo qui:</div>
         <textarea id="wz-token" class="wz-input" rows="4" placeholder="Incolla qui il token (inizia con eyJ...)">${WIZ.token}</textarea>
+        <input id="wz-remote" class="wz-input mono" style="font-family:monospace; font-size:12px;" placeholder="URL remoto facoltativo (es. https://xxxx.ui.nabu.casa)" value="${WIZ.remoteUrl||''}">
+        <input id="wz-remote" class="wz-input" value="${WIZ.remoteUrl||''}" placeholder="URL remoto (opzionale, es. https://xxxx.ui.nabu.casa)" onchange="WIZ.remoteUrl=this.value.trim().replace(/\/$/,'');">
         <div id="wz-test-result"></div>
         <button class="wz-btn" onclick="wzTestToken()">Verifica connessione →</button>`;
 
@@ -7323,8 +7334,32 @@ function wzRender() {
               </select>
               <input id="wz-qa-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome">
             </div>
-            <input id="wz-qa-ent" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_033 (solo per toggle/script/scena)" style="margin-bottom:8px; font-family:monospace;">
+            <input id="wz-qa-ent" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_039 (solo per toggle/script/scena)" style="margin-bottom:8px; font-family:monospace;">
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddQA()">＋ Aggiungi azione</button>
+          </div>
+        </details>` : ''}${WIZ.sections['temp'] !== false ? `
+        <details class="ed-acc"><summary class="ed-acc-head">🌡️ Stanze (temperature) <span class="ed-acc-n">${(WIZ.stanze||[]).length}</span></summary>
+          <div class="ed-acc-body">
+            ${(WIZ.stanze||[]).map((r, i) => `<div class="ed-row"><div style="font-size:15px;">${r.icon||'🏠'}</div><div class="ed-row-main"><div class="ed-row-new">${r.name}</div><div class="ed-row-old mono">${r.temp}</div></div><div class="ed-del" onclick="WIZ.stanze.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+              <input id="wz-st-icon" class="wz-input" style="margin-bottom:0; flex:0 0 64px; text-align:center;" placeholder="🛋️" maxlength="4">
+              <input id="wz-st-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome stanza (es. Salone)">
+            </div>
+            <input id="wz-st-temp" class="wz-input mono" list="wz-entity-list" placeholder="sensor.temperatura_salone (temperatura)" style="margin-bottom:8px; font-family:monospace;">
+            <input id="wz-st-hum" class="wz-input mono" list="wz-entity-list" placeholder="sensor.umidita_salone (facoltativo)" style="margin-bottom:8px; font-family:monospace;">
+            <button class="ed-btn-add" style="width:100%;" onclick="wzAddStanza()">＋ Aggiungi stanza</button>
+          </div>
+        </details>` : ''}${WIZ.sections['temp'] !== false ? `
+        <details class="ed-acc"><summary class="ed-acc-head">🌡️ Stanze (temperature) <span class="ed-acc-n">${(WIZ.stanze||[]).length}</span></summary>
+          <div class="ed-acc-body">
+            ${(WIZ.stanze||[]).map((r, i) => `<div class="ed-row"><div style="font-size:15px;">${r.icon||'🏠'}</div><div class="ed-row-main"><div class="ed-row-new">${r.name}</div><div class="ed-row-old mono">${r.temp}</div></div><div class="ed-del" onclick="WIZ.stanze.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+              <input id="wz-st-icon" class="wz-input" style="margin-bottom:0; flex:0 0 64px; text-align:center;" placeholder="🛋️" maxlength="4">
+              <input id="wz-st-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome stanza">
+            </div>
+            <input id="wz-st-temp" class="wz-input mono" list="wz-entity-list" placeholder="sensor.temperatura_salone (temperatura)" style="margin-bottom:8px; font-family:monospace;">
+            <input id="wz-st-hum" class="wz-input mono" list="wz-entity-list" placeholder="sensor.umidita_salone (facoltativo)" style="margin-bottom:8px; font-family:monospace;">
+            <button class="ed-btn-add" style="width:100%;" onclick="wzAddStanza()">＋ Aggiungi stanza</button>
           </div>
         </details>` : ''}${WIZ.sections['clima'] !== false ? `
         <details class="ed-acc"><summary class="ed-acc-head">❄️ Unità clima <span class="ed-acc-n">${(WIZ.climaUnits||[]).length}</span></summary>
@@ -7336,6 +7371,15 @@ function wzRender() {
             </div>
             <input id="wz-cl-ent" class="wz-input mono" list="wz-entity-list" placeholder="climate.studio" style="margin-bottom:8px; font-family:monospace;">
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddClima()">＋ Aggiungi unità</button>
+            <div class="ed-slot" style="margin-top:12px;"><div class="ed-slot-lbl">🔥 Entità caldaia (switch — facoltativa)</div>
+              <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" list="wz-entity-list"
+                     data-ref="switch.caldaia" value="${(WIZ.entities && WIZ.entities['switch.caldaia']) || ENTITY_OVERRIDES['switch.caldaia'] || ''}" placeholder="switch.caldaia" onchange="wzSetSlot(this)"></div>
+            <div class="ed-slot" style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--card-border);">
+              <div class="ed-slot-lbl">🔥 Entità caldaia (switch — opzionale)</div>
+              <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" list="wz-entity-list"
+                     data-ref="switch.caldaia" value="${(WIZ.entities && WIZ.entities['switch.caldaia']) || ENTITY_OVERRIDES['switch.caldaia'] || ''}"
+                     placeholder="es. dm.core_035" onchange="wzSetSlot(this)">
+            </div>
           </div>
         </details>` : ''}${WIZ.sections['ev'] !== false ? `
         <details class="ed-acc"><summary class="ed-acc-head">🚗 Immagine auto <span class="ed-acc-n">URL</span></summary>
@@ -7372,7 +7416,7 @@ function wzRender() {
               <input id="ed-qa-icon" class="ed-input ed-icon-input" placeholder="⚡" maxlength="4">
               <input id="ed-qa-name" class="ed-input" placeholder="Nome azione" style="flex:1;">
             </div>
-            <input id="ed-qa-ent" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_033 / dm.core_022 / scene.x (non serve per i popup)">
+            <input id="ed-qa-ent" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_039 / dm.core_022 / scene.x (non serve per i popup)">
             <input id="ed-qa-confirm" class="ed-input" placeholder="Messaggio di conferma (facoltativo, es. Sei sicuro?)">
             <button class="ed-btn-add" onclick="edAddQA()">＋ Aggiungi azione rapida</button>
           </div>
@@ -7408,6 +7452,7 @@ function wzRender() {
 }
 
 function wzTestToken() {
+    WIZ.remoteUrl = (document.getElementById('wz-remote') ? document.getElementById('wz-remote').value.trim() : WIZ.remoteUrl || '');
     const tk = (document.getElementById('wz-token').value || '').trim();
     const res = document.getElementById('wz-test-result');
     if (!tk || !tk.startsWith('eyJ')) { res.innerHTML = '<div class="wz-err">⚠️ Il token non sembra valido (deve iniziare con eyJ)</div>'; return; }
@@ -7513,6 +7558,32 @@ function wzAddQA() {
     }
     wzRender();
 }
+
+function wzAddStanza() {
+    const icon = (document.getElementById('wz-st-icon').value || '🏠').trim();
+    const name = (document.getElementById('wz-st-name').value || '').trim();
+    const temp = (document.getElementById('wz-st-temp').value || '').trim();
+    const hum = (document.getElementById('wz-st-hum').value || '').trim();
+    if (!name || !temp.includes('.')) { alert('Inserisci nome e sensore temperatura'); return; }
+    if (!WIZ.stanze) WIZ.stanze = [];
+    const r = { name, icon, temp };
+    if (hum.includes('.')) r.hum = hum;
+    WIZ.stanze.push(r);
+    wzRender();
+}
+
+function wzAddStanza() {
+    const icon = (document.getElementById('wz-st-icon').value || '🏠').trim();
+    const name = (document.getElementById('wz-st-name').value || '').trim();
+    const temp = (document.getElementById('wz-st-temp').value || '').trim();
+    const hum = (document.getElementById('wz-st-hum').value || '').trim();
+    if (!name || !temp.includes('.')) { alert('Inserisci nome e sensore temperatura'); return; }
+    if (!WIZ.stanze) WIZ.stanze = [];
+    const r = { name, icon, temp };
+    if (hum.includes('.')) r.hum = hum;
+    WIZ.stanze.push(r);
+    wzRender();
+}
 function wzAddClima() {
     const type = document.getElementById('wz-cl-type').value;
     const name = (document.getElementById('wz-cl-name').value || '').trim();
@@ -7539,7 +7610,7 @@ function wzResetAll() {
     location.reload();
 }
 function wzFinish() {
-    localStorage.setItem('cd_connection', JSON.stringify({ token: WIZ.token, admin_users: WIZ.admin ? [WIZ.admin] : [] }));
+    localStorage.setItem('cd_connection', JSON.stringify({ token: WIZ.token, admin_users: WIZ.admin ? [WIZ.admin] : [], remote_url: WIZ.remoteUrl || '' }));
     localStorage.setItem('cd_branding', JSON.stringify({ title: WIZ.title, subtitle: WIZ.subtitle }));
     localStorage.setItem('cd_sections', JSON.stringify(WIZ.sections));
     if (WIZ.sectionNames && Object.keys(WIZ.sectionNames).length) localStorage.setItem('cd_section_names', JSON.stringify(WIZ.sectionNames));
@@ -7547,6 +7618,8 @@ function wzFinish() {
     if (Object.keys(WIZ.luci).length) localStorage.setItem('cd_luci', JSON.stringify(WIZ.luci));
     if (WIZ.cameras) localStorage.setItem('cd_cameras', JSON.stringify(WIZ.cameras));
     if (WIZ.climaUnits) localStorage.setItem('cd_clima_units', JSON.stringify(WIZ.climaUnits));
+    if (WIZ.stanze) localStorage.setItem('cd_stanze', JSON.stringify(WIZ.stanze));
+    if (WIZ.stanze) localStorage.setItem('cd_stanze', JSON.stringify(WIZ.stanze));
     if (WIZ.quickActions) localStorage.setItem('cd_quick_actions', JSON.stringify(WIZ.quickActions));
     if (WIZ.evImage !== undefined) localStorage.setItem('cd_ev_image', JSON.stringify(WIZ.evImage || ''));
     if (WIZ.entities && Object.keys(WIZ.entities).length) {
@@ -7609,14 +7682,6 @@ const CD_SLOTS = {
         { ref: 'dm.energy_boiler_mese',   lbl: 'Boiler mese (kWh)' },
         { ref: 'dm.energy_potenza_ventola_inverter', lbl: 'Potenza ventola inverter (W)' },
         { ref: 'dm.energy_interruttore_ventola_inverter',       lbl: 'Interruttore ventola inverter' },
-    ]},
-    clima: { label: '🔥 Impianto termico (caldaia, pompe…)', slots: [
-        { ref: 'dm.clima_interruttore_caldaia',                      lbl: 'Interruttore caldaia' },
-        { ref: 'dm.clima_pompa_di_calore',              lbl: 'Pompa di calore' },
-        { ref: 'dm.clima_boost_pompa_di_calore',        lbl: 'Boost pompa di calore' },
-        { ref: 'dm.clima_termocamino',                  lbl: 'Termocamino' },
-        { ref: 'dm.clima_aspiratore_canna_fumaria',     lbl: 'Aspiratore canna fumaria' },
-        { ref: 'dm.clima_pompa_di_ricircolo',           lbl: 'Pompa di ricircolo' },
     ]},
     ev: { label: '🚗 Auto elettrica', slots: [
         { ref: 'dm.ev_batteria_auto',  lbl: 'Batteria auto (%)' },
@@ -7761,6 +7826,13 @@ function editorRenderSezioni() {
             </div>
             <input id="ed-cl-ent" list="ed-entity-list" class="ed-input mono" placeholder="climate.studio">
             <button class="ed-btn-add" onclick="edAddClima()">＋ Aggiungi unità clima</button>
+            <div class="ed-slot" style="margin-top:10px;"><div class="ed-slot-lbl">🔥 Entità caldaia (switch — facoltativa)</div>
+              <input class="ed-input mono ed-slot-in" list="ed-entity-list" data-ref="switch.caldaia" value="${ENTITY_OVERRIDES['switch.caldaia'] || ''}" placeholder="switch.caldaia" onchange="edSetSlot(this)"></div>
+            <div class="ed-slot" style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--card-border);">
+              <div class="ed-slot-lbl">🔥 Entità caldaia (switch — opzionale)</div>
+              <input class="ed-input mono ed-slot-in" list="ed-entity-list" data-ref="switch.caldaia"
+                     value="${ENTITY_OVERRIDES['switch.caldaia'] || ''}" placeholder="es. dm.core_035" onchange="edSetSlot(this)">
+            </div>
           </div>
         </div>
       </details>
@@ -8606,6 +8678,21 @@ function cdAutoHide() {
     });
 }
 document.addEventListener('DOMContentLoaded', () => setTimeout(cdAutoHide, 300));
+/* v262: ri-applico l'occultamento sezioni anche dopo load (doppia sicurezza) */
+window.addEventListener('load', () => {
+    try {
+        const wSect = cdCfg('cd_sections');
+        const sect = Object.keys(wSect||{}).length ? wSect : ((window.DASHBOARD_CONFIG||{}).sections || null);
+        if (!sect) return;
+        Object.entries(sect).forEach(([sec, enabled]) => {
+            if (enabled !== false) return;
+            const tab = document.querySelector(`.tab[data-tab="${sec}"]`);
+            const page = document.getElementById('page-' + sec);
+            if (tab) tab.style.display = 'none';
+            if (page) page.remove();
+        });
+    } catch(e) {}
+});
 
 
 /* ═══ v258: TELECAMERE dinamiche — configurabili da UI (cd_cameras) ═══ */
@@ -8773,7 +8860,7 @@ async function apriMeteo() {
   document.getElementById('weather-modal').classList.add('show');
   const list = document.getElementById('weather-forecast-list');
   list.innerHTML = '<div style="text-align:center; padding: 30px; font-weight:800; color:var(--text-dim);">Caricamento Previsioni...</div>';
-  const entityId = 'dm.core_034'; currentWeatherEntity = entityId;
+  const entityId = 'dm.core_040'; currentWeatherEntity = entityId;
 
   if (ws && ws.readyState === WebSocket.OPEN) {
       const reqId = msgId++;
@@ -9027,7 +9114,7 @@ function render() {
       if (panoramicaView && panoramicaView.classList.contains('active')) {
           edUpdateKpiOnly();
       }
-      const weatherEnt = STATES['dm.core_034'] || STATES['weather.home'] || STATES['dm.home_meteo'] || null;
+      const weatherEnt = STATES['dm.core_040'] || STATES['weather.home'] || STATES['dm.home_meteo'] || null;
       if(weatherEnt) {
         const wLangMap = { 'clear-night': 'Sereno (Notte)', 'cloudy': 'Nuvoloso', 'fog': 'Nebbia', 'hail': 'Grandine', 'lightning': 'Fulmini', 'lightning-rainy': 'Temporale', 'partlycloudy': 'Poco Nuvoloso', 'pouring': 'Acquazzone', 'rainy': 'Pioggia', 'snowy': 'Neve', 'snowy-rainy': 'Nevischio', 'sunny': 'Soleggiato', 'windy': 'Ventoso', 'windy-variant': 'Vento Forte' };
         document.getElementById('w-temp').textContent = (weatherEnt.attributes?.temperature !== undefined ? weatherEnt.attributes.temperature : '--') + '°C';
@@ -9369,11 +9456,11 @@ function render() {
       const updateBoilerBtn = (id, isActive, tOn='ON', tOff='OFF') => { const el = document.getElementById(id); if(el) { el.classList.toggle('active', isActive); const st = el.querySelector('.state'); if(st) st.textContent = isActive ? tOn : tOff; } };
       const isPompaSolActive = getRawState('dm.boiler_stato_pompa_solare') === 'on'; setActiveState('syn-p-solare', isPompaSolActive); updateBoilerBtn('b-c-pompasol', isPompaSolActive); const sun = document.getElementById('syn-sun'); if(sun) sun.classList.toggle('active', isPompaSolActive); setLine('flow-sol-hot', isPompaSolActive); setLine('flow-sol-cold', isPompaSolActive);
       const isPannelloSolActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; const sPanel = document.querySelector('.syn-solar-panel'); if(sPanel) sPanel.classList.toggle('active', isPannelloSolActive);
-      const isRicircoloActive = getRawState('dm.clima_pompa_di_ricircolo') === 'on'; setActiveState('syn-p-ricircolo', isRicircoloActive); updateBoilerBtn('b-c-ricircolo', isRicircoloActive); setLine('flow-ricircolo', isRicircoloActive); 
+      const isRicircoloActive = getRawState('dm.core_037') === 'on'; setActiveState('syn-p-ricircolo', isRicircoloActive); updateBoilerBtn('b-c-ricircolo', isRicircoloActive); setLine('flow-ricircolo', isRicircoloActive); 
       const chiaveState = getRawState('valve.chiave_solare_termico'); const isChiaveOpen = chiaveState === 'open'; setActiveState('syn-v-chiave', isChiaveOpen); updateBoilerBtn('b-c-valvola', isChiaveOpen, 'APERTA', 'CHIUSA'); document.getElementById('txt-chiave').textContent = isChiaveOpen ? 'APERTA' : 'CHIUSA';
       const isCtrlSolareActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; updateBoilerBtn('b-c-solare', isCtrlSolareActive); 
       let isCoverOpen = false; let coverPos = 0; const coverObj = STATES['dm.boiler_valvola_di_sicurezza']; if(coverObj && coverObj.attributes) { coverPos = coverObj.attributes.current_position; if(coverPos !== undefined && coverPos > 0) isCoverOpen = true; } const synSafety = document.getElementById('syn-safety-icon'); if(synSafety) synSafety.classList.toggle('active', isCoverOpen); const synFaucet = document.getElementById('syn-faucet-wrap'); if(synFaucet) synFaucet.classList.toggle('open', isCoverOpen); const sBtn = document.getElementById('b-c-sicurezza'); if(sBtn) { sBtn.classList.toggle('active', isCoverOpen); const stNode = sBtn.querySelector('.state'); if(stNode) stNode.textContent = isCoverOpen ? `${coverPos}%` : 'CHIUSA'; }
-      updateBoilerBtn('b-c-centralina', getRawState('dm.boiler_centralina_solare_termico') === 'on'); updateBoilerBtn('b-c-boiler', getRawState('dm.boiler_interruttore_boiler') === 'on'); updateBoilerBtn('b-c-pdc', getRawState('dm.clima_pompa_di_calore') === 'on'); updateBoilerBtn('b-c-boost', getRawState('dm.clima_boost_pompa_di_calore') === 'on');
+      updateBoilerBtn('b-c-centralina', getRawState('dm.boiler_centralina_solare_termico') === 'on'); updateBoilerBtn('b-c-boiler', getRawState('dm.boiler_interruttore_boiler') === 'on'); updateBoilerBtn('b-c-pdc', getRawState('dm.core_036') === 'on'); updateBoilerBtn('b-c-boost', getRawState('dm.core_034') === 'on');
 
       // ═══════ AGGIORNAMENTO PANNELLO ANTIFURTO PREMIUM ═══════
       (function() {
@@ -9690,8 +9777,8 @@ function apriQuickClimaCaldo() {
 // v244: render del pannello termico (caldaia/termocamino/aspiratore canna fumaria)
 function renderThermalPanel() {
     const map = [
-      { entityId: 'dm.clima_interruttore_caldaia',                   rowEl: 'ns-thermal-row-caldaia',     stateEl: 'ns-thermal-caldaia',     textEl: 'ns-thermal-caldaia-text' },
-      { entityId: 'dm.clima_termocamino',               rowEl: 'ns-thermal-row-termocamino', stateEl: 'ns-thermal-termocamino', textEl: 'ns-thermal-termocamino-text' }
+      { entityId: 'switch.caldaia',                   rowEl: 'ns-thermal-row-caldaia',     stateEl: 'ns-thermal-caldaia',     textEl: 'ns-thermal-caldaia-text' },
+      { entityId: 'dm.core_038',               rowEl: 'ns-thermal-row-termocamino', stateEl: 'ns-thermal-termocamino', textEl: 'ns-thermal-termocamino-text' }
     ];
     map.forEach(m => {
       const s = STATES[m.entityId];
@@ -9707,7 +9794,7 @@ function renderThermalPanel() {
       else                        { el.classList.add('unavail'); txt.textContent = 'N/D';   if (row) row.classList.add('is-unavail'); }
     });
     // Aspiratore (riga cliccabile)
-    const aspiratore = STATES['dm.clima_aspiratore_canna_fumaria'];
+    const aspiratore = STATES['dm.core_033'];
     const aspRow = document.getElementById('ns-thermal-row-aspiratore');
     const aspBtn = document.getElementById('ns-thermal-aspiratore-btn');
     const aspText = document.getElementById('ns-thermal-aspiratore-text');
@@ -9733,11 +9820,11 @@ function renderThermalPanel() {
 function toggleAspiratoreCF() {
     if (!ws) return;
     if (navigator.vibrate) navigator.vibrate(15);
-    const cur = STATES['dm.clima_aspiratore_canna_fumaria']?.state;
+    const cur = STATES['dm.core_033']?.state;
     const service = (cur === 'on') ? 'turn_off' : 'turn_on';
     ws.send(JSON.stringify({
       id: msgId++, type: 'call_service', domain: 'switch', service: service,
-      service_data: { entity_id: 'dm.clima_aspiratore_canna_fumaria' }
+      service_data: { entity_id: 'dm.core_033' }
     }));
     setTimeout(renderThermalPanel, 300);
 }
@@ -9746,7 +9833,7 @@ function toggleAspiratoreCF() {
 function renderCaldaiaBanner() {
     const banner = document.getElementById('caldaia-banner');
     if (!banner) return;
-    const stato = STATES['dm.clima_interruttore_caldaia']?.state;
+    const stato = STATES['switch.caldaia']?.state;
     banner.classList.toggle('show', stato === 'on');
 }
 

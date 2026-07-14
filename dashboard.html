@@ -5,12 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Smart Home Dashboard</title>
 <!-- ═══ CONFIG UTENTE (opzionale): copia config.example.js in config.js accanto a questo file e personalizza ═══ -->
-<!-- ═══ CONFIG UTENTE (opzionale — il Setup Wizard è la via consigliata) ═══
-     1) config.js accanto a questo file (installazione manuale)
-     2) /local/casa-dashboard-config.js (installazione HACS: file FUORI dalla cartella
-        community, così sopravvive agli aggiornamenti del componente) -->
-<script src="config.js" onerror="this.remove()"></script>
-<script src="/local/casa-dashboard-config.js" onerror="this.remove()"></script>
+<script src="config.js" onerror="console.warn('[Dashboard] config.js non trovato — uso i default interni')"></script>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@300;400;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -5728,16 +5723,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         <div class="cctv-status-badge">TVCC ATTIVO</div>
       </div>
 
-      <div class="cam-grid">
-        <div class="cam-card" onclick="apriCamera('cam-cameretta', 'CAM 01 // CAMERETTA')"><div class="cam-overlay-top"><span class="cam-name">CAM 01 // CAMERETTA</span><span class="cam-rec">REC</span></div><div class="cam-feed"><img id="cam-cameretta" src=""></div><div class="cam-overlay-bottom"><span class="cam-time" id="time-cameretta">--:--:--</span><span style="color:#06b6d4;">CH1</span></div></div>
-        <div class="cam-card" onclick="apriCamera('cam-salone', 'CAM 02 // SALONE')"><div class="cam-overlay-top"><span class="cam-name">CAM 02 // SALONE</span><span class="cam-rec">REC</span></div><div class="cam-feed"><img id="cam-salone" src=""></div><div class="cam-overlay-bottom"><span class="cam-time" id="time-salone">--:--:--</span><span style="color:#06b6d4;">CH2</span></div></div>
-        <div class="cam-card" onclick="apriCamera('cam-terrazza', 'CAM 03 // TERRAZZA')"><div class="cam-overlay-top"><span class="cam-name">CAM 03 // TERRAZZA</span><span class="cam-rec">REC</span></div><div class="cam-feed"><img id="cam-terrazza" src=""></div><div class="cam-overlay-bottom"><span class="cam-time" id="time-terrazza">--:--:--</span><span style="color:#06b6d4;">CH3</span></div></div>
-        <div class="cam-card" onclick="apriCamera('cam-cortiled', 'CAM 04 // CORTILE DESTRO')"><div class="cam-overlay-top"><span class="cam-name">CAM 04 // CORTILE DESTRO</span><span class="cam-rec">REC</span></div><div class="cam-feed"><img id="cam-cortiled" src=""></div><div class="cam-overlay-bottom"><span class="cam-time" id="time-cortiled">--:--:--</span><span style="color:#06b6d4;">CH4</span></div></div>
-        <div class="cam-card" onclick="apriCamera('cam-cortiles', 'CAM 05 // CORTILE SINISTRO')"><div class="cam-overlay-top"><span class="cam-name">CAM 05 // CORTILE SINISTRO</span><span class="cam-rec">REC</span></div><div class="cam-feed"><img id="cam-cortiles" src=""></div><div class="cam-overlay-bottom"><span class="cam-time" id="time-cortiles">--:--:--</span><span style="color:#06b6d4;">CH5</span></div></div>
-        <div class="cam-card" onclick="apriCamera('cam-strada', 'CAM 06 // STRADA')"><div class="cam-overlay-top"><span class="cam-name">CAM 06 // STRADA</span><span class="cam-rec">REC</span></div><div class="cam-feed"><img id="cam-strada" src=""></div><div class="cam-overlay-bottom"><span class="cam-time" id="time-strada">--:--:--</span><span style="color:#06b6d4;">CH6</span></div></div>
-        <div class="cam-card" onclick="apriCamera('cam-balconi', 'CAM 07 // BALCONI')"><div class="cam-overlay-top"><span class="cam-name">CAM 07 // BALCONI</span><span class="cam-rec">REC</span></div><div class="cam-feed"><img id="cam-balconi" src=""></div><div class="cam-overlay-bottom"><span class="cam-time" id="time-balconi">--:--:--</span><span style="color:#06b6d4;">CH7</span></div></div>
-        <div class="cam-card" onclick="apriCamera('cam-fontana', 'CAM 08 // FONTANA')"><div class="cam-overlay-top"><span class="cam-name">CAM 08 // FONTANA</span><span class="cam-rec">REC</span></div><div class="cam-feed"><img id="cam-fontana" src=""></div><div class="cam-overlay-bottom"><span class="cam-time" id="time-fontana">--:--:--</span><span style="color:#06b6d4;">CH8</span></div></div>
-      </div>
+      <div class="cam-grid" id="cam-grid"><!-- v258: card camere generate da getCameras() --></div>
     </div>
   </section>
 
@@ -5843,7 +5829,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
     <div class="cfg-grid">
       <!-- Editor Plancia -->
       <a class="cfg-card" id="srv-edit-card"
-         href="#" target="_top" rel="noopener" data-dyn-href="1"
+         href="#" target="_top" rel="noopener"
          onclick="return handleEditClick(event)"
          style="text-decoration:none; color:inherit;">
         <div class="cfg-card-ico" style="--cc-rgb: 14,165,233;">✏️</div>
@@ -6414,6 +6400,7 @@ window.CD_BAKED_CONFIG = {
   cd_sections: {},
   cd_luci: {},
   cd_stanze: [],
+  cd_cameras: [],
   cd_entity_overrides: {},
   cd_subloads_extra: {},
   cd_gruppi_extra: {},
@@ -7324,7 +7311,7 @@ async function edDownloadHTML() {
     }
 
     // Costruisci il nuovo blocco baked dai localStorage attuali (le personalizzazioni di questo dispositivo)
-    const keys = ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
+    const keys = ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_cameras','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
     const merged = {};
     keys.forEach(k => { merged[k] = cdCfg(k); });  // cdCfg = localStorage o baked precedente
     const bakedBlock = '/* CD_BAKED_START */\n'
@@ -7397,7 +7384,7 @@ function edImport() {
 }
 function edResetAll() {
     if (!confirm('Rimuovere TUTTE le personalizzazioni di questo dispositivo?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
+    ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_cameras','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
     location.reload();
 }
 
@@ -7446,7 +7433,7 @@ function apriSetupWizard() {
 function wzRender() {
     const card = document.getElementById('wz-card');
     if (!card) return;
-    const steps = ['Connessione', 'Nome', 'Sezioni', 'Luci', 'Fine'];
+    const steps = ['Connessione', 'Nome', 'Sezioni', 'Luci', 'Entità', 'Fine'];
     const dots = steps.map((s, i) => `<div class="wz-dot ${i+1 === WIZ.step ? 'active' : ''} ${i+1 < WIZ.step ? 'done' : ''}"></div>`).join('');
     let body = '';
 
@@ -7497,17 +7484,39 @@ function wzRender() {
         <button class="wz-btn" onclick="WIZ.step=5; wzRender();">Avanti →</button>`;
     }
 
-    if (WIZ.step === 5) body = `
+    if (WIZ.step === 5) {
+        // v258: configurazione entità per le sezioni ATTIVE, con etichette umane
+        const active = Object.entries(CD_SLOTS).filter(([k]) => k === 'lavatrice' ? (WIZ.sections['home'] !== false) : (WIZ.sections[k] !== false));
+        const acc = active.map(([key, sec]) => {
+            const rows = sec.slots.map(sl => {
+                const cur = (WIZ.entities && WIZ.entities[sl.ref]) || ENTITY_OVERRIDES[sl.ref] || '';
+                return `<div class="ed-slot"><div class="ed-slot-lbl">${sl.lbl}</div>
+                  <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" list="wz-entity-list"
+                         data-ref="${sl.ref}" value="${cur}" placeholder="${sl.ref}" onchange="wzSetSlot(this)"></div>`;
+            }).join('');
+            return `<details class="ed-acc"><summary class="ed-acc-head">${sec.label} <span class="ed-acc-n">${sec.slots.length}</span></summary><div class="ed-acc-body">${rows}</div></details>`;
+        }).join('');
+        const dl = '<datalist id="wz-entity-list">' + (WIZ.allEntities||[]).map(e => `<option value="${e}">`).join('') + '</datalist>';
+        body = `
+        <div class="wz-title">🧩 Collega le tue entità</div>
+        <div class="wz-sub">Per ogni voce scrivi la <b>tua</b> entità HA (autocomplete attivo). Puoi saltare questo passo e completarlo dopo da <b>⚙️ Configurazione → Configura Entità → 📑 Sezioni</b>. Le voci vuote mostreranno "—".</div>
+        ${dl}
+        <div style="max-height:46vh; overflow-y:auto; margin-bottom:14px;">${acc}</div>
+        <button class="wz-btn" onclick="WIZ.step=6; wzRender();">Avanti →</button>`;
+        if (!WIZ.allEntities || !WIZ.allEntities.length) wzLoadAllEntities();
+    }
+
+    if (WIZ.step === 6) body = `
         <div class="wz-title">🎉 Tutto pronto!</div>
-        <div class="wz-sub">La configurazione è salvata <b>su questo dispositivo</b>. Per renderla permanente su tutti i dispositivi:<br><br>
-        1. Dopo il riavvio, vai in <b>MiniPC → Configura Entità → 📤 Esporta</b><br>
-        2. Premi <b>"⬇ Scarica HTML modificato"</b><br>
-        3. Sostituisci il file su Home Assistant<br><br>
-        Per rimappare i sensori delle altre sezioni (energia, meteo…) usa lo stesso editor, tab <b>Sostituzioni</b> — ha l'autocomplete su tutte le tue entità.</div>
+        <div class="wz-sub">La configurazione è salvata <b>su questo dispositivo</b> (con HACS sopravvive agli aggiornamenti).<br><br>
+        📌 <b>Per tornare in configurazione in qualsiasi momento:</b><br>
+        • Pagina <b>⚙️ Config</b> nel menu (visibile agli admin)<br>
+        • Oppure aggiungi <b>#setup</b> all'URL della dashboard e ricarica<br><br>
+        Per rendere la config multi-dispositivo: ⚙️ → Configura Entità → 📤 Esporta.</div>
         <button class="wz-btn wz-btn-green" onclick="wzFinish()">Salva e avvia la dashboard ✓</button>`;
 
     card.innerHTML = `<div class="wz-dots">${dots}</div>${body}
-        ${WIZ.step > 1 && WIZ.step < 5 ? '<div class="wz-back" onclick="WIZ.step--; wzRender();">← Indietro</div>' : ''}
+        ${WIZ.step > 1 && WIZ.step < 6 ? '<div class="wz-back" onclick="WIZ.step--; wzRender();">← Indietro</div>' : ''}
         <div class="wz-skip" onclick="document.getElementById('setup-wizard').remove()">Chiudi senza salvare</div>`;
     if (WIZ.step === 4) wzRenderLights();
 }
@@ -7572,11 +7581,43 @@ function wzToggleLight(id, defName) {
     if (sub) sub.textContent = Object.keys(WIZ.luci).length;
 }
 
+
+function wzSetSlot(input) {
+    if (!WIZ.entities || Array.isArray(WIZ.entities)) WIZ.entities = {};
+    const ref = input.dataset.ref;
+    const val = (input.value || '').trim();
+    if (!val || val === ref) delete WIZ.entities[ref];
+    else if (val.includes('.')) WIZ.entities[ref] = val;
+}
+function wzLoadAllEntities() {
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    try {
+        const tws = new WebSocket(`${proto}//${location.host}/api/websocket`);
+        let mid = 1;
+        tws.onmessage = (ev) => {
+            const m = JSON.parse(ev.data);
+            if (m.type === 'auth_required') tws.send(JSON.stringify({ type: 'auth', access_token: WIZ.token }));
+            if (m.type === 'auth_ok') tws.send(JSON.stringify({ id: mid++, type: 'get_states' }));
+            if (m.type === 'result' && Array.isArray(m.result)) {
+                WIZ.allEntities = m.result.map(s => s.entity_id).sort();
+                tws.close();
+                const dl = document.getElementById('wz-entity-list');
+                if (dl) dl.innerHTML = WIZ.allEntities.map(e => `<option value="${e}">`).join('');
+            }
+        };
+    } catch(e) {}
+}
+
 function wzFinish() {
     localStorage.setItem('cd_connection', JSON.stringify({ token: WIZ.token, admin_users: WIZ.admin ? [WIZ.admin] : [] }));
     localStorage.setItem('cd_branding', JSON.stringify({ title: WIZ.title, subtitle: WIZ.subtitle }));
     localStorage.setItem('cd_sections', JSON.stringify(WIZ.sections));
     if (Object.keys(WIZ.luci).length) localStorage.setItem('cd_luci', JSON.stringify(WIZ.luci));
+    if (WIZ.entities && Object.keys(WIZ.entities).length) {
+        const cur = cdCfg('cd_entity_overrides');
+        Object.assign(cur, WIZ.entities);
+        localStorage.setItem('cd_entity_overrides', JSON.stringify(cur));
+    }
     location.reload();
 }
 
@@ -7587,6 +7628,13 @@ const CD_SLOTS = {
     home: { label: '🏠 Home', slots: [
         { ref: 'weather.casa',                 lbl: 'Meteo (entità weather)' },
         { ref: 'alarm_control_panel.casa', lbl: 'Allarme (alarm_control_panel)' },
+        { ref: 'switch.allarme_antifurto',     lbl: 'Interruttore antifurto (switch)' },
+        { ref: 'script.apri_cancello',         lbl: 'Script apertura cancello' },
+        { ref: 'sensor.luci_accese',           lbl: 'Contatore luci accese' },
+        { ref: 'sensor.finestre_aperte',       lbl: 'Contatore aperture' },
+        { ref: 'sensor.batterie_scariche',     lbl: 'Contatore batterie scariche' },
+        { ref: 'sensor.condizionatori_accesi', lbl: 'Contatore condizionatori accesi' },
+        { ref: 'sensor.termosifoni_accesi',    lbl: 'Contatore termosifoni accesi' },
     ]},
     energy: { label: '⚡ Energia', slots: [
         { ref: 'sensor.solarman_daily_production',        lbl: 'Produzione solare oggi (kWh)' },
@@ -7597,12 +7645,34 @@ const CD_SLOTS = {
         { ref: 'sensor.solarman_daily_battery_discharge', lbl: 'Batteria scaricata oggi (kWh)' },
         { ref: 'sensor.solarman_battery_soc',             lbl: 'Stato carica batteria (%)' },
         { ref: 'sensor.solarman_battery_power',           lbl: 'Potenza batteria (W)' },
-        { ref: 'sensor.solarman_load_l',                  lbl: 'Potenza consumo istantaneo (W)' },
-        { ref: 'sensor.solarman_external_ct_l',           lbl: 'Potenza rete istantanea (W)' },
-        { ref: 'sensor.solarman_grid_connected_status',   lbl: 'Stato connessione rete (on/off-grid)' },
+        { ref: 'sensor.solarman_load_l1_power',           lbl: 'Potenza consumo casa (W)' },
+        { ref: 'sensor.solarman_external_ct_l1_power',    lbl: 'Potenza scambio rete (W)' },
+        { ref: 'sensor.somma_sensori_fotovoltaico',       lbl: 'Potenza fotovoltaico (W)' },
+        { ref: 'sensor.solarman_grid_connected_status',   lbl: 'Stato rete (on/off-grid)' },
         { ref: 'sensor.solarman_dc_temperature',          lbl: 'Temperatura DC inverter (°C)' },
         { ref: 'sensor.solarman_ac_temperature',          lbl: 'Temperatura AC inverter (°C)' },
         { ref: 'sensor.solarman_battery_temperature',     lbl: 'Temperatura batteria (°C)' },
+        { ref: 'sensor.fotovoltaico_anno',                lbl: 'Produzione solare anno (kWh)' },
+        { ref: 'sensor.consumo_casa_anno',                lbl: 'Consumo casa anno (kWh)' },
+        { ref: 'sensor.sensor_fotovoltaico_mensile',      lbl: 'Produzione solare mese (kWh)' },
+        { ref: 'sensor.sensor_carichi_mensile',           lbl: 'Consumo casa mese (kWh)' },
+        { ref: 'sensor.sensor_grid_acquistata_mensile',   lbl: 'Rete acquistata mese (kWh)' },
+        { ref: 'sensor.sensor_grid_venduta_menesile',     lbl: 'Rete venduta mese (kWh)' },
+        { ref: 'sensor.sensor_batteria_caricata_mensile', lbl: 'Batteria caricata mese (kWh)' },
+        { ref: 'sensor.sensor_batteria_usata_mensile',    lbl: 'Batteria usata mese (kWh)' },
+        { ref: 'sensor.somma_elettrodomestici_cucinina_tutto_istantanei', lbl: 'Somma cucina istantanea (W)' },
+        { ref: 'sensor.somma_elettrodomestici_cucinina_tutto_giornaliero',lbl: 'Somma cucina oggi (kWh)' },
+        { ref: 'sensor.somma_elettrodomestici_cucinina_tutto_mensile',    lbl: 'Somma cucina mese (kWh)' },
+        { ref: 'sensor.somma_elettrodomestici_lavanderia_istantanei',     lbl: 'Somma lavanderia istantanea (W)' },
+        { ref: 'sensor.somma_elettrodomestici_lavanderia_giornaliero',    lbl: 'Somma lavanderia oggi (kWh)' },
+        { ref: 'sensor.somma_elettrodomestici_lavanderia_mensile',        lbl: 'Somma lavanderia mese (kWh)' },
+        { ref: 'sensor.energy_oggi_condizionatori',       lbl: 'Condizionatori oggi (kWh)' },
+        { ref: 'sensor.energy_mese_condizionatori',       lbl: 'Condizionatori mese (kWh)' },
+        { ref: 'sensor.potenza_condizionatori',           lbl: 'Potenza condizionatori (W)' },
+        { ref: 'sensor.energy_oggi_elettrodomestici_4',   lbl: 'Boiler oggi (kWh)' },
+        { ref: 'sensor.energy_mese_elettrodomestici_4',   lbl: 'Boiler mese (kWh)' },
+        { ref: 'sensor.ventola_superiore_inverter_power', lbl: 'Potenza ventola inverter (W)' },
+        { ref: 'switch.ventola_superiore_inverter',       lbl: 'Interruttore ventola inverter' },
     ]},
     clima: { label: '❄️ Clima', slots: [
         { ref: 'climate.salone',          lbl: 'Condizionatore Salone' },
@@ -7615,26 +7685,74 @@ const CD_SLOTS = {
         { ref: 'climate.termosifone_camera_da_letto', lbl: 'Termosifone Camera' },
         { ref: 'climate.termosifone_cameretta',       lbl: 'Termosifone Cameretta' },
         { ref: 'climate.termosifone_studio',          lbl: 'Termosifone Studio' },
+        { ref: 'switch.caldaia',                      lbl: 'Interruttore caldaia' },
+        { ref: 'switch.pompa_di_calore',              lbl: 'Pompa di calore' },
+        { ref: 'switch.boost_pompa_di_calore',        lbl: 'Boost pompa di calore' },
+        { ref: 'switch.termocamino',                  lbl: 'Termocamino' },
+        { ref: 'switch.aspiratore_canna_fumaria',     lbl: 'Aspiratore canna fumaria' },
+        { ref: 'switch.pompa_di_ricircolo',           lbl: 'Pompa di ricircolo' },
     ]},
     ev: { label: '🚗 Auto elettrica', slots: [
         { ref: 'sensor.leapmotor_battery',  lbl: 'Batteria auto (%)' },
         { ref: 'sensor.leapmotor_range',    lbl: 'Autonomia (km)' },
         { ref: 'sensor.leapmotor_odometer', lbl: 'Odometro (km)' },
-        { ref: 'sensor.evcc_lektrico_charged_energy',            lbl: 'Energia sessione ricarica (kWh)' },
-        { ref: 'sensor.evcc_lektrico_session_solar_percentage',  lbl: 'Percentuale solare sessione (%)' },
+        { ref: 'sensor.evcc_autonomia_al_limite',  lbl: 'Autonomia al limite di carica (km)' },
+        { ref: 'sensor.km_percorsi_dall_ultima_ricarica', lbl: 'Km dall\'ultima ricarica' },
+        { ref: 'sensor.stato_decodificato_evcc',   lbl: 'Stato ricarica (testo)' },
+        { ref: 'select.evcc_lektrico_mode',        lbl: 'Modalità ricarica EVCC (select)' },
+        { ref: 'select.target_soc_auto',           lbl: 'Target SOC (select)' },
+        { ref: 'sensor.evcc_lektrico_charged_energy',           lbl: 'Energia sessione (kWh)' },
+        { ref: 'sensor.evcc_lektrico_session_solar_percentage', lbl: 'Percentuale solare sessione (%)' },
+        { ref: 'sensor.1p7k_101573_potenza',       lbl: 'Potenza wallbox (W)' },
+        { ref: 'sensor.1p7k_101573_temperatura',   lbl: 'Temperatura wallbox (°C)' },
+        { ref: 'sensor.1p7k_101573_tensione',      lbl: 'Tensione wallbox (V)' },
+        { ref: 'sensor.leapmotor_b10_prelievo_totale_ac_2', lbl: 'Prelievo AC totale auto (kWh)' },
         { ref: 'sensor.energy_oggi_wallbox',  lbl: 'Energia wallbox oggi (kWh)' },
         { ref: 'sensor.energy_mese_wallbox',  lbl: 'Energia wallbox mese (kWh)' },
     ]},
     boiler: { label: '🌞 Solare termico', slots: [
         { ref: 'sensor.boiler_power',                lbl: 'Potenza resistenza boiler (W)' },
-        { ref: 'sensor.pompa_solare_termico',        lbl: 'Pompa solare termico' },
+        { ref: 'switch.boiler',                      lbl: 'Interruttore boiler' },
+        { ref: 'switch.solare_termico',              lbl: 'Interruttore solare termico' },
+        { ref: 'switch.centralina_solare_termico',   lbl: 'Centralina solare termico' },
+        { ref: 'switch.pompa_solare_termico_man',    lbl: 'Pompa solare (manuale)' },
+        { ref: 'binary_sensor.pompa_solare_termico', lbl: 'Stato pompa solare' },
+        { ref: 'sensor.pompa_solare_termico',        lbl: 'Sensore pompa solare' },
         { ref: 'sensor.delta_solare_termico_boiler', lbl: 'Delta temperatura (°C)' },
+        { ref: 'sensor.pressione_acqua',             lbl: 'Pressione acqua (bar)' },
+        { ref: 'cover.valvola_di_sicurezza',         lbl: 'Valvola di sicurezza (cover)' },
+        { ref: 'sensor.sonoff_1001dbde79_temperature', lbl: 'Sonda temperatura 1 (°C)' },
+        { ref: 'sensor.sonoff_1001e22ebd_temperature', lbl: 'Sonda temperatura 2 (°C)' },
+        { ref: 'sensor.sonoff_10021230f6_temperature', lbl: 'Sonda temperatura 3 (°C)' },
+    ]},
+    security: { label: '🛡️ Sicurezza', slots: [
+        { ref: 'alarm_control_panel.casa', lbl: 'Centrale allarme' },
+    ]},
+    lavatrice: { label: '🧺 Lavatrice', slots: [
+        { ref: 'switch.lavatrice',                lbl: 'Presa/avvio lavatrice (switch)' },
+        { ref: 'switch.lavatrice_lavatrice',      lbl: 'Avvio ciclo (switch dispositivo)' },
+        { ref: 'sensor.lavatrice_fase',           lbl: 'Fase corrente (testo)' },
+        { ref: 'sensor.lavatrice_tempo_rimanente',lbl: 'Tempo rimanente' },
+        { ref: 'select.lavatrice_programma',      lbl: 'Programma (select)' },
+        { ref: 'select.lavatrice_temperatura',    lbl: 'Temperatura (select)' },
+        { ref: 'select.lavatrice_centrifuga',     lbl: 'Centrifuga (select)' },
+        { ref: 'script.programma_14_2',           lbl: 'Script programma rapido 14\'' },
+        { ref: 'script.programma_30_2',           lbl: 'Script programma 30\'' },
+        { ref: 'script.programma_59_2',           lbl: 'Script programma 59\'' },
+        { ref: 'script.programma_misto_colorati', lbl: 'Script programma misto/colorati' },
     ]},
     server: { label: '🖥️ MiniPC', slots: [
         { ref: 'sensor.minipc_cpu_usage',    lbl: 'CPU (%)' },
         { ref: 'sensor.minipc_memory_use',   lbl: 'RAM (%)' },
         { ref: 'sensor.minipc_disk_usage',   lbl: 'Disco (%)' },
-        { ref: 'sensor.minipc_uptime',       lbl: 'Uptime' },
+        { ref: 'sensor.minipc_uptime',       lbl: 'Uptime MiniPC' },
+        { ref: 'sensor.minipc_package_id_0_temperature', lbl: 'Temperatura CPU (°C)' },
+        { ref: 'sensor.uptime',              lbl: 'Uptime Home Assistant' },
+        { ref: 'sensor.raspberry_current_power', lbl: 'Potenza Raspberry/server (W)' },
+        { ref: 'binary_sensor.internet',        lbl: 'Stato Internet (binary)' },
+        { ref: 'binary_sensor.ping_internet',   lbl: 'Ping Internet (binary)' },
+        { ref: 'binary_sensor.google_com',      lbl: 'Raggiungibilità Google (binary)' },
+        { ref: 'binary_sensor.lavanderia_internet', lbl: 'Internet lavanderia (binary)' },
         { ref: 'sensor.speedtest_download',  lbl: 'Speedtest Download (Mbit/s)' },
         { ref: 'sensor.speedtest_upload',    lbl: 'Speedtest Upload (Mbit/s)' },
         { ref: 'sensor.speedtest_ping',      lbl: 'Speedtest Ping (ms)' },
@@ -7684,7 +7802,47 @@ function editorRenderSezioni() {
             <button class="ed-btn-add" onclick="edAddStanza()">＋ Aggiungi stanza</button>
           </div>
         </div>
+      </details>
+      <details class="ed-acc"><summary class="ed-acc-head">📹 Telecamere <span class="ed-acc-n">${getCameras().length} camere</span></summary>
+        <div class="ed-acc-body">
+          <div class="ed-list">${getCameras().map((cam, i) => `
+            <div class="ed-row">
+              <div class="ed-row-main">
+                <div class="ed-row-new">${cam.name}</div>
+                <div class="ed-row-old mono">${cam.entity}${cam.stream ? ' · stream: ' + cam.stream : ''}</div>
+              </div>
+              <div class="ed-del" onclick="edDelCamera(${i})">🗑️</div>
+            </div>`).join('')}</div>
+          <div class="ed-form">
+            <input id="ed-cam-name" class="ed-input" placeholder="Nome (es. Giardino)">
+            <input id="ed-cam-ent" list="ed-entity-list" class="ed-input mono" placeholder="camera.giardino">
+            <input id="ed-cam-stream" class="ed-input mono" placeholder="Nome stream go2rtc (facoltativo, per WebRTC)">
+            <button class="ed-btn-add" onclick="edAddCamera()">＋ Aggiungi telecamera</button>
+          </div>
+        </div>
       </details>`;
+}
+
+function edAddCamera() {
+    const name = (document.getElementById('ed-cam-name').value || '').trim();
+    const ent = (document.getElementById('ed-cam-ent').value || '').trim();
+    const stream = (document.getElementById('ed-cam-stream').value || '').trim();
+    if (!name || !ent.includes('.')) { alert('Inserisci nome ed entità camera valida'); return; }
+    const cams = getCameras().slice();
+    const nuova = { name, entity: ent };
+    if (stream) nuova.stream = stream;
+    cams.push(nuova);
+    localStorage.setItem('cd_cameras', JSON.stringify(cams));
+    buildCamCards();
+    editorSwitch('sezioni');
+    edToast('Telecamera aggiunta');
+}
+function edDelCamera(i) {
+    const cams = getCameras().slice();
+    cams.splice(i, 1);
+    localStorage.setItem('cd_cameras', JSON.stringify(cams));
+    buildCamCards();
+    editorSwitch('sezioni');
 }
 
 function edSetSlot(input) {
@@ -8322,23 +8480,47 @@ function syncFullscreenExitState() {
 }
 document.addEventListener('fullscreenchange', syncFullscreenExitState);
 document.addEventListener('webkitfullscreenchange', syncFullscreenExitState);
+
+/* ═══ v258: TELECAMERE dinamiche — configurabili da UI (cd_cameras) ═══ */
+const CD_CAMERAS_DEFAULT = [
+    { name: 'Cameretta',        entity: 'camera.cameretta',       stream: 'cameretta' },
+    { name: 'Salone',           entity: 'camera.salone',          stream: 'salone' },
+    { name: 'Terrazza',         entity: 'camera.locale_tecnico',  stream: 'locale_tecnico' },
+    { name: 'Cortile Destro',   entity: 'camera.cortile_destro',  stream: 'cortile_destro' },
+    { name: 'Cortile Sinistro', entity: 'camera.cortile_sinistro',stream: 'cortile_sinistro' },
+    { name: 'Strada',           entity: 'camera.strada',          stream: 'strada' },
+    { name: 'Balconi',          entity: 'camera.balconi',         stream: 'balconi' },
+    { name: 'Fontana',          entity: 'camera.fontana',         stream: 'fontana' },
+];
+function getCameras() {
+    const w = cdCfg('cd_cameras');
+    if (Array.isArray(w) && w.length) return w;
+    const C = (window.DASHBOARD_CONFIG || {});
+    if (Array.isArray(C.cameras) && C.cameras.length) return C.cameras;
+    return CD_CAMERAS_DEFAULT;
+}
+function camSlug(cam, i) { return 'cam-' + (cam.entity ? cam.entity.split('.')[1] : 'x' + i); }
+function buildCamCards() {
+    const grid = document.getElementById('cam-grid');
+    if (!grid) return;
+    grid.innerHTML = getCameras().map((cam, i) => {
+        const slug = camSlug(cam, i);
+        const nm = (cam.name || cam.entity || '').toUpperCase().replace(/'/g, '&#39;');
+        const title = 'CAM ' + String(i+1).padStart(2,'0') + ' // ' + nm;
+        return `<div class="cam-card" onclick="apriCamera('${slug}', '${title}')"><div class="cam-overlay-top"><span class="cam-name">${title}</span><span class="cam-rec">REC</span></div><div class="cam-feed"><img id="${slug}" src=""></div><div class="cam-overlay-bottom"><span class="cam-time" id="time-${slug.replace('cam-','')}">--:--:--</span><span style="color:#06b6d4;">CH${i+1}</span></div></div>`;
+    }).join('');
+}
+document.addEventListener('DOMContentLoaded', buildCamCards);
+
 function apriCamera(camId, title) {
     if(navigator.vibrate) navigator.vibrate(10);
     currentPopupType = 'camera_view';
     const list = document.getElementById('details-list');
     document.getElementById('details-title').innerHTML = '📹 ' + title;
 
-    // Mappatura dei tuoi flussi go2rtc
-    const camMappings = { 
-        'cam-cameretta': 'cameretta', 
-        'cam-salone': 'salone', 
-        'cam-terrazza': 'locale_tecnico', 
-        'cam-cortiled': 'cortile_destro', 
-        'cam-cortiles': 'cortile_sinistro', 
-        'cam-strada': 'strada', 
-        'cam-balconi': 'balconi', 
-        'cam-fontana': 'fontana' 
-    };
+    // v258: mappa id→stream derivata dalla config camere
+    const camMappings = {};
+    getCameras().forEach((cam, i) => { camMappings[camSlug(cam, i)] = cam.stream || (cam.entity ? cam.entity.split('.')[1] : ''); });
     
     const streamName = camMappings[camId];
 
@@ -8650,16 +8832,7 @@ function refreshCameras() {
     if (!document.getElementById('page-security').classList.contains('active')) return;
     
     // Nomi Entità corretti e allineati con quelli funzionanti dei popup
-    const camMappings = [ 
-        { id: 'cam-cameretta', entity: 'camera.cameretta' }, 
-        { id: 'cam-salone', entity: 'camera.salone' }, 
-        { id: 'cam-terrazza', entity: 'camera.locale_tecnico' }, 
-        { id: 'cam-cortiled', entity: 'camera.cortile_destro' }, 
-        { id: 'cam-cortiles', entity: 'camera.cortile_sinistro' }, 
-        { id: 'cam-strada', entity: 'camera.strada' },
-        { id: 'cam-balconi', entity: 'camera.balconi' }, 
-        { id: 'cam-fontana', entity: 'camera.fontana' } 
-    ];
+    const camMappings = getCameras().map((cam, i) => ({ id: camSlug(cam, i), entity: cam.entity }));
     
     const ts = Date.now();
     
@@ -10573,6 +10746,10 @@ function buildTempCards() {
     }).join('');
 }
 document.addEventListener('DOMContentLoaded', buildTempCards);
+/* v258: accesso di emergenza alla configurazione — aggiungi #setup all'URL e ricarica */
+document.addEventListener('DOMContentLoaded', () => {
+    if (location.hash === '#setup') setTimeout(() => { try { apriSetupWizard(); } catch(e) {} }, 600);
+});
 
 function renderTemperature() {
     const ROOMS = getStanze().map(r => [r.temp, r.name, r.hum]);

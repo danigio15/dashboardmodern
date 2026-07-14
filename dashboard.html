@@ -4066,7 +4066,7 @@ async function refreshActiveDeviceTelemetry() {
 .srv-status-badge { display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:12px; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; flex-shrink:0; }
 .srv-status-badge.online  { background:rgba(16,185,129,0.1); color:#059669; border:1px solid rgba(16,185,129,0.2); }
 .srv-status-badge.offline { background:rgba(239,68,68,0.1);  color:#dc2626; border:1px solid rgba(239,68,68,0.2); }
-/* v254: variante "edit" celestino brand per il bottone Modifica Plancia (visibile solo a Giovanni) */
+/* v254: variante "edit" celestino brand per il bottone Modifica Plancia (solo admin) */
 .srv-status-badge.edit    { background:rgba(14,165,233,0.10); color:#0369a1; border:1px solid rgba(14,165,233,0.25); }
 .srv-status-badge.edit .srv-status-indicator { background:#0ea5e9; box-shadow:0 0 5px #0ea5e9; animation:pulseDot 2s infinite; }
 .srv-edit-card { background: linear-gradient(135deg, #fff 0%, #f0f9ff 100%); border-color: rgba(14,165,233,0.25); }
@@ -4764,7 +4764,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
       </button>
       
       <div class="brand-text">
-        <h1>Casa d'Aniello</h1>
+        <h1>Smart Home</h1>
         <p>Smart Home Dashboard</p>
       </div>
     </div>
@@ -5819,7 +5819,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
       <div id="debug-content">Caricamento...</div>
     </div>
 </section>
-  <!-- ═══════════ PAGINA CONFIGURAZIONE (solo Giovanni) ═══════════ -->
+  <!-- ═══════════ PAGINA CONFIGURAZIONE (solo admin) ═══════════ -->
   <section class="page" id="page-config">
     <div class="cfg-hero">
       <div class="cfg-hero-ico">⚙️</div>
@@ -6242,7 +6242,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
       <div class="ev-popup-header-info">
         <h3 class="ev-waw-title">La mia auto</h3>
         <div class="ev-popup-sub">
-          <span class="ev-popup-sub-name">Giovanni</span>
+          <span class="ev-popup-sub-name">EV</span>
           <span class="ev-popup-status" id="ev-popup-badge">⚪ SCOLLEGATA</span>
         </div>
       </div>
@@ -6422,7 +6422,7 @@ function cdCfg(key) {
   try { return (window.CD_BAKED_CONFIG && window.CD_BAKED_CONFIG[key]) || {}; } catch(e) { return {}; }
 }
 
-/* ═══ v254: SISTEMA OVERRIDE ENTITÀ (configurabile da UI, solo Giovanni) ═══ */
+/* ═══ v254: SISTEMA OVERRIDE ENTITÀ (configurabile da UI, solo admin) ═══ */
 let ENTITY_OVERRIDES = cdCfg('cd_entity_overrides');
 function resolveEntity(id) { return ENTITY_OVERRIDES[id] || id; }
 
@@ -6531,7 +6531,7 @@ const GRUPPI_MONITORAGGIO = {
   'batt': [],
 };
 
-/* ═══ v254: ESTENSIONI UTENTE (aggiunte da UI Configura Entità, solo Giovanni) ═══
+/* ═══ v254: ESTENSIONI UTENTE (aggiunte da UI Configura Entità, solo admin) ═══
    - cd_subloads_extra: { "cucina": [{name, pwr, icon, bin?, pwrLive?}, ...], "lavanderia": [...] }
    - cd_gruppi_extra:   { "win": ["binary_sensor.x", ...], "batt": [...], "luci": [...] }
    - cd_avvisi_names_extra: { "entity_id": "Nome Pulito" }  */
@@ -6950,7 +6950,7 @@ function mostraModalEditPlancia() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   v255: EDITOR VISUALE DASHBOARD (solo Giovanni)
+   v255: EDITOR VISUALE DASHBOARD (solo admin)
    Editor a tab: Sostituzioni · Carichi · Avvisi · Testi · Nascondi · Esporta
    Tutte le modifiche → localStorage (anteprima immediata) + Esporta JSON per
    rendere permanente nell'HTML tramite Claude.
@@ -7946,7 +7946,7 @@ function copyEditUrl() {
     }
 }
 
-/* v254: mostra le card "Editor Plancia" e "Configura Entità" SOLO se l'utente HA è Giovanni. */
+/* v254: mostra la pagina Configurazione solo agli admin. */
 /* ═══ v256: GESTIONE TEMA (chiaro / scuro / auto) ═══
    Salvato in localStorage 'cd_theme'. 'auto' segue prefers-color-scheme del dispositivo. */
 function getThemePref() { try { return localStorage.getItem('cd_theme') || 'auto'; } catch(e) { return 'auto'; } }
@@ -7980,7 +7980,7 @@ document.addEventListener('DOMContentLoaded', applyTheme);
 
 function updateEditButtonVisibility() {
     const user = getCurrentHassUser();
-    // v256: lista admin configurabile (wizard/config.js). Default: 'giovanni'.
+    // v256: lista admin configurabile (wizard/config.js).
     // Se la lista è vuota [], la pagina Config è visibile a TUTTI gli utenti.
     const admins = (cdCfg('cd_connection').admin_users)
                 || ((window.DASHBOARD_CONFIG || {}).admin_users)

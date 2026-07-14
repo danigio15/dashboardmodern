@@ -5427,7 +5427,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
     <div class="lm-hero" id="lm-hero-card">
       <!-- Foto sfondo - cambia tra idle e plugged -->
       <img id="ev-mod-car-img" class="lm-hero-bg"
-           src="/local/ev/idle.png"
+           src=""
            onerror="this.onerror=null;this.src=''"
            alt=""
            style="transition:opacity 0.4s ease;">
@@ -5828,18 +5828,15 @@ html[data-theme="dark"] header { background: var(--card-glass); }
     </div>
 
     <div class="cfg-grid">
-      <!-- Editor Plancia -->
-      <a class="cfg-card" id="srv-edit-card"
-         href="#" target="_top" rel="noopener"
-         onclick="return handleEditClick(event)"
-         style="text-decoration:none; color:inherit;">
-        <div class="cfg-card-ico" style="--cc-rgb: 14,165,233;">✏️</div>
+      <!-- Setup Wizard -->
+      <div class="cfg-card" onclick="apriSetupWizard()">
+        <div class="cfg-card-ico" style="--cc-rgb: 14,165,233;">🧙</div>
         <div class="cfg-card-txt">
-          <div class="cfg-card-nm">Editor Plancia</div>
-          <div class="cfg-card-ds">Esci dalla modalità kiosk e modifica la dashboard Lovelace</div>
+          <div class="cfg-card-nm">Setup Wizard</div>
+          <div class="cfg-card-ds">Configurazione guidata: connessione, nome, sezioni, luci, entità e telecamere</div>
         </div>
         <div class="cfg-card-arrow">›</div>
-      </a>
+      </div>
 
       <!-- Configura Entità -->
       <div class="cfg-card" id="srv-config-card" onclick="apriConfigEntita()">
@@ -6252,7 +6249,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
 
     <!-- Foto auto compatta -->
     <div class="ev-popup-img-row">
-      <img src="/local/leapmotor.png" id="ev-new-car-img" onerror="this.onerror=null; this.src='https://cdn.motor1.com/images/mgl/pA7pP1/s1/leapmotor-b10-2024.jpg'">
+      <img src="" id="ev-new-car-img" onerror="this.onerror=null;">
     </div>
 
     <!-- Hero card batteria -->
@@ -6395,7 +6392,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.2.1';
+const DASHBOARD_VERSION = '0.2.2';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6406,9 +6403,11 @@ window.CD_BAKED_CONFIG = {
   cd_luci: {},
   cd_stanze: [],
   cd_cameras: [],
+  cd_ev_image: "",
   cd_entity_overrides: {},
   cd_subloads_extra: {},
   cd_gruppi_extra: {},
+  cd_gruppi_removed: {},
   cd_avvisi_names_extra: {},
   cd_text_overrides: {},
   cd_hidden_elements: {}
@@ -6457,32 +6456,15 @@ const LOCAL_IP = _CONN.local_ip || (_CFG.connection && _CFG.connection.local_ip)
 const DASHBOARD_PATH = _CONN.dashboard_path || (_CFG.connection && _CFG.connection.dashboard_path) || "/lovelace/0?disable_km=";
 if (!LONG_LIVED_TOKEN) document.addEventListener('DOMContentLoaded', () => { if (typeof apriSetupWizard === 'function') apriSetupWizard(); });
 
-const LUCI_NAMES = {
-  'light.shellyplus2pm_c049ef8d2d58_switch_0': 'Salone - Faretti Centrali',
-  'light.shellyplus2pm_c049ef8d2d58_switch_1': 'Salone - Faretti Laterali',
-  'light.luce_corridoio_bagno': 'Corridoio - Faretto',
-  'light.lampadario_cucina': 'Cucina - Lampadario',
-  'light.shellyplus2pm_c049ef8db28c_switch_0': 'Cucina - Faretti',
-  'light.shellyplus2pm_c049ef8db28c_switch_1': 'Cucina - Veletta',
-  'light.luce_studio': 'Studio - Lampadario',
-  'light.shellyplus2pm_90380c3579f8_switch_0': 'Matrimoniale - Lampadario',
-  'light.ingresso': 'Ingresso - Faretti',
-  'light.lavanderia': 'Lavanderia - Faretto',
-  'light.cabina_armadio': 'Armadio - Faretto',
-  'light.luce_bagno_piccolo': 'Bagno - Lampadario',
-  'light.luce_cameretta': 'Cameretta - Lampadario',
-  'light.bagno_grande': 'Bagno Grande - Faretto',
-  'light.shellyplus1pm_4855199a44c0_switch_0': 'Corridoio Camere - Faretto',
-  'light.luce_cucinino': 'Cucinino - Faretto'
-};
+const LUCI_NAMES = {};
 
 const SUBLOADS_CONFIG = {
-  'cucina': { title: 'Cucina Istantaneo', icon: '🍳', items: [ { name: 'Forno', bin: 'binary_sensor.forno_in_funzione', pwr: 'sensor.forno_power', icon: '♨️' }, { name: 'Frigorifero', bin: 'binary_sensor.frigorifero_in_funzione', pwr: 'sensor.frigo_power', icon: '❄️' }, { name: 'Microonde', bin: 'binary_sensor.microonde_in_funzione', pwr: 'sensor.microonde_power', icon: '📻' }, { name: 'Friggitrice', bin: 'binary_sensor.macchinetta_caffe', pwr: 'sensor.friggitrice_macchina_del_caffe_power', icon: '🍟' }, { name: 'Frog', pwr: 'sensor.frog_power', icon: '☕' }, { name: 'Lavastoviglie', bin: 'binary_sensor.lavastoviglie_in_funzione', pwr: 'sensor.lavastoviglie_power', icon: '🍽️' } ] },
-  'lavanderia': { title: 'Lavanderia Istantaneo', icon: '🧺', items: [ { name: 'Lavatrice', bin: 'binary_sensor.lavatrice_in_funzione', pwr: 'sensor.lavatrice_power', icon: '👕' }, { name: 'Asciugatrice', bin: 'binary_sensor.asciugatrice_in_funzione', pwr: 'sensor.asciugatrice_power', icon: '💨' } ] },
-  'cucina_day': { title: 'Cucina Giornaliero', icon: '🍳', items: [ { name: 'Forno', bin: 'binary_sensor.forno_in_funzione', pwr: 'sensor.energy_oggi_forno', icon: '♨️' }, { name: 'Frigorifero', bin: 'binary_sensor.frigorifero_in_funzione', pwr: 'sensor.energy_oggi_frigo', icon: '❄️' }, { name: 'Microonde', bin: 'binary_sensor.microonde_in_funzione', pwr: 'sensor.energy_oggi_microonde', icon: '📻' }, { name: 'Friggitrice', bin: 'binary_sensor.macchinetta_caffe', pwr: 'sensor.energy_oggi_friggitrice', icon: '🍟' }, { name: 'Frog', pwr: 'sensor.energy_oggi_frog', pwrLive: 'sensor.frog_power', icon: '☕' }, { name: 'Lavastoviglie', bin: 'binary_sensor.lavastoviglie_in_funzione', pwr: 'sensor.energy_oggi_lavastoviglie', icon: '🍽️' } ] },
-  'lavanderia_day': { title: 'Lavanderia Giornaliero', icon: '🧺', items: [ { name: 'Lavatrice', bin: 'binary_sensor.lavatrice_in_funzione', pwr: 'sensor.energy_oggi_lavatrice', icon: '👕' }, { name: 'Asciugatrice', bin: 'binary_sensor.asciugatrice_in_funzione', pwr: 'sensor.energy_oggi_asciugatrice', icon: '💨' } ] },
-  'cucina_month': { title: 'Cucina Mensile', icon: '🍳', items: [ { name: 'Forno', bin: 'binary_sensor.forno_in_funzione', pwr: 'sensor.energy_mese_forno', icon: '♨️' }, { name: 'Frigorifero', bin: 'binary_sensor.frigorifero_in_funzione', pwr: 'sensor.energy_mese_frigo', icon: '❄️' }, { name: 'Microonde', bin: 'binary_sensor.microonde_in_funzione', pwr: 'sensor.energy_mese_microonde', icon: '📻' }, { name: 'Friggitrice', bin: 'binary_sensor.macchinetta_caffe', pwr: 'sensor.energy_mese_friggitrice', icon: '🍟' }, { name: 'Frog', pwr: 'sensor.energy_mese_frog', pwrLive: 'sensor.frog_power', icon: '☕' }, { name: 'Lavastoviglie', bin: 'binary_sensor.lavastoviglie_in_funzione', pwr: 'sensor.energy_mese_lavastoviglie', icon: '🍽️' } ] },
-  'lavanderia_month': { title: 'Lavanderia Mensile', icon: '🧺', items: [ { name: 'Lavatrice', bin: 'binary_sensor.lavatrice_in_funzione', pwr: 'sensor.energy_mese_lavatrice', icon: '👕' }, { name: 'Asciugatrice', bin: 'binary_sensor.asciugatrice_in_funzione', pwr: 'sensor.energy_mese_asciugatrice', icon: '💨' } ] }
+  'cucina': { title: 'Cucina Istantaneo', icon: '🍳', items: [] },
+  'lavanderia': { title: 'Lavanderia Istantaneo', icon: '🧺', items: [] },
+  'cucina_day': { title: 'Cucina Giornaliero', icon: '🍳', items: [] },
+  'lavanderia_day': { title: 'Lavanderia Giornaliero', icon: '🧺', items: [] },
+  'cucina_month': { title: 'Cucina Mensile', icon: '🍳', items: [] },
+  'lavanderia_month': { title: 'Lavanderia Mensile', icon: '🧺', items: [] }
 };
 
 /* ═══ v256: APPLICATORE CONFIG UTENTE ═══
@@ -6530,54 +6512,14 @@ const SUBLOADS_CONFIG = {
 })();
 
 /* v254: nomi puliti per il popup Avvisi (Aperture + Batterie) */
-const AVVISI_NAMES = {
-  // ── Aperture (contact) ──
-  'binary_sensor.sensore_finestra_bagno_piccolo_contact':            'Finestra Bagno Piccolo',
-  'binary_sensor.finestra_bagno_grande_contact':                     'Finestra Bagno Grande',
-  'binary_sensor.sensore_finestra_salone_contact':                   'Finestra Salone',
-  'binary_sensor.sensore_porta_d_ingresso_contact':                  "Porta d'Ingresso",
-  'binary_sensor.sensore_porta_finestra_camera_matrimoniale_contact':'Porta-Finestra Matrimoniale',
-  'binary_sensor.sensore_porta_finestra_cameretta_contact':          'Porta-Finestra Cameretta',
-  'binary_sensor.sensore_porta_finestra_cucina_contact':             'Porta-Finestra Cucina',
-  'binary_sensor.sensore_porta_finestra_salone_contact':             'Porta-Finestra Salone',
-  'binary_sensor.sensore_porta_finestra_studio_contact':             'Porta-Finestra Studio',
-  'binary_sensor.finestra_cucinino_contact':                         'Finestra Cucinino',
-  // ── Batterie ──
-  'sensor.finestra_cucinino_battery':                          'Finestra Cucinino',
-  'sensor.finestra_bagno_grande_battery':                      'Finestra Bagno Grande',
-  'sensor.pulsante_lavatrice_battery':                         'Pulsante Lavatrice',
-  'sensor.sensore_finestra_bagno_piccolo_battery':             'Finestra Bagno Piccolo',
-  'sensor.sensore_finestra_salone_battery':                    'Finestra Salone',
-  'sensor.sensore_porta_d_ingresso_battery':                   "Porta d'Ingresso",
-  'sensor.sensore_porta_finestra_camera_matrimoniale_battery': 'Porta-Finestra Matrimoniale',
-  'sensor.sensore_porta_finestra_cameretta_battery':           'Porta-Finestra Cameretta',
-  'sensor.sensore_porta_finestra_cucina_battery':              'Porta-Finestra Cucina',
-  'sensor.sensore_porta_finestra_salone_battery':              'Porta-Finestra Salone',
-  'sensor.sensore_porta_finestra_studio_battery':              'Porta-Finestra Studio',
-  'sensor.tasto_cancello_automatico_battery':                  'Tasto Cancello',
-  'sensor.temperatura_bagno_grande_battery':                   'Termometro Bagno Grande',
-  'sensor.temperatura_bagno_piccolo_battery':                  'Termometro Bagno Piccolo',
-  'sensor.temperatura_camera_matrimoniale_battery':            'Termometro Matrimoniale',
-  'sensor.temperatura_cameretta_battery':                      'Termometro Cameretta',
-  'sensor.temperatura_cucina_battery':                         'Termometro Cucina',
-  'sensor.temperatura_lacale_tecnico_battery':                 'Termometro Locale Tecnico',
-  'sensor.temperatura_lavanderia_battery':                     'Termometro Lavanderia',
-  'sensor.temperatura_salone_battery':                         'Termometro Salone',
-  'sensor.temperatura_studio_battery':                         'Termometro Studio',
-  'sensor.valvola_camera_matrimoniale_battery':                'Valvola Matrimoniale',
-  'sensor.valvola_cameretta_battery':                          'Valvola Cameretta',
-  'sensor.valvola_bagno_battery':                              'Valvola Bagno',
-  'sensor.valvola_studio_battery':                             'Valvola Studio',
-  'sensor.valvola_salone_battery':                             'Valvola Salone',
-  'sensor.valvola_cucina_battery':                             'Valvola Cucina'
-};
+const AVVISI_NAMES = {};
 
 const GRUPPI_MONITORAGGIO = {
   'luci': Object.keys(LUCI_NAMES),
-  'clima': ['climate.camera_da_letto','climate.cucina','climate.cameretta','climate.salone'],
-  'risc': ['climate.termosifone_salone','climate.termosifone_cucina','climate.termosifone_bagno','climate.termosifone_camera_da_letto','climate.termosifone_cameretta','climate.termosifone_studio'],
-  'win': ['binary_sensor.sensore_finestra_bagno_piccolo_contact','binary_sensor.finestra_bagno_grande_contact','binary_sensor.sensore_finestra_salone_contact','binary_sensor.sensore_porta_d_ingresso_contact','binary_sensor.sensore_porta_finestra_camera_matrimoniale_contact','binary_sensor.sensore_porta_finestra_cameretta_contact','binary_sensor.sensore_porta_finestra_cucina_contact','binary_sensor.sensore_porta_finestra_salone_contact','binary_sensor.sensore_porta_finestra_studio_contact','binary_sensor.finestra_cucinino_contact'],
-  'batt': ['sensor.finestra_cucinino_battery','sensor.finestra_bagno_grande_battery','sensor.pulsante_lavatrice_battery','sensor.sensore_finestra_bagno_piccolo_battery','sensor.sensore_finestra_salone_battery','sensor.sensore_porta_d_ingresso_battery','sensor.sensore_porta_finestra_camera_matrimoniale_battery','sensor.sensore_porta_finestra_cameretta_battery','sensor.sensore_porta_finestra_cucina_battery','sensor.sensore_porta_finestra_salone_battery','sensor.sensore_porta_finestra_studio_battery','sensor.tasto_cancello_automatico_battery','sensor.temperatura_bagno_grande_battery','sensor.temperatura_bagno_piccolo_battery','sensor.temperatura_camera_matrimoniale_battery','sensor.temperatura_cameretta_battery','sensor.temperatura_cucina_battery','sensor.temperatura_lacale_tecnico_battery','sensor.temperatura_lavanderia_battery','sensor.temperatura_salone_battery','sensor.temperatura_studio_battery','sensor.valvola_camera_matrimoniale_battery','sensor.valvola_cameretta_battery','sensor.valvola_bagno_battery','sensor.valvola_studio_battery','sensor.valvola_salone_battery','sensor.valvola_cucina_battery']
+  'clima': [],
+  'risc': [],
+  'win': [],
+  'batt': [],
 };
 
 /* ═══ v254: ESTENSIONI UTENTE (aggiunte da UI Configura Entità, solo Giovanni) ═══
@@ -6615,6 +6557,16 @@ try {
     Object.entries(C.entities).forEach(([o, n]) => { if (!(o in ENTITY_OVERRIDES)) ENTITY_OVERRIDES[o] = n; });
   }
 } catch(e) { console.warn('[Config] merge avvisi/entities fallito:', e); }
+
+/* v258: rimozioni utente dal Quadro Avvisi (vale anche per le voci di default) */
+try {
+  const removed = cdCfg('cd_gruppi_removed');
+  Object.entries(removed || {}).forEach(([grp, ids]) => {
+    if (GRUPPI_MONITORAGGIO[grp] && Array.isArray(ids)) {
+      GRUPPI_MONITORAGGIO[grp] = GRUPPI_MONITORAGGIO[grp].filter(id => !ids.includes(id));
+    }
+  });
+} catch(e) { console.warn('[Config] rimozioni avvisi fallite:', e); }
 
 function switchEnergyView(view) {
   if(navigator.vibrate) navigator.vibrate(5);
@@ -7136,21 +7088,22 @@ function edDelLoad(grp, i) {
 
 /* ─────────── TAB 3: AVVISI ─────────── */
 function editorRenderAvvisi() {
-    const extG = edGetExtra('cd_gruppi_extra');
     const extN = edGetExtra('cd_avvisi_names_extra');
+    const GRP_LBL = { win: '🚪 Aperture', batt: '🔋 Batterie', luci: '💡 Luci', clima: '❄️ Clima', risc: '🔥 Riscaldamento' };
     let rows = '';
-    Object.entries(extG).forEach(([grp, ids]) => {
-        (ids||[]).forEach((id, i) => {
+    Object.entries(GRP_LBL).forEach(([grp, glbl]) => {
+        (GRUPPI_MONITORAGGIO[grp] || []).forEach(id => {
+            const nm = extN[id] || AVVISI_NAMES[id] || (STATES[id]?.attributes?.friendly_name) || id;
             rows += `<div class="ed-row">
               <div class="ed-row-main">
-                <div class="ed-row-new">${extN[id]||id}</div>
-                <div class="ed-row-old">${grp} · ${id}</div>
+                <div class="ed-row-new">${nm}</div>
+                <div class="ed-row-old mono">${glbl} · ${id}</div>
               </div>
               <div class="ed-del" onclick="edDelAvviso('${grp}','${id}')">🗑️</div>
             </div>`;
         });
     });
-    if (!rows) rows = '<div class="ed-empty">Nessun avviso aggiunto</div>';
+    if (!rows) rows = '<div class="ed-empty">Nessun avviso configurato</div>';
     return `
       <div class="ed-intro">Aggiungi sensori al Quadro Avvisi (Aperture, Batterie, Luci, Clima, Riscaldamento) con un nome pulito.</div>
       <div class="ed-list">${rows}</div>
@@ -7181,11 +7134,23 @@ function edAddAvviso() {
     edToast('Avviso aggiunto — ricarica per vederlo');
 }
 function edDelAvviso(grp, id) {
+    // Rimuovi dalle aggiunte utente se presente
     const extG = edGetExtra('cd_gruppi_extra');
-    if (extG[grp]) { extG[grp] = extG[grp].filter(x => x !== id); localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG)); }
-    const extN = edGetExtra('cd_avvisi_names_extra');
-    if (extN[id]) { delete extN[id]; localStorage.setItem('cd_avvisi_names_extra', JSON.stringify(extN)); }
+    if (extG[grp] && extG[grp].includes(id)) {
+        extG[grp] = extG[grp].filter(x => x !== id);
+        if (!extG[grp].length) delete extG[grp];
+        localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
+    } else {
+        // È una voce di default: segna come rimossa
+        const rem = edGetExtra('cd_gruppi_removed');
+        if (!rem[grp]) rem[grp] = [];
+        if (!rem[grp].includes(id)) rem[grp].push(id);
+        localStorage.setItem('cd_gruppi_removed', JSON.stringify(rem));
+    }
+    // Applica subito in memoria
+    if (GRUPPI_MONITORAGGIO[grp]) GRUPPI_MONITORAGGIO[grp] = GRUPPI_MONITORAGGIO[grp].filter(x => x !== id);
     editorSwitch('avvisi');
+    edToast('Avviso rimosso');
 }
 
 /* ─────────── TAB 4: TESTI (rinomina qualsiasi etichetta visibile) ─────────── */
@@ -7316,7 +7281,7 @@ async function edDownloadHTML() {
     }
 
     // Costruisci il nuovo blocco baked dai localStorage attuali (le personalizzazioni di questo dispositivo)
-    const keys = ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_cameras','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
+    const keys = ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_cameras','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
     const merged = {};
     keys.forEach(k => { merged[k] = cdCfg(k); });  // cdCfg = localStorage o baked precedente
     const bakedBlock = '/* CD_BAKED_START */\n'
@@ -7389,7 +7354,7 @@ function edImport() {
 }
 function edResetAll() {
     if (!confirm('Rimuovere TUTTE le personalizzazioni di questo dispositivo?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_cameras','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
+    ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_cameras','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
     location.reload();
 }
 
@@ -7426,7 +7391,8 @@ function apriSetupWizard() {
         subtitle: brand.subtitle || 'Smart Home Dashboard',
         sections: Object.keys(sect||{}).length ? sect : { home:true, energy:true, ev:true, boiler:true, clima:true, temp:true, security:true, server:true },
         luci: Object.assign({}, Object.keys(luci||{}).length ? luci : (typeof LUCI_NAMES !== 'undefined' ? LUCI_NAMES : {})),
-        entities: []
+        entities: {},
+        cameras: getCameras().slice()
     };
     const w = document.createElement('div');
     w.id = 'setup-wizard';
@@ -7497,7 +7463,7 @@ function wzRender() {
                 const cur = (WIZ.entities && WIZ.entities[sl.ref]) || ENTITY_OVERRIDES[sl.ref] || '';
                 return `<div class="ed-slot"><div class="ed-slot-lbl">${sl.lbl}</div>
                   <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" list="wz-entity-list"
-                         data-ref="${sl.ref}" value="${cur}" placeholder="${sl.ref}" onchange="wzSetSlot(this)"></div>`;
+                         data-ref="${sl.ref}" value="${cur}" placeholder="es. ${sl.ref.split('.')[0]}.mia_entita" onchange="wzSetSlot(this)"></div>`;
             }).join('');
             return `<details class="ed-acc"><summary class="ed-acc-head">${sec.label} <span class="ed-acc-n">${sec.slots.length}</span></summary><div class="ed-acc-body">${rows}</div></details>`;
         }).join('');
@@ -7506,7 +7472,16 @@ function wzRender() {
         <div class="wz-title">🧩 Collega le tue entità</div>
         <div class="wz-sub">Per ogni voce scrivi la <b>tua</b> entità HA (autocomplete attivo). Puoi saltare questo passo e completarlo dopo da <b>⚙️ Configurazione → Configura Entità → 📑 Sezioni</b>. Le voci vuote mostreranno "—".</div>
         ${dl}
-        <div style="max-height:46vh; overflow-y:auto; margin-bottom:14px;">${acc}</div>
+        <div style="max-height:46vh; overflow-y:auto; margin-bottom:14px;">${acc}${WIZ.sections['security'] !== false ? `
+        <details class="ed-acc"><summary class="ed-acc-head">📹 Telecamere <span class="ed-acc-n">${(WIZ.cameras||[]).length}</span></summary>
+          <div class="ed-acc-body">
+            ${(WIZ.cameras||[]).map((cam, i) => `<div class="ed-row"><div class="ed-row-main"><div class="ed-row-new">${cam.name}</div><div class="ed-row-old mono">${cam.entity}</div></div><div class="ed-del" onclick="WIZ.cameras.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
+            <input id="wz-cam-name" class="wz-input" placeholder="Nome (es. Giardino)" style="margin-bottom:8px;">
+            <input id="wz-cam-ent" class="wz-input mono" list="wz-entity-list" placeholder="camera.giardino" style="margin-bottom:8px; font-family:monospace;">
+            <input id="wz-cam-stream" class="wz-input mono" placeholder="Stream go2rtc (facoltativo)" style="margin-bottom:8px; font-family:monospace;">
+            <button class="ed-btn-add" style="width:100%;" onclick="wzAddCamera()">＋ Aggiungi telecamera</button>
+          </div>
+        </details>` : ''}</div>
         <button class="wz-btn" onclick="WIZ.step=6; wzRender();">Avanti →</button>`;
         if (!WIZ.allEntities || !WIZ.allEntities.length) wzLoadAllEntities();
     }
@@ -7615,9 +7590,21 @@ function wzLoadAllEntities() {
 }
 
 
+
+function wzAddCamera() {
+    const name = (document.getElementById('wz-cam-name').value || '').trim();
+    const ent = (document.getElementById('wz-cam-ent').value || '').trim();
+    const stream = (document.getElementById('wz-cam-stream').value || '').trim();
+    if (!name || !ent.includes('.')) { alert('Inserisci nome ed entità camera'); return; }
+    if (!WIZ.cameras) WIZ.cameras = [];
+    const cam = { name, entity: ent };
+    if (stream) cam.stream = stream;
+    WIZ.cameras.push(cam);
+    wzRender();
+}
 function wzResetAll() {
     if (!confirm('Cancellare TUTTA la configurazione salvata su questo dispositivo (token, sezioni, luci, entità, stanze, camere, tema)?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_cameras','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_cameras','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
     location.reload();
 }
 function wzFinish() {
@@ -7625,6 +7612,7 @@ function wzFinish() {
     localStorage.setItem('cd_branding', JSON.stringify({ title: WIZ.title, subtitle: WIZ.subtitle }));
     localStorage.setItem('cd_sections', JSON.stringify(WIZ.sections));
     if (Object.keys(WIZ.luci).length) localStorage.setItem('cd_luci', JSON.stringify(WIZ.luci));
+    if (WIZ.cameras) localStorage.setItem('cd_cameras', JSON.stringify(WIZ.cameras));
     if (WIZ.entities && Object.keys(WIZ.entities).length) {
         const cur = cdCfg('cd_entity_overrides');
         Object.assign(cur, WIZ.entities);
@@ -7790,7 +7778,7 @@ function editorRenderSezioni() {
             return `<div class="ed-slot">
               <div class="ed-slot-lbl">${sl.lbl}</div>
               <input class="ed-input mono ed-slot-in" list="ed-entity-list" 
-                     data-ref="${sl.ref}" value="${cur}" placeholder="${sl.ref}"
+                     data-ref="${sl.ref}" value="${cur}" placeholder="es. ${sl.ref.split('.')[0]}.mia_entita"
                      onchange="edSetSlot(this)">
             </div>`;
         }).join('');
@@ -7801,6 +7789,14 @@ function editorRenderSezioni() {
     return `
       <div class="ed-intro">Configura le entità di ogni sezione con le <b>tue</b> entità HA. Lascia vuoto per usare il riferimento di default (se non esiste nel tuo HA, la card mostra "—").</div>
       ${sezAccordions}
+      <details class="ed-acc"><summary class="ed-acc-head">🚗 Immagine auto (sezione EV) <span class="ed-acc-n">URL</span></summary>
+        <div class="ed-acc-body">
+          <div class="ed-slot"><div class="ed-slot-lbl">URL immagine (es. /local/mia_auto.png oppure https://…)</div>
+            <input class="ed-input mono" value="${(function(){ const v = cdCfg('cd_ev_image'); return (typeof v === 'string' ? v : (v && v.url) || ''); })()}" placeholder="/local/mia_auto.png"
+                   onchange="localStorage.setItem('cd_ev_image', JSON.stringify(this.value.trim())); edToast('Immagine salvata — ricarica per applicare');">
+          </div>
+        </div>
+      </details>
       <details class="ed-acc"><summary class="ed-acc-head">🌡️ Stanze (temperature) <span class="ed-acc-n">${stanze.length} stanze</span></summary>
         <div class="ed-acc-body">
           <div class="ed-list">${stanzeRows}</div>
@@ -8494,16 +8490,7 @@ document.addEventListener('fullscreenchange', syncFullscreenExitState);
 document.addEventListener('webkitfullscreenchange', syncFullscreenExitState);
 
 /* ═══ v258: TELECAMERE dinamiche — configurabili da UI (cd_cameras) ═══ */
-const CD_CAMERAS_DEFAULT = [
-    { name: 'Cameretta',        entity: 'camera.cameretta',       stream: 'cameretta' },
-    { name: 'Salone',           entity: 'camera.salone',          stream: 'salone' },
-    { name: 'Terrazza',         entity: 'camera.locale_tecnico',  stream: 'locale_tecnico' },
-    { name: 'Cortile Destro',   entity: 'camera.cortile_destro',  stream: 'cortile_destro' },
-    { name: 'Cortile Sinistro', entity: 'camera.cortile_sinistro',stream: 'cortile_sinistro' },
-    { name: 'Strada',           entity: 'camera.strada',          stream: 'strada' },
-    { name: 'Balconi',          entity: 'camera.balconi',         stream: 'balconi' },
-    { name: 'Fontana',          entity: 'camera.fontana',         stream: 'fontana' },
-];
+const CD_CAMERAS_DEFAULT = [];
 function getCameras() {
     const w = cdCfg('cd_cameras');
     if (Array.isArray(w) && w.length) return w;
@@ -8523,6 +8510,15 @@ function buildCamCards() {
     }).join('');
 }
 document.addEventListener('DOMContentLoaded', buildCamCards);
+/* v258: immagine auto configurabile (cd_ev_image = URL) */
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const img = cdCfg('cd_ev_image');
+        const url = (typeof img === 'string' && img) ? img : (img && img.url) || '';
+        if (url) ['ev-mod-car-img','ev-new-car-img'].forEach(id => { const el = document.getElementById(id); if (el) el.src = url; });
+    } catch(e) {}
+});
+
 
 function apriCamera(camId, title) {
     if(navigator.vibrate) navigator.vibrate(10);
@@ -10708,17 +10704,7 @@ async function renderEdDailyChart(daysInMonth, selMonth, selYear, isCurrentMonth
 
 // ── TEMPERATURE STANZE ─────────────────────────────────────────
 /* ═══ v257: STANZE dinamiche — configurabili da UI (cd_stanze) ═══ */
-const CD_STANZE_DEFAULT = [
-    { name: 'Salone',            icon: '🛋️', rgb: '14,165,233',  temp: 'sensor.temperatura_salone_temperature' },
-    { name: 'Matrimoniale',      icon: '🛏️', rgb: '124,58,237',  temp: 'sensor.temperatura_camera_matrimoniale_temperature' },
-    { name: 'Cameretta',         icon: '🧸', rgb: '236,72,153',  temp: 'sensor.temperatura_cameretta_temperature' },
-    { name: 'Studio',            icon: '💼', rgb: '6,182,212',   temp: 'sensor.temperatura_studio_temperature' },
-    { name: 'Bagno Grande',      icon: '🚿', rgb: '34,197,94',   temp: 'sensor.temperatura_bagno_grande_temperature' },
-    { name: 'Bagno Piccolo',     icon: '🛁', rgb: '20,184,166',  temp: 'sensor.temperatura_bagno_piccolo_temperature' },
-    { name: 'Lavanderia',        icon: '🧺', rgb: '249,115,22',  temp: 'sensor.temperatura_lavanderia_temperature' },
-    { name: 'Locale Tecnico',    icon: '⚙️', rgb: '100,116,139', temp: 'sensor.temperatura_lacale_tecnico_temperature' },
-    { name: 'Cucina',            icon: '🍽️', rgb: '217,70,239',  temp: 'sensor.temperatura_cucina_temperature' },
-];
+const CD_STANZE_DEFAULT = [];
 const STANZE_RGB_PALETTE = ['14,165,233','124,58,237','236,72,153','6,182,212','34,197,94','20,184,166','249,115,22','100,116,139','217,70,239','245,158,11'];
 
 function getStanze() {

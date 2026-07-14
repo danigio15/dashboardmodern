@@ -3549,7 +3549,7 @@ async function refreshActiveDeviceTelemetry() {
 
 
 /* ════════════════════════════════════════════════
-   LEAPMOTOR B10 — Dashboard Premium Redesign
+   SEZIONE EV — Dashboard Premium Redesign
    ════════════════════════════════════════════════ */
 
 /* ── Hero Card (immagine + batteria) ── */
@@ -4648,6 +4648,8 @@ async function refreshActiveDeviceTelemetry() {
 .wz-sect-ico { font-size: 22px; flex-shrink: 0; }
 .wz-sect-txt { flex: 1; min-width: 0; }
 .wz-sect-nm { font-size: 13.5px; font-weight: 800; color: var(--text); }
+.wz-sect-rename { font-size: 13.5px; font-weight: 800; color: var(--text); border: none; border-bottom: 1px dashed #cbd5e1; background: transparent; padding: 0 0 2px; width: 100%; font-family: 'Inter', sans-serif; }
+.wz-sect-rename:focus { outline: none; border-bottom-color: #0ea5e9; }
 .wz-sect-ds { font-size: 11px; color: var(--text-dim); }
 .wz-check { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; transition: 0.2s; cursor: pointer; }
 .wz-sect.on .wz-check, .wz-light.on .wz-check { background: #0ea5e9; border-color: #0ea5e9; }
@@ -4776,7 +4778,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
   <nav class="tabs bottom-nav-bar">
     <button class="tab active" data-tab="home"><span class="icon">🏠</span><span class="text">Home</span></button>
     <button class="tab" data-tab="energy"><span class="icon">⚡</span><span class="text">Energia</span></button>
-    <button class="tab" data-tab="ev"><span class="icon">🚗</span><span class="text">Leapmotor</span></button>
+    <button class="tab" data-tab="ev"><span class="icon">🚗</span><span class="text">Auto</span></button>
     <button class="tab" data-tab="boiler"><span class="icon">🌞</span><span class="text">Solare Termico</span></button>
     <button class="tab" data-tab="clima"><span class="icon">❄️</span><span class="text">Clima</span></button>
     <button class="tab" data-tab="temp"><span class="icon">🌡️</span><span class="text">Stanze</span></button>
@@ -5433,8 +5435,8 @@ html[data-theme="dark"] header { background: var(--card-glass); }
            style="transition:opacity 0.4s ease;">
       <div class="lm-hero-top">
         <div class="lm-brand">
-          <div class="lm-brand-name">Leapmotor B10</div>
-          <div class="lm-brand-sub">Giovanni · EV Smart</div>
+          <div class="lm-brand-name">La mia auto</div>
+          <div class="lm-brand-sub">EV Smart</div>
         </div>
         <div class="lm-charge-badge" id="lm-charge-badge" style="position:static;transform:none;margin-left:auto;">
           <span class="lm-charge-pulse" id="lm-dot"></span>
@@ -6238,7 +6240,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
     <!-- Header standard dashboard -->
     <div class="ev-waw-header">
       <div class="ev-popup-header-info">
-        <h3 class="ev-waw-title">Leapmotor B10</h3>
+        <h3 class="ev-waw-title">La mia auto</h3>
         <div class="ev-popup-sub">
           <span class="ev-popup-sub-name">Giovanni</span>
           <span class="ev-popup-status" id="ev-popup-badge">⚪ SCOLLEGATA</span>
@@ -6392,7 +6394,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.2.2';
+const DASHBOARD_VERSION = '0.2.3';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6400,6 +6402,7 @@ window.CD_BAKED_CONFIG = {
   cd_connection: {},
   cd_branding: {},
   cd_sections: {},
+  cd_section_names: {},
   cd_luci: {},
   cd_stanze: [],
   cd_cameras: [],
@@ -6425,7 +6428,13 @@ function resolveEntity(id) { return ENTITY_OVERRIDES[id] || id; }
 
 const _RAW_STATES = {};
 let STATES = new Proxy(_RAW_STATES, {
-    get(target, key) { if (typeof key !== 'string') return target[key]; return target[ENTITY_OVERRIDES[key] || key]; },
+    get(target, key) {
+        if (typeof key !== 'string') return target[key];
+        if (ENTITY_OVERRIDES[key]) return target[ENTITY_OVERRIDES[key]];
+        // v259: build pubblica — i ref di sezione non mappati non risolvono
+        if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING && typeof CD_SLOT_REFS !== 'undefined' && CD_SLOT_REFS.has(key)) return undefined;
+        return target[key];
+    },
     set(target, key, value) { target[key] = value; return true; },
     has(target, key) { return (typeof key === 'string' ? (ENTITY_OVERRIDES[key] || key) : key) in target; },
     deleteProperty(target, key) { delete target[key]; return true; }
@@ -7281,7 +7290,7 @@ async function edDownloadHTML() {
     }
 
     // Costruisci il nuovo blocco baked dai localStorage attuali (le personalizzazioni di questo dispositivo)
-    const keys = ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_cameras','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
+    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
     const merged = {};
     keys.forEach(k => { merged[k] = cdCfg(k); });  // cdCfg = localStorage o baked precedente
     const bakedBlock = '/* CD_BAKED_START */\n'
@@ -7354,7 +7363,7 @@ function edImport() {
 }
 function edResetAll() {
     if (!confirm('Rimuovere TUTTE le personalizzazioni di questo dispositivo?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_cameras','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
     location.reload();
 }
 
@@ -7392,7 +7401,9 @@ function apriSetupWizard() {
         sections: Object.keys(sect||{}).length ? sect : { home:true, energy:true, ev:true, boiler:true, clima:true, temp:true, security:true, server:true },
         luci: Object.assign({}, Object.keys(luci||{}).length ? luci : (typeof LUCI_NAMES !== 'undefined' ? LUCI_NAMES : {})),
         entities: {},
-        cameras: getCameras().slice()
+        cameras: getCameras().slice(),
+        sectionNames: cdCfg('cd_section_names') || {},
+        evImage: (function(){ const v = cdCfg('cd_ev_image'); return (typeof v === 'string' ? v : (v && v.url) || ''); })()
     };
     const w = document.createElement('div');
     w.id = 'setup-wizard';
@@ -7438,10 +7449,15 @@ function wzRender() {
         <div class="wz-title">📑 Quali sezioni ti servono?</div>
         <div class="wz-sub">Attiva solo quelle rilevanti per casa tua — potrai cambiarle in seguito.</div>
         <div class="wz-sect-grid">${sezioni.map(([k,ic,nm,ds]) => `
-          <div class="wz-sect ${WIZ.sections[k] !== false ? 'on' : ''}" onclick="WIZ.sections['${k}'] = !(WIZ.sections['${k}'] !== false); wzRender();">
-            <div class="wz-sect-ico">${ic}</div>
-            <div class="wz-sect-txt"><div class="wz-sect-nm">${nm}</div><div class="wz-sect-ds">${ds}</div></div>
-            <div class="wz-check">${WIZ.sections[k] !== false ? '✓' : ''}</div>
+          <div class="wz-sect ${WIZ.sections[k] !== false ? 'on' : ''}">
+            <div class="wz-sect-ico" onclick="WIZ.sections['${k}'] = !(WIZ.sections['${k}'] !== false); wzRender();">${ic}</div>
+            <div class="wz-sect-txt">
+              ${WIZ.sections[k] !== false
+                ? `<input class="wz-sect-rename" value="${(WIZ.sectionNames && WIZ.sectionNames[k]) || nm}" data-def="${nm}" onchange="if(!WIZ.sectionNames)WIZ.sectionNames={}; const v=this.value.trim(); if(v && v!==this.dataset.def) WIZ.sectionNames['${k}']=v; else delete WIZ.sectionNames['${k}'];">`
+                : `<div class="wz-sect-nm">${nm}</div>`}
+              <div class="wz-sect-ds">${ds}</div>
+            </div>
+            <div class="wz-check" onclick="WIZ.sections['${k}'] = !(WIZ.sections['${k}'] !== false); wzRender();">${WIZ.sections[k] !== false ? '✓' : ''}</div>
           </div>`).join('')}</div>
         <button class="wz-btn" onclick="WIZ.step=4; wzLoadLights();">Avanti →</button>`;
     }
@@ -7472,7 +7488,14 @@ function wzRender() {
         <div class="wz-title">🧩 Collega le tue entità</div>
         <div class="wz-sub">Per ogni voce scrivi la <b>tua</b> entità HA (autocomplete attivo). Puoi saltare questo passo e completarlo dopo da <b>⚙️ Configurazione → Configura Entità → 📑 Sezioni</b>. Le voci vuote mostreranno "—".</div>
         ${dl}
-        <div style="max-height:46vh; overflow-y:auto; margin-bottom:14px;">${acc}${WIZ.sections['security'] !== false ? `
+        <div style="max-height:46vh; overflow-y:auto; margin-bottom:14px;">${acc}${WIZ.sections['ev'] !== false ? `
+        <details class="ed-acc"><summary class="ed-acc-head">🚗 Immagine auto <span class="ed-acc-n">URL</span></summary>
+          <div class="ed-acc-body">
+            <div class="ed-slot"><div class="ed-slot-lbl">URL immagine (es. /local/mia_auto.png — caricala in /config/www/)</div>
+              <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" value="${WIZ.evImage||''}" placeholder="/local/mia_auto.png"
+                     onchange="WIZ.evImage = this.value.trim();"></div>
+          </div>
+        </details>` : ''}${WIZ.sections['security'] !== false ? `
         <details class="ed-acc"><summary class="ed-acc-head">📹 Telecamere <span class="ed-acc-n">${(WIZ.cameras||[]).length}</span></summary>
           <div class="ed-acc-body">
             ${(WIZ.cameras||[]).map((cam, i) => `<div class="ed-row"><div class="ed-row-main"><div class="ed-row-new">${cam.name}</div><div class="ed-row-old mono">${cam.entity}</div></div><div class="ed-del" onclick="WIZ.cameras.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
@@ -7604,15 +7627,18 @@ function wzAddCamera() {
 }
 function wzResetAll() {
     if (!confirm('Cancellare TUTTA la configurazione salvata su questo dispositivo (token, sezioni, luci, entità, stanze, camere, tema)?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_cameras','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
     location.reload();
 }
 function wzFinish() {
     localStorage.setItem('cd_connection', JSON.stringify({ token: WIZ.token, admin_users: WIZ.admin ? [WIZ.admin] : [] }));
     localStorage.setItem('cd_branding', JSON.stringify({ title: WIZ.title, subtitle: WIZ.subtitle }));
     localStorage.setItem('cd_sections', JSON.stringify(WIZ.sections));
+    if (WIZ.sectionNames && Object.keys(WIZ.sectionNames).length) localStorage.setItem('cd_section_names', JSON.stringify(WIZ.sectionNames));
+    else localStorage.removeItem('cd_section_names');
     if (Object.keys(WIZ.luci).length) localStorage.setItem('cd_luci', JSON.stringify(WIZ.luci));
     if (WIZ.cameras) localStorage.setItem('cd_cameras', JSON.stringify(WIZ.cameras));
+    if (WIZ.evImage !== undefined) localStorage.setItem('cd_ev_image', JSON.stringify(WIZ.evImage || ''));
     if (WIZ.entities && Object.keys(WIZ.entities).length) {
         const cur = cdCfg('cd_entity_overrides');
         Object.assign(cur, WIZ.entities);
@@ -7758,6 +7784,12 @@ const CD_SLOTS = {
         { ref: 'sensor.speedtest_ping',      lbl: 'Speedtest Ping (ms)' },
     ]},
 };
+
+/* v259: se true (build pubblica), gli slot NON mappati dall'utente non leggono i ref di
+   default — mostrano "—" anche se un'entità con quel nome esiste nell'HA dell'utente. */
+const CD_REQUIRE_MAPPING = true;
+const CD_SLOT_REFS = new Set();
+Object.values(CD_SLOTS).forEach(sec => sec.slots.forEach(sl => CD_SLOT_REFS.add(sl.ref)));
 
 function editorRenderSezioni() {
     const allSections = Object.entries(CD_SLOTS);
@@ -8510,6 +8542,16 @@ function buildCamCards() {
     }).join('');
 }
 document.addEventListener('DOMContentLoaded', buildCamCards);
+/* v259: nomi sezioni personalizzati applicati ai tab */
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const names = cdCfg('cd_section_names');
+        Object.entries(names || {}).forEach(([sec, nm]) => {
+            const t = document.querySelector(`.tab[data-tab="${sec}"] .text`);
+            if (t && nm) t.textContent = nm;
+        });
+    } catch(e) {}
+});
 /* v258: immagine auto configurabile (cd_ev_image = URL) */
 document.addEventListener('DOMContentLoaded', () => {
     try {

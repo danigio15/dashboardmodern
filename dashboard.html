@@ -4625,6 +4625,7 @@ async function refreshActiveDeviceTelemetry() {
 /* ═══ v256: SETUP WIZARD ═══ */
 #setup-wizard { position: fixed; inset: 0; z-index: 99999; background: rgba(230,235,241,0.92); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); display: flex; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); overflow-y: auto; }
 .wz-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 28px; box-shadow: var(--shadow-sculpted), 0 24px 60px rgba(0,0,0,0.12); max-width: 520px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 30px 28px; position: relative; }
+.wz-ver { position: absolute; top: 14px; right: 18px; font-size: 10px; font-weight: 800; color: var(--text-dim); opacity: 0.6; letter-spacing: 0.5px; }
 .wz-dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 22px; }
 .wz-dot { width: 9px; height: 9px; border-radius: 50%; background: #e2e8f0; transition: 0.3s; }
 .wz-dot.active { background: #0ea5e9; box-shadow: 0 0 8px rgba(14,165,233,0.5); transform: scale(1.25); }
@@ -5822,7 +5823,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
       <div class="cfg-hero-ico">⚙️</div>
       <div class="cfg-hero-txt">
         <div class="cfg-hero-title">CONFIGURAZIONE</div>
-        <div class="cfg-hero-sub">Strumenti riservati all'amministratore</div>
+        <div class="cfg-hero-sub">Strumenti amministratore · <span id="cfg-ver"></span></div>
       </div>
     </div>
 
@@ -6393,6 +6394,10 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    momento del download HTML → valgono su TUTTI i dispositivi.
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
+/* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
+const DASHBOARD_VERSION = '0.2.1';
+console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
+
 /* CD_BAKED_START */
 window.CD_BAKED_CONFIG = {
   cd_connection: {},
@@ -7511,13 +7516,14 @@ function wzRender() {
         <div class="wz-sub">La configurazione è salvata <b>su questo dispositivo</b> (con HACS sopravvive agli aggiornamenti).<br><br>
         📌 <b>Per tornare in configurazione in qualsiasi momento:</b><br>
         • Pagina <b>⚙️ Config</b> nel menu (visibile agli admin)<br>
-        • Oppure aggiungi <b>#setup</b> all'URL della dashboard e ricarica<br><br>
+        • Oppure <b>7 tap veloci sul titolo</b> in alto nella Home<br><br>
         Per rendere la config multi-dispositivo: ⚙️ → Configura Entità → 📤 Esporta.</div>
         <button class="wz-btn wz-btn-green" onclick="wzFinish()">Salva e avvia la dashboard ✓</button>`;
 
-    card.innerHTML = `<div class="wz-dots">${dots}</div>${body}
+    card.innerHTML = `<div class="wz-ver">v${DASHBOARD_VERSION}</div><div class="wz-dots">${dots}</div>${body}
         ${WIZ.step > 1 && WIZ.step < 6 ? '<div class="wz-back" onclick="WIZ.step--; wzRender();">← Indietro</div>' : ''}
-        <div class="wz-skip" onclick="document.getElementById('setup-wizard').remove()">Chiudi senza salvare</div>`;
+        <div class="wz-skip" onclick="document.getElementById('setup-wizard').remove()">Chiudi senza salvare</div>
+        <div class="wz-skip" style="color:#fca5a5;" onclick="wzResetAll()">🗑️ Reset totale configurazione (questo dispositivo)</div>`;
     if (WIZ.step === 4) wzRenderLights();
 }
 
@@ -7608,6 +7614,12 @@ function wzLoadAllEntities() {
     } catch(e) {}
 }
 
+
+function wzResetAll() {
+    if (!confirm('Cancellare TUTTA la configurazione salvata su questo dispositivo (token, sezioni, luci, entità, stanze, camere, tema)?')) return;
+    ['cd_connection','cd_branding','cd_sections','cd_luci','cd_stanze','cd_cameras','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    location.reload();
+}
 function wzFinish() {
     localStorage.setItem('cd_connection', JSON.stringify({ token: WIZ.token, admin_users: WIZ.admin ? [WIZ.admin] : [] }));
     localStorage.setItem('cd_branding', JSON.stringify({ title: WIZ.title, subtitle: WIZ.subtitle }));
@@ -10746,6 +10758,31 @@ function buildTempCards() {
     }).join('');
 }
 document.addEventListener('DOMContentLoaded', buildTempCards);
+document.addEventListener('DOMContentLoaded', () => { const v = document.getElementById('cfg-ver'); if (v) v.textContent = 'v' + DASHBOARD_VERSION; });
+
+/* ═══ v258: ACCESSO RAPIDO AL WIZARD — 7 tap veloci sul titolo dell'header ═══ */
+(function initSecretTap() {
+    let taps = 0, timer = null;
+    function attach() {
+        const h1 = document.querySelector('header h1');
+        if (!h1) return;
+        h1.style.cursor = 'default';
+        h1.addEventListener('click', () => {
+            taps++;
+            clearTimeout(timer);
+            timer = setTimeout(() => { taps = 0; }, 2500);
+            if (taps === 5 && navigator.vibrate) navigator.vibrate(30);
+            if (taps >= 7) {
+                taps = 0;
+                if (navigator.vibrate) navigator.vibrate([50,50,50]);
+                try { apriSetupWizard(); } catch(e) { console.error(e); }
+            }
+        });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attach);
+    else attach();
+})();
+
 /* v258: accesso di emergenza alla configurazione — aggiungi #setup all'URL e ricarica */
 document.addEventListener('DOMContentLoaded', () => {
     if (location.hash === '#setup') setTimeout(() => { try { apriSetupWizard(); } catch(e) {} }, 600);

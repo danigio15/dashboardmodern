@@ -2786,14 +2786,14 @@ nav.tabs.bottom-nav-bar .tab.active .text {
 // ================= TITANICO MOTORE DI CALCOLO E HISTORICAL DRILL-DOWN =================
 const RECAP_DEVICES = {
     'wallbox':      { name: 'Wallbox EV',    sensor: 'dm.ev_energia_wallbox_mese',         icon: '🚗', color: '#06b6d4' },
-    'asciugatrice': { name: 'Asciugatrice',  sensor: 'dm.core_007',    icon: '💨', color: '#f59e0b' },
-    'frigo':        { name: 'Frigorifero',   sensor: 'dm.core_010',           icon: '🧊', color: '#1e40af' },
-    'lavastoviglie':{ name: 'Lavastoviglie', sensor: 'dm.core_012',   icon: '🍽️', color: '#10b981' },
-    'lavatrice':    { name: 'Lavatrice',     sensor: 'dm.core_013',       icon: '🧺', color: '#7c3aed' },
-    'forno':        { name: 'Forno',         sensor: 'dm.core_008',           icon: '♨️', color: '#e11d48' },
-    'friggitrice':  { name: 'Friggitrice',   sensor: 'dm.core_009',     icon: '🍟', color: '#ea580c' },
-    'caffe':        { name: 'Macchina Caffè',          sensor: 'dm.core_011',            icon: '☕', color: '#a16207' },
-    'microonde':    { name: 'Microonde',     sensor: 'dm.core_014',       icon: '📡', color: '#8b5cf6' },
+    'asciugatrice': { name: 'Asciugatrice',  sensor: 'dm.core_022',    icon: '💨', color: '#f59e0b' },
+    'frigo':        { name: 'Frigorifero',   sensor: 'dm.core_025',           icon: '🧊', color: '#1e40af' },
+    'lavastoviglie':{ name: 'Lavastoviglie', sensor: 'dm.core_027',   icon: '🍽️', color: '#10b981' },
+    'lavatrice':    { name: 'Lavatrice',     sensor: 'dm.core_028',       icon: '🧺', color: '#7c3aed' },
+    'forno':        { name: 'Forno',         sensor: 'dm.core_023',           icon: '♨️', color: '#e11d48' },
+    'friggitrice':  { name: 'Friggitrice',   sensor: 'dm.core_024',     icon: '🍟', color: '#ea580c' },
+    'caffe':        { name: 'Macchina Caffè',          sensor: 'dm.core_026',            icon: '☕', color: '#a16207' },
+    'microonde':    { name: 'Microonde',     sensor: 'dm.core_029',       icon: '📡', color: '#8b5cf6' },
     'boiler':       { name: 'Boiler',        sensor: 'dm.energy_boiler_mese', icon: '🔥', color: '#f97316' },
 };
 
@@ -4181,7 +4181,7 @@ async function refreshActiveDeviceTelemetry() {
   .srv-hero-top { flex-direction: column; align-items: flex-start; gap: 8px; }
   .srv-hero-title { font-size: 20px; }
 }
-/* === EV POPUP - REDESIGN COERENTE CON DASHBOARD === */
+/* === EV POPUP === */
 .ev-popup-card {
   max-width: 480px;
   width: 100%;
@@ -5105,14 +5105,14 @@ html[data-theme="dark"] header { background: var(--card-glass); }
                 <option value="">— Scegli —</option>
                 <optgroup label="Elettrodomestici">
                   <option value="dm.ev_energia_wallbox_mese">⚡ Wallbox</option>
-                  <option value="dm.core_010">🧊 Frigorifero</option>
-                  <option value="dm.core_012">🍽️ Lavastoviglie</option>
-                  <option value="dm.core_009">🍟 Friggitrice</option>
-                  <option value="dm.core_011">☕ Macchina Caffè</option>
-                  <option value="dm.core_007">💨 Asciugatrice</option>
-                  <option value="dm.core_013">🧺 Lavatrice</option>
-                  <option value="dm.core_008">♨️ Forno</option>
-                  <option value="dm.core_014">📡 Microonde</option>
+                  <option value="dm.core_025">🧊 Frigorifero</option>
+                  <option value="dm.core_027">🍽️ Lavastoviglie</option>
+                  <option value="dm.core_024">🍟 Friggitrice</option>
+                  <option value="dm.core_026">☕ Macchina Caffè</option>
+                  <option value="dm.core_022">💨 Asciugatrice</option>
+                  <option value="dm.core_028">🧺 Lavatrice</option>
+                  <option value="dm.core_023">♨️ Forno</option>
+                  <option value="dm.core_029">📡 Microonde</option>
                   <option value="dm.energy_boiler_mese">🔥 Boiler</option>
                 </optgroup>
                 <optgroup label="Climatizzazione">
@@ -5887,176 +5887,16 @@ html[data-theme="dark"] header { background: var(--card-glass); }
 
       <!-- ZONA FREDDO: Condizionatori -->
       <div class="clima-zone clima-zone-freddo show">
-      <div class="clima-premium-grid">
-        
-        <div class="cp-card" id="card-climate-salone" onclick="apriClimaPopup('dm.clima_condizionatore_salone', event)" style="--cp-rgb: 148, 163, 184;">
-           <div class="cp-header">
-              <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-salone">❄️</div><div class="cp-name">Salone</div></div>
-              <div class="cp-badge" id="badge-climate-salone">SPENTO</div>
-           </div>
-           <div class="cp-body">
-              <div class="cp-temp-target"><span class="lbl">Target</span><span class="val" id="tgt-climate-salone">--°</span></div>
-              <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-salone">--°</span></div>
-           </div>
-           <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_salone', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-salone" onclick="toggleClima('dm.clima_condizionatore_salone')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_salone', 'up')">➕</button>
-           </div>
-        </div>
-
-        <div class="cp-card" id="card-climate-cucina" onclick="apriClimaPopup('dm.clima_condizionatore_cucina', event)" style="--cp-rgb: 148, 163, 184;">
-           <div class="cp-header">
-              <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-cucina">❄️</div><div class="cp-name">Cucina</div></div>
-              <div class="cp-badge" id="badge-climate-cucina">SPENTO</div>
-           </div>
-           <div class="cp-body">
-              <div class="cp-temp-target"><span class="lbl">Target</span><span class="val" id="tgt-climate-cucina">--°</span></div>
-              <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-cucina">--°</span></div>
-           </div>
-           <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_cucina', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-cucina" onclick="toggleClima('dm.clima_condizionatore_cucina')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_cucina', 'up')">➕</button>
-           </div>
-        </div>
-
-        <div class="cp-card" id="card-climate-camera_da_letto" onclick="apriClimaPopup('dm.clima_condizionatore_camera', event)" style="--cp-rgb: 148, 163, 184;">
-           <div class="cp-header">
-              <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-camera_da_letto">❄️</div><div class="cp-name">Matrimoniale</div></div>
-              <div class="cp-badge" id="badge-climate-camera_da_letto">SPENTO</div>
-           </div>
-           <div class="cp-body">
-              <div class="cp-temp-target"><span class="lbl">Target</span><span class="val" id="tgt-climate-camera_da_letto">--°</span></div>
-              <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-camera_da_letto">--°</span></div>
-           </div>
-           <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_camera', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-camera_da_letto" onclick="toggleClima('dm.clima_condizionatore_camera')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_camera', 'up')">➕</button>
-           </div>
-        </div>
-
-        <div class="cp-card" id="card-climate-cameretta" onclick="apriClimaPopup('dm.clima_condizionatore_cameretta', event)" style="--cp-rgb: 148, 163, 184;">
-           <div class="cp-header">
-              <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-cameretta">❄️</div><div class="cp-name">Cameretta</div></div>
-              <div class="cp-badge" id="badge-climate-cameretta">SPENTO</div>
-           </div>
-           <div class="cp-body">
-              <div class="cp-temp-target"><span class="lbl">Target</span><span class="val" id="tgt-climate-cameretta">--°</span></div>
-              <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-cameretta">--°</span></div>
-           </div>
-           <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_cameretta', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-cameretta" onclick="toggleClima('dm.clima_condizionatore_cameretta')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_cameretta', 'up')">➕</button>
-           </div>
-        </div>
-
+      <div class="clima-premium-grid" id="clima-grid-freddo"> id="clima-grid-freddo"
+        <!-- v260: card generate da getClimaUnits() -->
       </div>
       <!-- /clima-zone-freddo -->
       </div>
 
       <!-- ZONA CALDO: Termosifoni -->
       <div class="clima-zone clima-zone-caldo">
-      <div class="clima-premium-grid">
-        
-        <div class="cp-card" id="card-climate-termosifone_salone" onclick="apriClimaPopup('dm.clima_termosifone_salone', event)" style="--cp-rgb: 148, 163, 184;">
-           <div class="cp-header">
-              <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-termosifone_salone">🔥</div><div class="cp-name">Salone</div></div>
-              <div class="cp-badge" id="badge-climate-termosifone_salone">SPENTO</div>
-           </div>
-           <div class="cp-body">
-              <div class="cp-temp-target"><span class="lbl">Target</span><span class="val" id="tgt-climate-termosifone_salone">--°</span></div>
-              <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-termosifone_salone">--°</span></div>
-           </div>
-           <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_salone', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_salone" onclick="toggleClima('dm.clima_termosifone_salone')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_salone', 'up')">➕</button>
-           </div>
-        </div>
-
-        <div class="cp-card" id="card-climate-termosifone_cucina" onclick="apriClimaPopup('dm.clima_termosifone_cucina', event)" style="--cp-rgb: 148, 163, 184;">
-           <div class="cp-header">
-              <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-termosifone_cucina">🔥</div><div class="cp-name">Cucina</div></div>
-              <div class="cp-badge" id="badge-climate-termosifone_cucina">SPENTO</div>
-           </div>
-           <div class="cp-body">
-              <div class="cp-temp-target"><span class="lbl">Target</span><span class="val" id="tgt-climate-termosifone_cucina">--°</span></div>
-              <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-termosifone_cucina">--°</span></div>
-           </div>
-           <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_cucina', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_cucina" onclick="toggleClima('dm.clima_termosifone_cucina')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_cucina', 'up')">➕</button>
-           </div>
-        </div>
-
-        <div class="cp-card" id="card-climate-termosifone_camera_da_letto" onclick="apriClimaPopup('dm.clima_termosifone_camera', event)" style="--cp-rgb: 148, 163, 184;">
-           <div class="cp-header">
-              <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-termosifone_camera_da_letto">🔥</div><div class="cp-name">Matrimoniale</div></div>
-              <div class="cp-badge" id="badge-climate-termosifone_camera_da_letto">SPENTO</div>
-           </div>
-           <div class="cp-body">
-              <div class="cp-temp-target"><span class="lbl">Target</span><span class="val" id="tgt-climate-termosifone_camera_da_letto">--°</span></div>
-              <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-termosifone_camera_da_letto">--°</span></div>
-           </div>
-           <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_camera', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_camera_da_letto" onclick="toggleClima('dm.clima_termosifone_camera')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_camera', 'up')">➕</button>
-           </div>
-        </div>
-
-        <div class="cp-card" id="card-climate-termosifone_cameretta" onclick="apriClimaPopup('dm.clima_termosifone_cameretta', event)" style="--cp-rgb: 148, 163, 184;">
-           <div class="cp-header">
-              <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-termosifone_cameretta">🔥</div><div class="cp-name">Cameretta</div></div>
-              <div class="cp-badge" id="badge-climate-termosifone_cameretta">SPENTO</div>
-           </div>
-           <div class="cp-body">
-              <div class="cp-temp-target"><span class="lbl">Target</span><span class="val" id="tgt-climate-termosifone_cameretta">--°</span></div>
-              <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-termosifone_cameretta">--°</span></div>
-           </div>
-           <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_cameretta', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_cameretta" onclick="toggleClima('dm.clima_termosifone_cameretta')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_cameretta', 'up')">➕</button>
-           </div>
-        </div>
-
-        <div class="cp-card" id="card-climate-termosifone_bagno" onclick="apriClimaPopup('dm.clima_termosifone_bagno', event)" style="--cp-rgb: 148, 163, 184;">
-           <div class="cp-header">
-              <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-termosifone_bagno">🔥</div><div class="cp-name">Bagno</div></div>
-              <div class="cp-badge" id="badge-climate-termosifone_bagno">SPENTO</div>
-           </div>
-           <div class="cp-body">
-              <div class="cp-temp-target"><span class="lbl">Target</span><span class="val" id="tgt-climate-termosifone_bagno">--°</span></div>
-              <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-termosifone_bagno">--°</span></div>
-           </div>
-           <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_bagno', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_bagno" onclick="toggleClima('dm.clima_termosifone_bagno')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_bagno', 'up')">➕</button>
-           </div>
-        </div>
-
-        <div class="cp-card" id="card-climate-termosifone_studio" onclick="apriClimaPopup('dm.clima_termosifone_studio', event)" style="--cp-rgb: 148, 163, 184;">
-           <div class="cp-header">
-              <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-termosifone_studio">🔥</div><div class="cp-name">Studio</div></div>
-              <div class="cp-badge" id="badge-climate-termosifone_studio">SPENTO</div>
-           </div>
-           <div class="cp-body">
-              <div class="cp-temp-target"><span class="lbl">Target</span><span class="val" id="tgt-climate-termosifone_studio">--°</span></div>
-              <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-termosifone_studio">--°</span></div>
-           </div>
-           <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_studio', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_studio" onclick="toggleClima('dm.clima_termosifone_studio')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_studio', 'up')">➕</button>
-           </div>
-        </div>
-
+      <div class="clima-premium-grid" id="clima-grid-caldo">
+        <!-- v260: card generate da getClimaUnits() -->
       </div>
       <!-- /clima-zone-caldo -->
       </div>
@@ -6206,7 +6046,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         <div class="lav-area-mon">
            <div class="lav-mon-card"><div class="lbl">FASE ATTUALE</div><div class="val" id="v-lav-fase" style="color: var(--accent);">—</div></div>
            <div class="lav-mon-card"><div class="lbl">TEMPO RIMANENTE</div><div class="val" id="v-lav-tempo" style="color: var(--load);">—</div></div>
-           <div class="lav-mon-card hist-clickable" onclick="apriStorico(event, 'dm.core_015', 'Consumo Lavatrice')"><div class="lbl">ASSORBIMENTO</div><div class="val" id="v-lav-power-w" style="color: #f59e0b;">—</div></div>
+           <div class="lav-mon-card hist-clickable" onclick="apriStorico(event, 'dm.core_030', 'Consumo Lavatrice')"><div class="lbl">ASSORBIMENTO</div><div class="val" id="v-lav-power-w" style="color: #f59e0b;">—</div></div>
         </div>
 
         <div class="lav-area-manual">
@@ -6394,7 +6234,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.2.4';
+const DASHBOARD_VERSION = '0.2.3';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6406,6 +6246,7 @@ window.CD_BAKED_CONFIG = {
   cd_luci: {},
   cd_stanze: [],
   cd_cameras: [],
+  cd_clima_units: [],
   cd_ev_image: "",
   cd_entity_overrides: {},
   cd_subloads_extra: {},
@@ -7290,7 +7131,7 @@ async function edDownloadHTML() {
     }
 
     // Costruisci il nuovo blocco baked dai localStorage attuali (le personalizzazioni di questo dispositivo)
-    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
+    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
     const merged = {};
     keys.forEach(k => { merged[k] = cdCfg(k); });  // cdCfg = localStorage o baked precedente
     const bakedBlock = '/* CD_BAKED_START */\n'
@@ -7363,7 +7204,7 @@ function edImport() {
 }
 function edResetAll() {
     if (!confirm('Rimuovere TUTTE le personalizzazioni di questo dispositivo?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
     location.reload();
 }
 
@@ -7402,6 +7243,7 @@ function apriSetupWizard() {
         luci: Object.assign({}, Object.keys(luci||{}).length ? luci : (typeof LUCI_NAMES !== 'undefined' ? LUCI_NAMES : {})),
         entities: {},
         cameras: getCameras().slice(),
+        climaUnits: getClimaUnits().slice(),
         sectionNames: cdCfg('cd_section_names') || {},
         evImage: (function(){ const v = cdCfg('cd_ev_image'); return (typeof v === 'string' ? v : (v && v.url) || ''); })()
     };
@@ -7479,7 +7321,7 @@ function wzRender() {
                 const cur = (WIZ.entities && WIZ.entities[sl.ref]) || ENTITY_OVERRIDES[sl.ref] || '';
                 return `<div class="ed-slot"><div class="ed-slot-lbl">${sl.lbl}</div>
                   <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" list="wz-entity-list"
-                         data-ref="${sl.ref}" value="${cur}" placeholder="${sl.ref}" onchange="wzSetSlot(this)"></div>`;
+                         data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_031" onchange="wzSetSlot(this)"></div>`;
             }).join('');
             return `<details class="ed-acc"><summary class="ed-acc-head">${sec.label} <span class="ed-acc-n">${sec.slots.length}</span></summary><div class="ed-acc-body">${rows}</div></details>`;
         }).join('');
@@ -7488,7 +7330,18 @@ function wzRender() {
         <div class="wz-title">🧩 Collega le tue entità</div>
         <div class="wz-sub">Per ogni voce scrivi la <b>tua</b> entità HA (autocomplete attivo). Puoi saltare questo passo e completarlo dopo da <b>⚙️ Configurazione → Configura Entità → 📑 Sezioni</b>. Le voci vuote mostreranno "—".</div>
         ${dl}
-        <div style="max-height:46vh; overflow-y:auto; margin-bottom:14px;">${acc}${WIZ.sections['ev'] !== false ? `
+        <div style="max-height:46vh; overflow-y:auto; margin-bottom:14px;">${acc}${WIZ.sections['clima'] !== false ? `
+        <details class="ed-acc"><summary class="ed-acc-head">❄️ Unità clima <span class="ed-acc-n">${(WIZ.climaUnits||[]).length}</span></summary>
+          <div class="ed-acc-body">
+            ${(WIZ.climaUnits||[]).map((u, i) => `<div class="ed-row"><div style="font-size:15px;">${u.type==='termo'?'🔥':'❄️'}</div><div class="ed-row-main"><div class="ed-row-new">${u.name}</div><div class="ed-row-old mono">${u.entity}</div></div><div class="ed-del" onclick="WIZ.climaUnits.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+              <select id="wz-cl-type" class="wz-input" style="margin-bottom:0; flex:0 0 46%;"><option value="clima">❄️ Condizionatore</option><option value="termo">🔥 Termosifone</option></select>
+              <input id="wz-cl-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome (es. Studio)">
+            </div>
+            <input id="wz-cl-ent" class="wz-input mono" list="wz-entity-list" placeholder="climate.studio" style="margin-bottom:8px; font-family:monospace;">
+            <button class="ed-btn-add" style="width:100%;" onclick="wzAddClima()">＋ Aggiungi unità</button>
+          </div>
+        </details>` : ''}${WIZ.sections['ev'] !== false ? `
         <details class="ed-acc"><summary class="ed-acc-head">🚗 Immagine auto <span class="ed-acc-n">URL</span></summary>
           <div class="ed-acc-body">
             <div class="ed-slot"><div class="ed-slot-lbl">URL immagine (es. /local/mia_auto.png — caricala in /config/www/)</div>
@@ -7496,7 +7349,28 @@ function wzRender() {
                      onchange="WIZ.evImage = this.value.trim();"></div>
           </div>
         </details>` : ''}${WIZ.sections['security'] !== false ? `
-        <details class="ed-acc"><summary class="ed-acc-head">📹 Telecamere <span class="ed-acc-n">${(WIZ.cameras||[]).length}</span></summary>
+        <details class="ed-acc"><summary class="ed-acc-head">❄️ Unità clima <span class="ed-acc-n">${getClimaUnits().length} unità</span></summary>
+        <div class="ed-acc-body">
+          <div class="ed-list">${getClimaUnits().map((u, i) => `
+            <div class="ed-row">
+              <div style="font-size:16px; flex-shrink:0;">${u.type === 'termo' ? '🔥' : '❄️'}</div>
+              <div class="ed-row-main">
+                <div class="ed-row-new">${u.name} <span style="font-weight:600; color:var(--text-dim); font-size:10px;">(${u.type === 'termo' ? 'termosifone' : 'condizionatore'})</span></div>
+                <div class="ed-row-old mono">${u.entity}</div>
+              </div>
+              <div class="ed-del" onclick="edDelClima(${i})">🗑️</div>
+            </div>`).join('')}</div>
+          <div class="ed-form">
+            <div class="ed-form-row">
+              <select id="ed-cl-type" class="ed-input" style="flex:0 0 46%;"><option value="clima">❄️ Condizionatore</option><option value="termo">🔥 Termosifone</option></select>
+              <input id="ed-cl-name" class="ed-input" placeholder="Nome (es. Studio)" style="flex:1;">
+            </div>
+            <input id="ed-cl-ent" list="ed-entity-list" class="ed-input mono" placeholder="climate.studio">
+            <button class="ed-btn-add" onclick="edAddClima()">＋ Aggiungi unità clima</button>
+          </div>
+        </div>
+      </details>
+      <details class="ed-acc"><summary class="ed-acc-head">📹 Telecamere <span class="ed-acc-n">${(WIZ.cameras||[]).length}</span></summary>
           <div class="ed-acc-body">
             ${(WIZ.cameras||[]).map((cam, i) => `<div class="ed-row"><div class="ed-row-main"><div class="ed-row-new">${cam.name}</div><div class="ed-row-old mono">${cam.entity}</div></div><div class="ed-del" onclick="WIZ.cameras.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
             <input id="wz-cam-name" class="wz-input" placeholder="Nome (es. Giardino)" style="margin-bottom:8px;">
@@ -7614,6 +7488,16 @@ function wzLoadAllEntities() {
 
 
 
+
+function wzAddClima() {
+    const type = document.getElementById('wz-cl-type').value;
+    const name = (document.getElementById('wz-cl-name').value || '').trim();
+    const ent = (document.getElementById('wz-cl-ent').value || '').trim();
+    if (!name || !ent.includes('.')) { alert('Inserisci nome ed entità'); return; }
+    if (!WIZ.climaUnits) WIZ.climaUnits = [];
+    WIZ.climaUnits.push({ name, entity: ent, type });
+    wzRender();
+}
 function wzAddCamera() {
     const name = (document.getElementById('wz-cam-name').value || '').trim();
     const ent = (document.getElementById('wz-cam-ent').value || '').trim();
@@ -7627,7 +7511,7 @@ function wzAddCamera() {
 }
 function wzResetAll() {
     if (!confirm('Cancellare TUTTA la configurazione salvata su questo dispositivo (token, sezioni, luci, entità, stanze, camere, tema)?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
     location.reload();
 }
 function wzFinish() {
@@ -7638,6 +7522,7 @@ function wzFinish() {
     else localStorage.removeItem('cd_section_names');
     if (Object.keys(WIZ.luci).length) localStorage.setItem('cd_luci', JSON.stringify(WIZ.luci));
     if (WIZ.cameras) localStorage.setItem('cd_cameras', JSON.stringify(WIZ.cameras));
+    if (WIZ.climaUnits) localStorage.setItem('cd_clima_units', JSON.stringify(WIZ.climaUnits));
     if (WIZ.evImage !== undefined) localStorage.setItem('cd_ev_image', JSON.stringify(WIZ.evImage || ''));
     if (WIZ.entities && Object.keys(WIZ.entities).length) {
         const cur = cdCfg('cd_entity_overrides');
@@ -7700,17 +7585,7 @@ const CD_SLOTS = {
         { ref: 'dm.energy_potenza_ventola_inverter', lbl: 'Potenza ventola inverter (W)' },
         { ref: 'dm.energy_interruttore_ventola_inverter',       lbl: 'Interruttore ventola inverter' },
     ]},
-    clima: { label: '❄️ Clima', slots: [
-        { ref: 'dm.clima_condizionatore_salone',          lbl: 'Condizionatore Salone' },
-        { ref: 'dm.clima_condizionatore_cucina',          lbl: 'Condizionatore Cucina' },
-        { ref: 'dm.clima_condizionatore_camera', lbl: 'Condizionatore Camera' },
-        { ref: 'dm.clima_condizionatore_cameretta',       lbl: 'Condizionatore Cameretta' },
-        { ref: 'dm.clima_termosifone_salone',          lbl: 'Termosifone Salone' },
-        { ref: 'dm.clima_termosifone_cucina',          lbl: 'Termosifone Cucina' },
-        { ref: 'dm.clima_termosifone_bagno',           lbl: 'Termosifone Bagno' },
-        { ref: 'dm.clima_termosifone_camera', lbl: 'Termosifone Camera' },
-        { ref: 'dm.clima_termosifone_cameretta',       lbl: 'Termosifone Cameretta' },
-        { ref: 'dm.clima_termosifone_studio',          lbl: 'Termosifone Studio' },
+    clima: { label: '❄️ Clima (impianto)', slots: [
         { ref: 'dm.clima_interruttore_caldaia',                      lbl: 'Interruttore caldaia' },
         { ref: 'dm.clima_pompa_di_calore',              lbl: 'Pompa di calore' },
         { ref: 'dm.clima_boost_pompa_di_calore',        lbl: 'Boost pompa di calore' },
@@ -7810,7 +7685,7 @@ function editorRenderSezioni() {
             return `<div class="ed-slot">
               <div class="ed-slot-lbl">${sl.lbl}</div>
               <input class="ed-input mono ed-slot-in" list="ed-entity-list" 
-                     data-ref="${sl.ref}" value="${cur}" placeholder="${sl.ref}"
+                     data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_031"
                      onchange="edSetSlot(this)">
             </div>`;
         }).join('');
@@ -7843,6 +7718,27 @@ function editorRenderSezioni() {
           </div>
         </div>
       </details>
+      <details class="ed-acc"><summary class="ed-acc-head">❄️ Unità clima <span class="ed-acc-n">${getClimaUnits().length} unità</span></summary>
+        <div class="ed-acc-body">
+          <div class="ed-list">${getClimaUnits().map((u, i) => `
+            <div class="ed-row">
+              <div style="font-size:16px; flex-shrink:0;">${u.type === 'termo' ? '🔥' : '❄️'}</div>
+              <div class="ed-row-main">
+                <div class="ed-row-new">${u.name} <span style="font-weight:600; color:var(--text-dim); font-size:10px;">(${u.type === 'termo' ? 'termosifone' : 'condizionatore'})</span></div>
+                <div class="ed-row-old mono">${u.entity}</div>
+              </div>
+              <div class="ed-del" onclick="edDelClima(${i})">🗑️</div>
+            </div>`).join('')}</div>
+          <div class="ed-form">
+            <div class="ed-form-row">
+              <select id="ed-cl-type" class="ed-input" style="flex:0 0 46%;"><option value="clima">❄️ Condizionatore</option><option value="termo">🔥 Termosifone</option></select>
+              <input id="ed-cl-name" class="ed-input" placeholder="Nome (es. Studio)" style="flex:1;">
+            </div>
+            <input id="ed-cl-ent" list="ed-entity-list" class="ed-input mono" placeholder="climate.studio">
+            <button class="ed-btn-add" onclick="edAddClima()">＋ Aggiungi unità clima</button>
+          </div>
+        </div>
+      </details>
       <details class="ed-acc"><summary class="ed-acc-head">📹 Telecamere <span class="ed-acc-n">${getCameras().length} camere</span></summary>
         <div class="ed-acc-body">
           <div class="ed-list">${getCameras().map((cam, i) => `
@@ -7863,6 +7759,26 @@ function editorRenderSezioni() {
       </details>`;
 }
 
+
+function edAddClima() {
+    const type = document.getElementById('ed-cl-type').value;
+    const name = (document.getElementById('ed-cl-name').value || '').trim();
+    const ent = (document.getElementById('ed-cl-ent').value || '').trim();
+    if (!name || !ent.includes('.')) { alert('Inserisci nome ed entità climate valida'); return; }
+    const units = getClimaUnits().slice();
+    units.push({ name, entity: ent, type });
+    localStorage.setItem('cd_clima_units', JSON.stringify(units));
+    buildClimaCards();
+    editorSwitch('sezioni');
+    edToast('Unità clima aggiunta');
+}
+function edDelClima(i) {
+    const units = getClimaUnits().slice();
+    units.splice(i, 1);
+    localStorage.setItem('cd_clima_units', JSON.stringify(units));
+    buildClimaCards();
+    editorSwitch('sezioni');
+}
 function edAddCamera() {
     const name = (document.getElementById('ed-cam-name').value || '').trim();
     const ent = (document.getElementById('ed-cam-ent').value || '').trim();
@@ -7946,7 +7862,7 @@ function copyEditUrl() {
     }
 }
 
-/* v254: mostra la pagina Configurazione solo agli admin. */
+/* v254: mostra le card "Editor Plancia" e "Configura Entità" solo agli admin. */
 /* ═══ v256: GESTIONE TEMA (chiaro / scuro / auto) ═══
    Salvato in localStorage 'cd_theme'. 'auto' segue prefers-color-scheme del dispositivo. */
 function getThemePref() { try { return localStorage.getItem('cd_theme') || 'auto'; } catch(e) { return 'auto'; } }
@@ -8521,6 +8437,65 @@ function syncFullscreenExitState() {
 document.addEventListener('fullscreenchange', syncFullscreenExitState);
 document.addEventListener('webkitfullscreenchange', syncFullscreenExitState);
 
+
+/* ═══ v260: UNITÀ CLIMA dinamiche — configurabili da UI (cd_clima_units) ═══ */
+const CD_CLIMA_DEFAULT = [];
+function getClimaUnits() {
+    const w = cdCfg('cd_clima_units');
+    if (Array.isArray(w) && w.length) return w;
+    const C = (window.DASHBOARD_CONFIG || {});
+    if (Array.isArray(C.clima_units) && C.clima_units.length) return C.clima_units;
+    return CD_CLIMA_DEFAULT;
+}
+function buildClimaCards() {
+    const gF = document.getElementById('clima-grid-freddo');
+    const gC = document.getElementById('clima-grid-caldo');
+    if (!gF && !gC) return;
+    const card = (u) => {
+        const htmlId = u.entity.replace(/\./g, '-');
+        const nm = (u.name || '').replace(/'/g, '&#39;');
+        const icon = u.type === 'termo' ? '🔥' : '❄️';
+        return `<div class="cp-card" id="card-${htmlId}" onclick="apriClimaPopup('${u.entity}', event)" style="--cp-rgb: 148, 163, 184;">
+           <div class="cp-header">
+              <div class="cp-title-wrap"><div class="cp-icon">${icon}</div><div class="cp-name">${u.name}</div></div>
+              <div class="cp-badge">SPENTO</div>
+           </div>
+           <div class="cp-body">
+              <div class="cp-temp-target"><span class="lbl">Target</span><span class="val">--°</span></div>
+              <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current">--°</span></div>
+           </div>
+           <div class="cp-controls">
+              <button class="cp-btn" onclick="event.stopPropagation(); setTemp('${u.entity}', 'down')">➖</button>
+              <button class="cp-btn cp-pwr" onclick="event.stopPropagation(); toggleClima('${u.entity}')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
+              <button class="cp-btn" onclick="event.stopPropagation(); setTemp('${u.entity}', 'up')">➕</button>
+           </div>
+        </div>`;
+    };
+    const units = getClimaUnits();
+    if (gF) gF.innerHTML = units.filter(u => u.type !== 'termo').map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1;">Nessun condizionatore configurato</div>';
+    if (gC) gC.innerHTML = units.filter(u => u.type === 'termo').map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1;">Nessun termosifone configurato</div>';
+}
+document.addEventListener('DOMContentLoaded', buildClimaCards);
+
+/* ═══ v260: AUTO-HIDE (build pubblica) — gli elementi le cui entità di sezione
+   non sono state mappate dall'utente vengono nascosti dalla dashboard. ═══ */
+function cdAutoHide() {
+    if (typeof CD_REQUIRE_MAPPING === 'undefined' || !CD_REQUIRE_MAPPING) return;
+    const CARD_SEL = '.cp-card, .lm-kpi-card, .lm-stat-card, .srv-status-card, .qa-btn, .ns-thermal-row, .ev-kpi, .recap-card, .hist-clickable, [data-cd-card]';
+    document.querySelectorAll('[onclick]').forEach(el => {
+        const oc = el.getAttribute('onclick') || '';
+        const refs = oc.match(/dm\.[a-z0-9_]+/g);
+        if (!refs || !refs.length) return;
+        const allUnmapped = refs.every(r => !ENTITY_OVERRIDES[r]);
+        if (allUnmapped) {
+            const card = el.closest(CARD_SEL) || el;
+            card.style.display = 'none';
+        }
+    });
+}
+document.addEventListener('DOMContentLoaded', () => setTimeout(cdAutoHide, 300));
+
+
 /* ═══ v258: TELECAMERE dinamiche — configurabili da UI (cd_cameras) ═══ */
 const CD_CAMERAS_DEFAULT = [];
 function getCameras() {
@@ -8686,7 +8661,7 @@ async function apriMeteo() {
   document.getElementById('weather-modal').classList.add('show');
   const list = document.getElementById('weather-forecast-list');
   list.innerHTML = '<div style="text-align:center; padding: 30px; font-weight:800; color:var(--text-dim);">Caricamento Previsioni...</div>';
-  const entityId = 'dm.core_016'; currentWeatherEntity = entityId;
+  const entityId = 'dm.core_032'; currentWeatherEntity = entityId;
 
   if (ws && ws.readyState === WebSocket.OPEN) {
       const reqId = msgId++;
@@ -8940,7 +8915,7 @@ function render() {
       if (panoramicaView && panoramicaView.classList.contains('active')) {
           edUpdateKpiOnly();
       }
-      const weatherEnt = STATES['dm.core_016'] || STATES['weather.home'] || STATES['dm.home_meteo'] || null;
+      const weatherEnt = STATES['dm.core_032'] || STATES['weather.home'] || STATES['dm.home_meteo'] || null;
       if(weatherEnt) {
         const wLangMap = { 'clear-night': 'Sereno (Notte)', 'cloudy': 'Nuvoloso', 'fog': 'Nebbia', 'hail': 'Grandine', 'lightning': 'Fulmini', 'lightning-rainy': 'Temporale', 'partlycloudy': 'Poco Nuvoloso', 'pouring': 'Acquazzone', 'rainy': 'Pioggia', 'snowy': 'Neve', 'snowy-rainy': 'Nevischio', 'sunny': 'Soleggiato', 'windy': 'Ventoso', 'windy-variant': 'Vento Forte' };
         document.getElementById('w-temp').textContent = (weatherEnt.attributes?.temperature !== undefined ? weatherEnt.attributes.temperature : '--') + '°C';
@@ -9269,7 +9244,7 @@ function render() {
       if(document.getElementById('lavatrice-modal').classList.contains('show')) {
           updateSelectOptions('dm.lavatrice_programma', 'sel-lav-prog'); updateSelectOptions('dm.lavatrice_temperatura', 'sel-lav-temp'); updateSelectOptions('dm.lavatrice_centrifuga', 'sel-lav-cent');
           document.getElementById('v-lav-fase').textContent = getDisplay('dm.lavatrice_fase_corrente'); document.getElementById('v-lav-tempo').textContent = getDisplay('dm.lavatrice_tempo_rimanente');
-          const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('dm.core_015');
+          const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('dm.core_030');
           const mainPwrSwitch = STATES['dm.lavatrice_presa_avvio_lavatrice']; const btnMainPwr = document.getElementById('lav-btn-power'); const txtMainPwr = document.getElementById('lav-txt-power');
           if (btnMainPwr && mainPwrSwitch) { const isOn = mainPwrSwitch.state === 'on'; btnMainPwr.classList.toggle('active', isOn); txtMainPwr.textContent = isOn ? 'ACCESA' : 'SPENTA'; btnMainPwr.querySelector('.icon').textContent = isOn ? '⚡' : '🔌'; if(isOn) { btnMainPwr.style.setProperty('--btn-col', '#0ea5e9'); btnMainPwr.style.setProperty('--btn-bg', '#e0f2fe'); } else { btnMainPwr.style.setProperty('--btn-col', '#64748b'); btnMainPwr.style.setProperty('--btn-bg', '#fff'); } }
           const playSwitch = STATES['dm.lavatrice_avvio_ciclo']; const btnPlay = document.getElementById('lav-txt-play');
@@ -9363,7 +9338,7 @@ function render() {
         }
       })();
 
-      const lights = ['dm.core_006', 'dm.core_003', 'dm.core_002', 'dm.core_005', 'dm.core_004']; lights.forEach(l => { const el = document.getElementById('t-' + l.replace('.', '-')); if(el) el.classList.toggle('on', getRawState(l) === 'on'); });
+      const lights = ['dm.core_021', 'dm.core_018', 'dm.core_017', 'dm.core_020', 'dm.core_019']; lights.forEach(l => { const el = document.getElementById('t-' + l.replace('.', '-')); if(el) el.classList.toggle('on', getRawState(l) === 'on'); });
 
       // CPU gestita sopra
 
@@ -9468,11 +9443,7 @@ function render() {
       
       if(currentPopupType && document.getElementById('details-modal').classList.contains('show') && !currentPopupType.startsWith('subloads_') && currentPopupType !== 'gestione_luci' && currentPopupType !== 'camera_view') { apriDettagli(null, currentPopupType); }
 
-      const climas = [
-          'dm.clima_condizionatore_salone', 'dm.clima_condizionatore_cucina', 'dm.clima_condizionatore_camera', 'dm.clima_condizionatore_cameretta',
-          'dm.clima_termosifone_salone', 'dm.clima_termosifone_bagno', 'dm.clima_termosifone_cucina', 
-          'dm.clima_termosifone_studio', 'dm.clima_termosifone_camera', 'dm.clima_termosifone_cameretta'
-      ];
+      const climas = getClimaUnits().map(u => u.entity);
       
       climas.forEach(id => {
           const s = STATES[id];
@@ -9558,12 +9529,12 @@ function toggleClima(entity) {
 // v241: aggiunto switch FREDDO/CALDO. Stessa lista stanze, lo switch decide se
 //       il tap accende il condizionatore (climate.*) o il termosifone (input_boolean.*)
 const QUICK_STANZE = [
-  { nome: 'Matrimoniale', icona: '🛌', clima: 'dm.clima_condizionatore_camera', term: 'dm.clima_toggle_termosifone_camera' },
-  { nome: 'Cameretta',    icona: '🛏️', clima: 'dm.clima_condizionatore_cameretta',       term: 'dm.clima_toggle_termosifone_cameretta' },
-  { nome: 'Cucina',       icona: '🍽️', clima: 'dm.clima_condizionatore_cucina',          term: 'dm.clima_toggle_cucina' },
-  { nome: 'Salone',       icona: '🛋️', clima: 'dm.clima_condizionatore_salone',          term: null },
-  { nome: 'Bagno',        icona: '🛁', clima: null,                       term: 'dm.clima_toggle_termosifone_bagno' },
-  { nome: 'Studio',       icona: '💼', clima: null,                       term: 'dm.clima_toggle_termosifone_studio' }
+  { nome: 'Matrimoniale', icona: '🛌', clima: 'dm.core_002', term: 'dm.core_014' },
+  { nome: 'Cameretta',    icona: '🛏️', clima: 'dm.core_003',       term: 'dm.core_015' },
+  { nome: 'Cucina',       icona: '🍽️', clima: 'dm.core_004',          term: 'dm.core_012' },
+  { nome: 'Salone',       icona: '🛋️', clima: 'dm.core_005',          term: null },
+  { nome: 'Bagno',        icona: '🛁', clima: null,                       term: 'dm.core_013' },
+  { nome: 'Studio',       icona: '💼', clima: null,                       term: 'dm.core_016' }
 ];
 
 // Modalità corrente del popup: 'freddo' (default) o 'caldo'
@@ -9879,28 +9850,28 @@ const ED_SENSORS_CURR = {
 // Sensori dispositivi mese corrente → usati anche per mesi precedenti via History
 const ED_DEV_SENSORS_CURR = {
     wallbox:      'dm.ev_energia_wallbox_mese',
-    asciugatrice: 'dm.core_007',
-    frigo:        'dm.core_010',
-    lavastoviglie:'dm.core_012',
-    lavatrice:    'dm.core_013',
-    forno:        'dm.core_008',
-    friggitrice:  'dm.core_009',
-    caffe:        'dm.core_011',
-    microonde:    'dm.core_014',
+    asciugatrice: 'dm.core_022',
+    frigo:        'dm.core_025',
+    lavastoviglie:'dm.core_027',
+    lavatrice:    'dm.core_028',
+    forno:        'dm.core_023',
+    friggitrice:  'dm.core_024',
+    caffe:        'dm.core_026',
+    microonde:    'dm.core_029',
     boiler:       'dm.energy_boiler_mese',
 };
 
 const ED_DEVICES = [
     { key:'wallbox',      name:'Wallbox',          icon:'⚡', color:'#06b6d4', sensor:'dm.ev_energia_wallbox_mese',               bg:'rgba(6,182,212,0.1)' },
     { key:'clima',        name:'Condizionatori',   icon:'❄️', color:'#0ea5e9', sensor:'dm.energy_condizionatori_mese',         bg:'rgba(14,165,233,0.1)' },
-    { key:'frigo',        name:'Frigorifero',      icon:'🧊', color:'#1e40af', sensor:'dm.core_010',                 bg:'rgba(30,64,175,0.1)' },
-    { key:'lavastoviglie',name:'Lavastoviglie',    icon:'🍽️', color:'#059669', sensor:'dm.core_012',         bg:'rgba(5,150,105,0.1)' },
-    { key:'friggitrice',  name:'Friggitrice',      icon:'🍟', color:'#ea580c', sensor:'dm.core_009',           bg:'rgba(234,88,12,0.1)' },
-    { key:'caffe',        name:'Macchina Caffè',             icon:'☕', color:'#a16207', sensor:'dm.core_011',                  bg:'rgba(161,98,7,0.1)' },
-    { key:'asciugatrice', name:'Asciugatrice',     icon:'💨', color:'#f59e0b', sensor:'dm.core_007',          bg:'rgba(245,158,11,0.1)' },
-    { key:'lavatrice',    name:'Lavatrice',        icon:'🧺', color:'#7c3aed', sensor:'dm.core_013',             bg:'rgba(124,58,237,0.1)' },
-    { key:'forno',        name:'Forno',            icon:'♨️', color:'#e11d48', sensor:'dm.core_008',                 bg:'rgba(225,29,72,0.1)' },
-    { key:'microonde',    name:'Microonde',        icon:'📡', color:'#8b5cf6', sensor:'dm.core_014',             bg:'rgba(139,92,246,0.1)' },
+    { key:'frigo',        name:'Frigorifero',      icon:'🧊', color:'#1e40af', sensor:'dm.core_025',                 bg:'rgba(30,64,175,0.1)' },
+    { key:'lavastoviglie',name:'Lavastoviglie',    icon:'🍽️', color:'#059669', sensor:'dm.core_027',         bg:'rgba(5,150,105,0.1)' },
+    { key:'friggitrice',  name:'Friggitrice',      icon:'🍟', color:'#ea580c', sensor:'dm.core_024',           bg:'rgba(234,88,12,0.1)' },
+    { key:'caffe',        name:'Macchina Caffè',             icon:'☕', color:'#a16207', sensor:'dm.core_026',                  bg:'rgba(161,98,7,0.1)' },
+    { key:'asciugatrice', name:'Asciugatrice',     icon:'💨', color:'#f59e0b', sensor:'dm.core_022',          bg:'rgba(245,158,11,0.1)' },
+    { key:'lavatrice',    name:'Lavatrice',        icon:'🧺', color:'#7c3aed', sensor:'dm.core_028',             bg:'rgba(124,58,237,0.1)' },
+    { key:'forno',        name:'Forno',            icon:'♨️', color:'#e11d48', sensor:'dm.core_023',                 bg:'rgba(225,29,72,0.1)' },
+    { key:'microonde',    name:'Microonde',        icon:'📡', color:'#8b5cf6', sensor:'dm.core_029',             bg:'rgba(139,92,246,0.1)' },
     { key:'boiler',       name:'Boiler Elettrico', icon:'🔥', color:'#f97316', sensor:'dm.energy_boiler_mese',    bg:'rgba(249,115,22,0.1)' },
 ];
 
@@ -11116,16 +11087,16 @@ function apriClimaPopup(entity, event) {
     const fanMode   = s.attributes?.fan_mode ?? 'auto';
     const hvacMode  = s.attributes?.hvac_mode ?? s.state;
     const names     = {
-        'dm.clima_condizionatore_salone':                    ['❄️ Condizionatore','Salone'],
-        'dm.clima_condizionatore_cucina':                    ['❄️ Condizionatore','Cucina'],
-        'dm.clima_condizionatore_camera':           ['❄️ Condizionatore','Camera da Letto'],
-        'dm.clima_condizionatore_cameretta':                 ['❄️ Condizionatore','Cameretta'],
-        'dm.clima_termosifone_salone':        ['🔥 Termosifone','Salone'],
-        'dm.clima_termosifone_cucina':        ['🔥 Termosifone','Cucina'],
-        'dm.clima_termosifone_camera':['🔥 Termosifone','Camera da Letto'],
-        'dm.clima_termosifone_cameretta':     ['🔥 Termosifone','Cameretta'],
-        'dm.clima_termosifone_bagno':         ['🔥 Termosifone','Bagno'],
-        'dm.clima_termosifone_studio':        ['🔥 Termosifone','Studio'],
+        'dm.core_005':                    ['❄️ Condizionatore','Salone'],
+        'dm.core_004':                    ['❄️ Condizionatore','Cucina'],
+        'dm.core_002':           ['❄️ Condizionatore','Camera da Letto'],
+        'dm.core_003':                 ['❄️ Condizionatore','Cameretta'],
+        'dm.core_010':        ['🔥 Termosifone','Salone'],
+        'dm.core_009':        ['🔥 Termosifone','Cucina'],
+        'dm.core_007':['🔥 Termosifone','Camera da Letto'],
+        'dm.core_008':     ['🔥 Termosifone','Cameretta'],
+        'dm.core_006':         ['🔥 Termosifone','Bagno'],
+        'dm.core_011':        ['🔥 Termosifone','Studio'],
     };
     const [room, name] = names[entity] || ['🌡️ Clima', entity.split('.')[1]];
 

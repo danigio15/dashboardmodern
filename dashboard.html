@@ -6214,7 +6214,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.3.2';
+const DASHBOARD_VERSION = '0.3.3';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6339,7 +6339,7 @@ function cdOnReady(fn) {
                 if (enabled !== false) return;
                 const tab = document.querySelector(`.tab[data-tab="${sec}"]`);
                 const page = document.getElementById('page-' + sec);
-                if (tab) tab.classList.add('cd-section-off');
+                if (tab) tab.remove();   // v262: rimozione fisica — nessun CSS può farlo riapparire
                 if (page) page.remove();
             });
         });
@@ -7344,18 +7344,6 @@ function wzRender() {
             <div style="display:flex; gap:8px; margin-bottom:8px;">
               <input id="wz-st-icon" class="wz-input" style="margin-bottom:0; flex:0 0 64px; text-align:center;" placeholder="🛋️" maxlength="4">
               <input id="wz-st-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome stanza (es. Salone)">
-            </div>
-            <input id="wz-st-temp" class="wz-input mono" list="wz-entity-list" placeholder="sensor.temperatura_salone (temperatura)" style="margin-bottom:8px; font-family:monospace;">
-            <input id="wz-st-hum" class="wz-input mono" list="wz-entity-list" placeholder="sensor.umidita_salone (facoltativo)" style="margin-bottom:8px; font-family:monospace;">
-            <button class="ed-btn-add" style="width:100%;" onclick="wzAddStanza()">＋ Aggiungi stanza</button>
-          </div>
-        </details>` : ''}${WIZ.sections['temp'] !== false ? `
-        <details class="ed-acc"><summary class="ed-acc-head">🌡️ Stanze (temperature) <span class="ed-acc-n">${(WIZ.stanze||[]).length}</span></summary>
-          <div class="ed-acc-body">
-            ${(WIZ.stanze||[]).map((r, i) => `<div class="ed-row"><div style="font-size:15px;">${r.icon||'🏠'}</div><div class="ed-row-main"><div class="ed-row-new">${r.name}</div><div class="ed-row-old mono">${r.temp}</div></div><div class="ed-del" onclick="WIZ.stanze.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
-            <div style="display:flex; gap:8px; margin-bottom:8px;">
-              <input id="wz-st-icon" class="wz-input" style="margin-bottom:0; flex:0 0 64px; text-align:center;" placeholder="🛋️" maxlength="4">
-              <input id="wz-st-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome stanza">
             </div>
             <input id="wz-st-temp" class="wz-input mono" list="wz-entity-list" placeholder="sensor.temperatura_salone (temperatura)" style="margin-bottom:8px; font-family:monospace;">
             <input id="wz-st-hum" class="wz-input mono" list="wz-entity-list" placeholder="sensor.umidita_salone (facoltativo)" style="margin-bottom:8px; font-family:monospace;">

@@ -6214,7 +6214,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.3.3';
+const DASHBOARD_VERSION = '0.3.4';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -7315,7 +7315,9 @@ function wzRender() {
                   <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" list="wz-entity-list"
                          data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_032" onchange="wzSetSlot(this)"></div>`;
             }).join('');
-            return `<details class="ed-acc"><summary class="ed-acc-head">${sec.label} <span class="ed-acc-n">${sec.slots.length}</span></summary><div class="ed-acc-body">${rows}</div></details>`;
+            const evImg = key === 'ev' ? `<div class="ed-slot"><div class="ed-slot-lbl">🖼️ URL immagine auto (es. /local/mia_auto.png)</div>
+                  <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" value="${WIZ.evImage||''}" placeholder="/local/mia_auto.png" onchange="WIZ.evImage = this.value.trim();"></div>` : '';
+            return `<details class="ed-acc"><summary class="ed-acc-head">${sec.label} <span class="ed-acc-n">${sec.slots.length}</span></summary><div class="ed-acc-body">${rows}${evImg}</div></details>`;
         }).join('');
         const dl = '<datalist id="wz-entity-list">' + (WIZ.allEntities||[]).map(e => `<option value="${e}">`).join('') + '</datalist>';
         body = `
@@ -7368,13 +7370,6 @@ function wzRender() {
                      data-ref="switch.caldaia" value="${(WIZ.entities && WIZ.entities['switch.caldaia']) || ENTITY_OVERRIDES['switch.caldaia'] || ''}"
                      placeholder="es. dm.core_035" onchange="wzSetSlot(this)">
             </div>
-          </div>
-        </details>` : ''}${WIZ.sections['ev'] !== false ? `
-        <details class="ed-acc"><summary class="ed-acc-head">🚗 Immagine auto <span class="ed-acc-n">URL</span></summary>
-          <div class="ed-acc-body">
-            <div class="ed-slot"><div class="ed-slot-lbl">URL immagine (es. /local/mia_auto.png — caricala in /config/www/)</div>
-              <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" value="${WIZ.evImage||''}" placeholder="/local/mia_auto.png"
-                     onchange="WIZ.evImage = this.value.trim();"></div>
           </div>
         </details>` : ''}${WIZ.sections['security'] !== false ? `
         <details class="ed-acc"><summary class="ed-acc-head">⚡ Azioni rapide (Home) <span class="ed-acc-n">${getQuickActions().length} azioni</span></summary>
@@ -7767,21 +7762,17 @@ function editorRenderSezioni() {
                      onchange="edSetSlot(this)">
             </div>`;
         }).join('');
+        const evImgEd = key === 'ev' ? `<div class="ed-slot"><div class="ed-slot-lbl">🖼️ URL immagine auto (es. /local/mia_auto.png)</div>
+            <input class="ed-input mono" value="${(function(){ const v = cdCfg('cd_ev_image'); return (typeof v === 'string' ? v : (v && v.url) || ''); })()}" placeholder="/local/mia_auto.png"
+                   onchange="localStorage.setItem('cd_ev_image', JSON.stringify(this.value.trim())); edToast('Immagine salvata — ricarica per applicare');"></div>` : '';
         return `<details class="ed-acc"><summary class="ed-acc-head">${sec.label} <span class="ed-acc-n">${sec.slots.length} entità</span></summary>
-            <div class="ed-acc-body">${rows}</div></details>`;
+            <div class="ed-acc-body">${rows}${evImgEd}</div></details>`;
     }).join('');
 
     return `
       <div class="ed-intro">Configura le entità di ogni sezione con le <b>tue</b> entità HA. Lascia vuoto per usare il riferimento di default (se non esiste nel tuo HA, la card mostra "—").</div>
       ${sezAccordions}
-      <details class="ed-acc"><summary class="ed-acc-head">🚗 Immagine auto (sezione EV) <span class="ed-acc-n">URL</span></summary>
-        <div class="ed-acc-body">
-          <div class="ed-slot"><div class="ed-slot-lbl">URL immagine (es. /local/mia_auto.png oppure https://…)</div>
-            <input class="ed-input mono" value="${(function(){ const v = cdCfg('cd_ev_image'); return (typeof v === 'string' ? v : (v && v.url) || ''); })()}" placeholder="/local/mia_auto.png"
-                   onchange="localStorage.setItem('cd_ev_image', JSON.stringify(this.value.trim())); edToast('Immagine salvata — ricarica per applicare');">
-          </div>
-        </div>
-      </details>
+
       <details class="ed-acc"><summary class="ed-acc-head">🌡️ Stanze (temperature) <span class="ed-acc-n">${stanze.length} stanze</span></summary>
         <div class="ed-acc-body">
           <div class="ed-list">${stanzeRows}</div>
@@ -8648,6 +8639,33 @@ function buildClimaCards() {
     if (gC) gC.innerHTML = units.filter(u => u.type === 'termo').map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1;">Nessun termosifone configurato</div>';
 }
 document.addEventListener('DOMContentLoaded', buildClimaCards);
+
+/* ═══ v263: AUTO-AGGIORNAMENTO — dopo un update HACS la dashboard si ricarica da sola.
+   Al load (e ogni 6h) legge il proprio sorgente dal server con cache disabilitata:
+   se la versione sul disco è diversa da quella in esecuzione, ricarica con ?v=nuova
+   (query diversa = il browser scarica il file fresco). L'URL della plancia non cambia mai. ═══ */
+async function cdCheckUpdate() {
+    try {
+        const resp = await fetch(location.pathname + '?_upd=' + Date.now(), { cache: 'no-store' });
+        if (!resp.ok) return;
+        const src = await resp.text();
+        const m = src.match(/const DASHBOARD_VERSION = '([^']+)'/);
+        if (!m || m[1] === DASHBOARD_VERSION) return;
+        const target = m[1];
+        const params = new URLSearchParams(location.search);
+        if (params.get('v') === target) {
+            // Già ricaricato con la nuova versione ma il browser serve ancora la vecchia: cache ostinata
+            console.warn('[Dashboard] Nuova versione ' + target + ' disponibile ma la cache non si aggiorna. Svuota la cache del browser/app.');
+            return;
+        }
+        console.log('[Dashboard] Aggiornamento ' + DASHBOARD_VERSION + ' → ' + target + ': ricarico…');
+        params.set('v', target);
+        location.replace(location.pathname + '?' + params.toString() + location.hash);
+    } catch(e) {}
+}
+document.addEventListener('DOMContentLoaded', () => setTimeout(cdCheckUpdate, 4000));
+setInterval(cdCheckUpdate, 6 * 3600 * 1000);
+
 
 /* ═══ v260: AUTO-HIDE (build pubblica) — gli elementi le cui entità di sezione
    non sono state mappate dall'utente vengono nascosti dalla dashboard. ═══ */

@@ -2786,14 +2786,14 @@ nav.tabs.bottom-nav-bar .tab.active .text {
 // ================= TITANICO MOTORE DI CALCOLO E HISTORICAL DRILL-DOWN =================
 const RECAP_DEVICES = {
     'wallbox':      { name: 'Wallbox EV',    sensor: 'dm.ev_energia_wallbox_mese',         icon: '🚗', color: '#06b6d4' },
-    'asciugatrice': { name: 'Asciugatrice',  sensor: 'dm.core_022',    icon: '💨', color: '#f59e0b' },
-    'frigo':        { name: 'Frigorifero',   sensor: 'dm.core_025',           icon: '🧊', color: '#1e40af' },
-    'lavastoviglie':{ name: 'Lavastoviglie', sensor: 'dm.core_027',   icon: '🍽️', color: '#10b981' },
-    'lavatrice':    { name: 'Lavatrice',     sensor: 'dm.core_028',       icon: '🧺', color: '#7c3aed' },
-    'forno':        { name: 'Forno',         sensor: 'dm.core_023',           icon: '♨️', color: '#e11d48' },
-    'friggitrice':  { name: 'Friggitrice',   sensor: 'dm.core_024',     icon: '🍟', color: '#ea580c' },
-    'caffe':        { name: 'Macchina Caffè',          sensor: 'dm.core_026',            icon: '☕', color: '#a16207' },
-    'microonde':    { name: 'Microonde',     sensor: 'dm.core_029',       icon: '📡', color: '#8b5cf6' },
+    'asciugatrice': { name: 'Asciugatrice',  sensor: 'dm.core_023',    icon: '💨', color: '#f59e0b' },
+    'frigo':        { name: 'Frigorifero',   sensor: 'dm.core_026',           icon: '🧊', color: '#1e40af' },
+    'lavastoviglie':{ name: 'Lavastoviglie', sensor: 'dm.core_028',   icon: '🍽️', color: '#10b981' },
+    'lavatrice':    { name: 'Lavatrice',     sensor: 'dm.core_029',       icon: '🧺', color: '#7c3aed' },
+    'forno':        { name: 'Forno',         sensor: 'dm.core_024',           icon: '♨️', color: '#e11d48' },
+    'friggitrice':  { name: 'Friggitrice',   sensor: 'dm.core_025',     icon: '🍟', color: '#ea580c' },
+    'caffe':         { name: 'Macchina Caffè',          sensor: 'dm.core_027',            icon: '☕', color: '#a16207' },
+    'microonde':    { name: 'Microonde',     sensor: 'dm.core_030',       icon: '📡', color: '#8b5cf6' },
     'boiler':       { name: 'Boiler',        sensor: 'dm.energy_boiler_mese', icon: '🔥', color: '#f97316' },
 };
 
@@ -4848,28 +4848,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
     </div>
 
     <h3 class="section-title">Azioni Rapide Premium</h3>
-    <div class="quick-actions">
-      <div class="qa-btn" onclick="apriGestioneLuci(true)">
-        <div class="icon" style="filter: drop-shadow(0 6px 12px rgba(245,158,11,0.4)); color: #f59e0b;">💡</div>
-        Gestione Luci
-      </div>
-      <div class="qa-btn" onclick="apriQuickClima()">
-        <div class="icon" style="filter: drop-shadow(0 6px 12px rgba(14,165,233,0.4)); color: #0ea5e9;">❄️</div>
-        Clima
-      </div>
-      <div class="qa-btn" onclick="apriQuickAntifurto()">
-        <div class="icon" style="filter: drop-shadow(0 6px 12px rgba(124,58,237,0.4)); color: #7c3aed;">🛡️</div>
-        Antifurto
-      </div>
-      <div class="qa-btn" onclick="apriPopupLavatrice()">
-        <div class="icon" style="filter: drop-shadow(0 6px 12px rgba(14,165,233,0.4)); color: #0ea5e9;">🧺</div>
-        Lavatrice
-      </div>
-      <div class="qa-btn" onclick="confermaAzione({ icon: '⛩️', title: 'Apri Cancello', message: 'Sei sicuro di voler aprire il cancello?', confirmLabel: 'Sì, apri', cancelLabel: 'Annulla', onConfirm: () => toggle('dm.home_script_apertura_cancello') })">
-        <div class="icon" style="filter: drop-shadow(0 6px 12px rgba(22,163,74,0.4)); color: #16a34a;">⛩️</div>
-        Cancello
-      </div>
-    </div>
+    <div class="quick-actions" id="qa-grid"><!-- v261: azioni generate da getQuickActions() --></div>
   </section>
 
 <section class="page" id="page-energy">
@@ -5105,14 +5084,14 @@ html[data-theme="dark"] header { background: var(--card-glass); }
                 <option value="">— Scegli —</option>
                 <optgroup label="Elettrodomestici">
                   <option value="dm.ev_energia_wallbox_mese">⚡ Wallbox</option>
-                  <option value="dm.core_025">🧊 Frigorifero</option>
-                  <option value="dm.core_027">🍽️ Lavastoviglie</option>
-                  <option value="dm.core_024">🍟 Friggitrice</option>
-                  <option value="dm.core_026">☕ Macchina Caffè</option>
-                  <option value="dm.core_022">💨 Asciugatrice</option>
-                  <option value="dm.core_028">🧺 Lavatrice</option>
-                  <option value="dm.core_023">♨️ Forno</option>
-                  <option value="dm.core_029">📡 Microonde</option>
+                  <option value="dm.core_026">🧊 Frigorifero</option>
+                  <option value="dm.core_028">🍽️ Lavastoviglie</option>
+                  <option value="dm.core_025">🍟 Friggitrice</option>
+                  <option value="dm.core_027">☕ Macchina Caffè</option>
+                  <option value="dm.core_023">💨 Asciugatrice</option>
+                  <option value="dm.core_029">🧺 Lavatrice</option>
+                  <option value="dm.core_024">♨️ Forno</option>
+                  <option value="dm.core_030">📡 Microonde</option>
                   <option value="dm.energy_boiler_mese">🔥 Boiler</option>
                 </optgroup>
                 <optgroup label="Climatizzazione">
@@ -6046,7 +6025,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         <div class="lav-area-mon">
            <div class="lav-mon-card"><div class="lbl">FASE ATTUALE</div><div class="val" id="v-lav-fase" style="color: var(--accent);">—</div></div>
            <div class="lav-mon-card"><div class="lbl">TEMPO RIMANENTE</div><div class="val" id="v-lav-tempo" style="color: var(--load);">—</div></div>
-           <div class="lav-mon-card hist-clickable" onclick="apriStorico(event, 'dm.core_030', 'Consumo Lavatrice')"><div class="lbl">ASSORBIMENTO</div><div class="val" id="v-lav-power-w" style="color: #f59e0b;">—</div></div>
+           <div class="lav-mon-card hist-clickable" onclick="apriStorico(event, 'dm.core_031', 'Consumo Lavatrice')"><div class="lbl">ASSORBIMENTO</div><div class="val" id="v-lav-power-w" style="color: #f59e0b;">—</div></div>
         </div>
 
         <div class="lav-area-manual">
@@ -6234,7 +6213,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.2.3';
+const DASHBOARD_VERSION = '0.3.1';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6247,6 +6226,7 @@ window.CD_BAKED_CONFIG = {
   cd_stanze: [],
   cd_cameras: [],
   cd_clima_units: [],
+  cd_quick_actions: null,
   cd_ev_image: "",
   cd_entity_overrides: {},
   cd_subloads_extra: {},
@@ -7131,7 +7111,7 @@ async function edDownloadHTML() {
     }
 
     // Costruisci il nuovo blocco baked dai localStorage attuali (le personalizzazioni di questo dispositivo)
-    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
+    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
     const merged = {};
     keys.forEach(k => { merged[k] = cdCfg(k); });  // cdCfg = localStorage o baked precedente
     const bakedBlock = '/* CD_BAKED_START */\n'
@@ -7204,7 +7184,7 @@ function edImport() {
 }
 function edResetAll() {
     if (!confirm('Rimuovere TUTTE le personalizzazioni di questo dispositivo?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
     location.reload();
 }
 
@@ -7244,6 +7224,7 @@ function apriSetupWizard() {
         entities: {},
         cameras: getCameras().slice(),
         climaUnits: getClimaUnits().slice(),
+        quickActions: getQuickActions().slice(),
         sectionNames: cdCfg('cd_section_names') || {},
         evImage: (function(){ const v = cdCfg('cd_ev_image'); return (typeof v === 'string' ? v : (v && v.url) || ''); })()
     };
@@ -7321,7 +7302,7 @@ function wzRender() {
                 const cur = (WIZ.entities && WIZ.entities[sl.ref]) || ENTITY_OVERRIDES[sl.ref] || '';
                 return `<div class="ed-slot"><div class="ed-slot-lbl">${sl.lbl}</div>
                   <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" list="wz-entity-list"
-                         data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_031" onchange="wzSetSlot(this)"></div>`;
+                         data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_032" onchange="wzSetSlot(this)"></div>`;
             }).join('');
             return `<details class="ed-acc"><summary class="ed-acc-head">${sec.label} <span class="ed-acc-n">${sec.slots.length}</span></summary><div class="ed-acc-body">${rows}</div></details>`;
         }).join('');
@@ -7330,7 +7311,22 @@ function wzRender() {
         <div class="wz-title">🧩 Collega le tue entità</div>
         <div class="wz-sub">Per ogni voce scrivi la <b>tua</b> entità HA (autocomplete attivo). Puoi saltare questo passo e completarlo dopo da <b>⚙️ Configurazione → Configura Entità → 📑 Sezioni</b>. Le voci vuote mostreranno "—".</div>
         ${dl}
-        <div style="max-height:46vh; overflow-y:auto; margin-bottom:14px;">${acc}${WIZ.sections['clima'] !== false ? `
+        <div style="max-height:46vh; overflow-y:auto; margin-bottom:14px;">${acc}${WIZ.sections['home'] !== false ? `
+        <details class="ed-acc"><summary class="ed-acc-head">⚡ Azioni rapide <span class="ed-acc-n">${(WIZ.quickActions||[]).length}</span></summary>
+          <div class="ed-acc-body">
+            ${(WIZ.quickActions||[]).map((a, i) => `<div class="ed-row"><div style="font-size:15px;">${a.icon||'⚡'}</div><div class="ed-row-main"><div class="ed-row-new">${a.name||a.builtin||'?'}</div><div class="ed-row-old mono">${a.type}</div></div><div class="ed-del" onclick="WIZ.quickActions.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+              <select id="wz-qa-type" class="wz-input" style="margin-bottom:0; flex:0 0 44%;">
+                <option value="builtin_luci">💡 Popup Luci</option><option value="builtin_clima">❄️ Popup Clima</option>
+                <option value="builtin_antifurto">🛡️ Popup Antifurto</option><option value="builtin_lavatrice">🧺 Popup Lavatrice</option>
+                <option value="toggle">🔀 Toggle entità</option><option value="script">📜 Script</option><option value="scene">🎬 Scena</option>
+              </select>
+              <input id="wz-qa-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome">
+            </div>
+            <input id="wz-qa-ent" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_033 (solo per toggle/script/scena)" style="margin-bottom:8px; font-family:monospace;">
+            <button class="ed-btn-add" style="width:100%;" onclick="wzAddQA()">＋ Aggiungi azione</button>
+          </div>
+        </details>` : ''}${WIZ.sections['clima'] !== false ? `
         <details class="ed-acc"><summary class="ed-acc-head">❄️ Unità clima <span class="ed-acc-n">${(WIZ.climaUnits||[]).length}</span></summary>
           <div class="ed-acc-body">
             ${(WIZ.climaUnits||[]).map((u, i) => `<div class="ed-row"><div style="font-size:15px;">${u.type==='termo'?'🔥':'❄️'}</div><div class="ed-row-main"><div class="ed-row-new">${u.name}</div><div class="ed-row-old mono">${u.entity}</div></div><div class="ed-del" onclick="WIZ.climaUnits.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
@@ -7349,24 +7345,36 @@ function wzRender() {
                      onchange="WIZ.evImage = this.value.trim();"></div>
           </div>
         </details>` : ''}${WIZ.sections['security'] !== false ? `
-        <details class="ed-acc"><summary class="ed-acc-head">❄️ Unità clima <span class="ed-acc-n">${getClimaUnits().length} unità</span></summary>
+        <details class="ed-acc"><summary class="ed-acc-head">⚡ Azioni rapide (Home) <span class="ed-acc-n">${getQuickActions().length} azioni</span></summary>
         <div class="ed-acc-body">
-          <div class="ed-list">${getClimaUnits().map((u, i) => `
-            <div class="ed-row">
-              <div style="font-size:16px; flex-shrink:0;">${u.type === 'termo' ? '🔥' : '❄️'}</div>
+          <div class="ed-list">${getQuickActions().map((a, i) => {
+            const b = a.type === 'builtin' ? CD_QA_BUILTINS[a.builtin] : null;
+            return `<div class="ed-row">
+              <div style="font-size:16px; flex-shrink:0;">${a.icon || (b && b.icon) || '⚡'}</div>
               <div class="ed-row-main">
-                <div class="ed-row-new">${u.name} <span style="font-weight:600; color:var(--text-dim); font-size:10px;">(${u.type === 'termo' ? 'termosifone' : 'condizionatore'})</span></div>
-                <div class="ed-row-old mono">${u.entity}</div>
+                <div class="ed-row-new">${a.name || (b && b.name) || '?'}</div>
+                <div class="ed-row-old mono">${a.type === 'builtin' ? 'popup nativo: ' + a.builtin : a.type + ' · ' + (a.entity||'')}</div>
               </div>
-              <div class="ed-del" onclick="edDelClima(${i})">🗑️</div>
-            </div>`).join('')}</div>
+              <div class="ed-del" onclick="edDelQA(${i})">🗑️</div>
+            </div>`;
+          }).join('')}</div>
           <div class="ed-form">
             <div class="ed-form-row">
-              <select id="ed-cl-type" class="ed-input" style="flex:0 0 46%;"><option value="clima">❄️ Condizionatore</option><option value="termo">🔥 Termosifone</option></select>
-              <input id="ed-cl-name" class="ed-input" placeholder="Nome (es. Studio)" style="flex:1;">
+              <select id="ed-qa-type" class="ed-input" style="flex:0 0 40%;">
+                <option value="toggle">🔀 Toggle entità</option>
+                <option value="script">📜 Script</option>
+                <option value="scene">🎬 Scena</option>
+                <option value="builtin_luci">💡 Popup Luci</option>
+                <option value="builtin_clima">❄️ Popup Clima</option>
+                <option value="builtin_antifurto">🛡️ Popup Antifurto</option>
+                <option value="builtin_lavatrice">🧺 Popup Lavatrice</option>
+              </select>
+              <input id="ed-qa-icon" class="ed-input ed-icon-input" placeholder="⚡" maxlength="4">
+              <input id="ed-qa-name" class="ed-input" placeholder="Nome azione" style="flex:1;">
             </div>
-            <input id="ed-cl-ent" list="ed-entity-list" class="ed-input mono" placeholder="climate.studio">
-            <button class="ed-btn-add" onclick="edAddClima()">＋ Aggiungi unità clima</button>
+            <input id="ed-qa-ent" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_033 / dm.core_022 / scene.x (non serve per i popup)">
+            <input id="ed-qa-confirm" class="ed-input" placeholder="Messaggio di conferma (facoltativo, es. Sei sicuro?)">
+            <button class="ed-btn-add" onclick="edAddQA()">＋ Aggiungi azione rapida</button>
           </div>
         </div>
       </details>
@@ -7489,6 +7497,22 @@ function wzLoadAllEntities() {
 
 
 
+
+function wzAddQA() {
+    const tsel = document.getElementById('wz-qa-type').value;
+    const name = (document.getElementById('wz-qa-name').value || '').trim();
+    const ent = (document.getElementById('wz-qa-ent').value || '').trim();
+    if (!WIZ.quickActions) WIZ.quickActions = [];
+    if (tsel.startsWith('builtin_')) {
+        const a = { type: 'builtin', builtin: tsel.replace('builtin_','') };
+        if (name) a.name = name;
+        WIZ.quickActions.push(a);
+    } else {
+        if (!name || !ent.includes('.')) { alert('Inserisci nome ed entità'); return; }
+        WIZ.quickActions.push({ type: tsel, name, entity: ent });
+    }
+    wzRender();
+}
 function wzAddClima() {
     const type = document.getElementById('wz-cl-type').value;
     const name = (document.getElementById('wz-cl-name').value || '').trim();
@@ -7511,7 +7535,7 @@ function wzAddCamera() {
 }
 function wzResetAll() {
     if (!confirm('Cancellare TUTTA la configurazione salvata su questo dispositivo (token, sezioni, luci, entità, stanze, camere, tema)?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
     location.reload();
 }
 function wzFinish() {
@@ -7523,6 +7547,7 @@ function wzFinish() {
     if (Object.keys(WIZ.luci).length) localStorage.setItem('cd_luci', JSON.stringify(WIZ.luci));
     if (WIZ.cameras) localStorage.setItem('cd_cameras', JSON.stringify(WIZ.cameras));
     if (WIZ.climaUnits) localStorage.setItem('cd_clima_units', JSON.stringify(WIZ.climaUnits));
+    if (WIZ.quickActions) localStorage.setItem('cd_quick_actions', JSON.stringify(WIZ.quickActions));
     if (WIZ.evImage !== undefined) localStorage.setItem('cd_ev_image', JSON.stringify(WIZ.evImage || ''));
     if (WIZ.entities && Object.keys(WIZ.entities).length) {
         const cur = cdCfg('cd_entity_overrides');
@@ -7585,7 +7610,7 @@ const CD_SLOTS = {
         { ref: 'dm.energy_potenza_ventola_inverter', lbl: 'Potenza ventola inverter (W)' },
         { ref: 'dm.energy_interruttore_ventola_inverter',       lbl: 'Interruttore ventola inverter' },
     ]},
-    clima: { label: '❄️ Clima (impianto)', slots: [
+    clima: { label: '🔥 Impianto termico (caldaia, pompe…)', slots: [
         { ref: 'dm.clima_interruttore_caldaia',                      lbl: 'Interruttore caldaia' },
         { ref: 'dm.clima_pompa_di_calore',              lbl: 'Pompa di calore' },
         { ref: 'dm.clima_boost_pompa_di_calore',        lbl: 'Boost pompa di calore' },
@@ -7685,7 +7710,7 @@ function editorRenderSezioni() {
             return `<div class="ed-slot">
               <div class="ed-slot-lbl">${sl.lbl}</div>
               <input class="ed-input mono ed-slot-in" list="ed-entity-list" 
-                     data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_031"
+                     data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_032"
                      onchange="edSetSlot(this)">
             </div>`;
         }).join('');
@@ -7760,6 +7785,39 @@ function editorRenderSezioni() {
 }
 
 
+
+function edAddQA() {
+    const tsel = document.getElementById('ed-qa-type').value;
+    const icon = (document.getElementById('ed-qa-icon').value || '').trim();
+    const name = (document.getElementById('ed-qa-name').value || '').trim();
+    const ent = (document.getElementById('ed-qa-ent').value || '').trim();
+    const conf = (document.getElementById('ed-qa-confirm').value || '').trim();
+    const list = getQuickActions().slice();
+    if (tsel.startsWith('builtin_')) {
+        const b = tsel.replace('builtin_','');
+        const a = { type: 'builtin', builtin: b };
+        if (name) a.name = name;
+        if (icon) a.icon = icon;
+        list.push(a);
+    } else {
+        if (!name || !ent.includes('.')) { alert('Inserisci nome ed entità valida'); return; }
+        const a = { type: tsel, name, entity: ent };
+        if (icon) a.icon = icon;
+        if (conf) a.confirm = conf;
+        list.push(a);
+    }
+    localStorage.setItem('cd_quick_actions', JSON.stringify(list));
+    buildQuickActions();
+    editorSwitch('sezioni');
+    edToast('Azione aggiunta');
+}
+function edDelQA(i) {
+    const list = getQuickActions().slice();
+    list.splice(i, 1);
+    localStorage.setItem('cd_quick_actions', JSON.stringify(list));   // [] = nessuna azione, blocco nascosto
+    buildQuickActions();
+    editorSwitch('sezioni');
+}
 function edAddClima() {
     const type = document.getElementById('ed-cl-type').value;
     const name = (document.getElementById('ed-cl-name').value || '').trim();
@@ -8438,6 +8496,60 @@ document.addEventListener('fullscreenchange', syncFullscreenExitState);
 document.addEventListener('webkitfullscreenchange', syncFullscreenExitState);
 
 
+
+/* ═══ v261: AZIONI RAPIDE dinamiche — configurabili da UI (cd_quick_actions) ═══
+   Tipi: builtin (popup nativi), toggle (switch/light), script, scene. */
+const CD_QA_BUILTINS = {
+    luci:      { name: 'Gestione Luci', icon: '💡', color: '#f59e0b', fn: () => apriGestioneLuci(true) },
+    clima:     { name: 'Clima',         icon: '❄️', color: '#0ea5e9', fn: () => apriQuickClima() },
+    antifurto: { name: 'Antifurto',     icon: '🛡️', color: '#7c3aed', fn: () => apriQuickAntifurto() },
+    lavatrice: { name: 'Lavatrice',     icon: '🧺', color: '#0ea5e9', fn: () => apriPopupLavatrice() },
+};
+const CD_QA_DEFAULT = [];
+function getQuickActions() {
+    const w = cdCfg('cd_quick_actions');
+    if (Array.isArray(w)) return w;   // anche [] esplicito = nessuna azione
+    const C = (window.DASHBOARD_CONFIG || {});
+    if (Array.isArray(C.quick_actions)) return C.quick_actions;
+    return CD_QA_DEFAULT;
+}
+function qaRun(i) {
+    const a = getQuickActions()[i];
+    if (!a) return;
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (a.type === 'builtin' && CD_QA_BUILTINS[a.builtin]) { CD_QA_BUILTINS[a.builtin].fn(); return; }
+    const eid = resolveEntity(a.entity || '');
+    if (!eid || !eid.includes('.')) return;
+    const doCall = () => {
+        const domain = a.type === 'script' ? 'script' : a.type === 'scene' ? 'scene' : eid.split('.')[0];
+        const service = a.type === 'script' ? 'turn_on' : a.type === 'scene' ? 'turn_on' : 'toggle';
+        if (ws) ws.send(JSON.stringify({ id: msgId++, type: 'call_service', domain, service, service_data: { entity_id: eid } }));
+    };
+    if (a.confirm) {
+        confermaAzione({ icon: a.icon || '⚡', title: a.name, message: a.confirm, confirmText: 'CONFERMA', onConfirm: doCall });
+    } else doCall();
+}
+function buildQuickActions() {
+    const grid = document.getElementById('qa-grid');
+    if (!grid) return;
+    const actions = getQuickActions();
+    // v261: nessuna azione configurata → l'intero blocco sparisce dalla home
+    const wrap = grid.closest('section') ? grid : grid;
+    if (!actions.length) { grid.style.display = 'none'; const t = grid.previousElementSibling; if (t && /azioni/i.test(t.textContent||'')) t.style.display = 'none'; return; }
+    grid.style.display = '';
+    grid.innerHTML = actions.map((a, i) => {
+        const b = a.type === 'builtin' ? CD_QA_BUILTINS[a.builtin] : null;
+        const name = a.name || (b && b.name) || '?';
+        const icon = a.icon || (b && b.icon) || '⚡';
+        const color = a.color || (b && b.color) || '#0ea5e9';
+        return `<div class="qa-btn" onclick="qaRun(${i})">
+        <div class="icon" style="filter: drop-shadow(0 6px 12px ${color}66); color: ${color};">${icon}</div>
+        ${name}
+      </div>`;
+    }).join('');
+}
+document.addEventListener('DOMContentLoaded', buildQuickActions);
+
 /* ═══ v260: UNITÀ CLIMA dinamiche — configurabili da UI (cd_clima_units) ═══ */
 const CD_CLIMA_DEFAULT = [];
 function getClimaUnits() {
@@ -8661,7 +8773,7 @@ async function apriMeteo() {
   document.getElementById('weather-modal').classList.add('show');
   const list = document.getElementById('weather-forecast-list');
   list.innerHTML = '<div style="text-align:center; padding: 30px; font-weight:800; color:var(--text-dim);">Caricamento Previsioni...</div>';
-  const entityId = 'dm.core_032'; currentWeatherEntity = entityId;
+  const entityId = 'dm.core_034'; currentWeatherEntity = entityId;
 
   if (ws && ws.readyState === WebSocket.OPEN) {
       const reqId = msgId++;
@@ -8915,7 +9027,7 @@ function render() {
       if (panoramicaView && panoramicaView.classList.contains('active')) {
           edUpdateKpiOnly();
       }
-      const weatherEnt = STATES['dm.core_032'] || STATES['weather.home'] || STATES['dm.home_meteo'] || null;
+      const weatherEnt = STATES['dm.core_034'] || STATES['weather.home'] || STATES['dm.home_meteo'] || null;
       if(weatherEnt) {
         const wLangMap = { 'clear-night': 'Sereno (Notte)', 'cloudy': 'Nuvoloso', 'fog': 'Nebbia', 'hail': 'Grandine', 'lightning': 'Fulmini', 'lightning-rainy': 'Temporale', 'partlycloudy': 'Poco Nuvoloso', 'pouring': 'Acquazzone', 'rainy': 'Pioggia', 'snowy': 'Neve', 'snowy-rainy': 'Nevischio', 'sunny': 'Soleggiato', 'windy': 'Ventoso', 'windy-variant': 'Vento Forte' };
         document.getElementById('w-temp').textContent = (weatherEnt.attributes?.temperature !== undefined ? weatherEnt.attributes.temperature : '--') + '°C';
@@ -9244,7 +9356,7 @@ function render() {
       if(document.getElementById('lavatrice-modal').classList.contains('show')) {
           updateSelectOptions('dm.lavatrice_programma', 'sel-lav-prog'); updateSelectOptions('dm.lavatrice_temperatura', 'sel-lav-temp'); updateSelectOptions('dm.lavatrice_centrifuga', 'sel-lav-cent');
           document.getElementById('v-lav-fase').textContent = getDisplay('dm.lavatrice_fase_corrente'); document.getElementById('v-lav-tempo').textContent = getDisplay('dm.lavatrice_tempo_rimanente');
-          const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('dm.core_030');
+          const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('dm.core_031');
           const mainPwrSwitch = STATES['dm.lavatrice_presa_avvio_lavatrice']; const btnMainPwr = document.getElementById('lav-btn-power'); const txtMainPwr = document.getElementById('lav-txt-power');
           if (btnMainPwr && mainPwrSwitch) { const isOn = mainPwrSwitch.state === 'on'; btnMainPwr.classList.toggle('active', isOn); txtMainPwr.textContent = isOn ? 'ACCESA' : 'SPENTA'; btnMainPwr.querySelector('.icon').textContent = isOn ? '⚡' : '🔌'; if(isOn) { btnMainPwr.style.setProperty('--btn-col', '#0ea5e9'); btnMainPwr.style.setProperty('--btn-bg', '#e0f2fe'); } else { btnMainPwr.style.setProperty('--btn-col', '#64748b'); btnMainPwr.style.setProperty('--btn-bg', '#fff'); } }
           const playSwitch = STATES['dm.lavatrice_avvio_ciclo']; const btnPlay = document.getElementById('lav-txt-play');
@@ -9850,28 +9962,28 @@ const ED_SENSORS_CURR = {
 // Sensori dispositivi mese corrente → usati anche per mesi precedenti via History
 const ED_DEV_SENSORS_CURR = {
     wallbox:      'dm.ev_energia_wallbox_mese',
-    asciugatrice: 'dm.core_022',
-    frigo:        'dm.core_025',
-    lavastoviglie:'dm.core_027',
-    lavatrice:    'dm.core_028',
-    forno:        'dm.core_023',
-    friggitrice:  'dm.core_024',
-    caffe:        'dm.core_026',
-    microonde:    'dm.core_029',
+    asciugatrice: 'dm.core_023',
+    frigo:        'dm.core_026',
+    lavastoviglie:'dm.core_028',
+    lavatrice:    'dm.core_029',
+    forno:        'dm.core_024',
+    friggitrice:  'dm.core_025',
+    caffe:         'dm.core_027',
+    microonde:    'dm.core_030',
     boiler:       'dm.energy_boiler_mese',
 };
 
 const ED_DEVICES = [
     { key:'wallbox',      name:'Wallbox',          icon:'⚡', color:'#06b6d4', sensor:'dm.ev_energia_wallbox_mese',               bg:'rgba(6,182,212,0.1)' },
     { key:'clima',        name:'Condizionatori',   icon:'❄️', color:'#0ea5e9', sensor:'dm.energy_condizionatori_mese',         bg:'rgba(14,165,233,0.1)' },
-    { key:'frigo',        name:'Frigorifero',      icon:'🧊', color:'#1e40af', sensor:'dm.core_025',                 bg:'rgba(30,64,175,0.1)' },
-    { key:'lavastoviglie',name:'Lavastoviglie',    icon:'🍽️', color:'#059669', sensor:'dm.core_027',         bg:'rgba(5,150,105,0.1)' },
-    { key:'friggitrice',  name:'Friggitrice',      icon:'🍟', color:'#ea580c', sensor:'dm.core_024',           bg:'rgba(234,88,12,0.1)' },
-    { key:'caffe',        name:'Macchina Caffè',             icon:'☕', color:'#a16207', sensor:'dm.core_026',                  bg:'rgba(161,98,7,0.1)' },
-    { key:'asciugatrice', name:'Asciugatrice',     icon:'💨', color:'#f59e0b', sensor:'dm.core_022',          bg:'rgba(245,158,11,0.1)' },
-    { key:'lavatrice',    name:'Lavatrice',        icon:'🧺', color:'#7c3aed', sensor:'dm.core_028',             bg:'rgba(124,58,237,0.1)' },
-    { key:'forno',        name:'Forno',            icon:'♨️', color:'#e11d48', sensor:'dm.core_023',                 bg:'rgba(225,29,72,0.1)' },
-    { key:'microonde',    name:'Microonde',        icon:'📡', color:'#8b5cf6', sensor:'dm.core_029',             bg:'rgba(139,92,246,0.1)' },
+    { key:'frigo',        name:'Frigorifero',      icon:'🧊', color:'#1e40af', sensor:'dm.core_026',                 bg:'rgba(30,64,175,0.1)' },
+    { key:'lavastoviglie',name:'Lavastoviglie',    icon:'🍽️', color:'#059669', sensor:'dm.core_028',         bg:'rgba(5,150,105,0.1)' },
+    { key:'friggitrice',  name:'Friggitrice',      icon:'🍟', color:'#ea580c', sensor:'dm.core_025',           bg:'rgba(234,88,12,0.1)' },
+    { key:'caffe',         name:'Macchina Caffè',             icon:'☕', color:'#a16207', sensor:'dm.core_027',                  bg:'rgba(161,98,7,0.1)' },
+    { key:'asciugatrice', name:'Asciugatrice',     icon:'💨', color:'#f59e0b', sensor:'dm.core_023',          bg:'rgba(245,158,11,0.1)' },
+    { key:'lavatrice',    name:'Lavatrice',        icon:'🧺', color:'#7c3aed', sensor:'dm.core_029',             bg:'rgba(124,58,237,0.1)' },
+    { key:'forno',        name:'Forno',            icon:'♨️', color:'#e11d48', sensor:'dm.core_024',                 bg:'rgba(225,29,72,0.1)' },
+    { key:'microonde',    name:'Microonde',        icon:'📡', color:'#8b5cf6', sensor:'dm.core_030',             bg:'rgba(139,92,246,0.1)' },
     { key:'boiler',       name:'Boiler Elettrico', icon:'🔥', color:'#f97316', sensor:'dm.energy_boiler_mese',    bg:'rgba(249,115,22,0.1)' },
 ];
 

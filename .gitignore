@@ -1,0 +1,10 @@
+# Config personale: contiene il token HA — MAI committare
+config.js
+casa-dashboard-config.js
+
+# Build
+dist/
+
+# Sistema
+.DS_Store
+Thumbs.db

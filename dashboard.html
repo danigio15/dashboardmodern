@@ -24,24 +24,24 @@ function updateDebug() {
     const panel = document.getElementById('debug-content');
     if (!panel) return;
     const sensors = [
-        ['sensor.minipc_uptime',                   'Uptime (Glances)'],
-        ['sensor.uptime',                          'Uptime (system_monitor)'],
-        ['sensor.minipc_cpu_usage',                'CPU %'],
-        ['sensor.minipc_memory_use',               'RAM MB'],
-        ['sensor.minipc_disk_usage',               'Disco %'],
-        ['sensor.minipc_package_id_0_temperature', 'Temp CPU'],
-        ['sensor.raspberry_current_power',         'Potenza W'],
-        ['binary_sensor.internet',                 'Internet (nome)'],
-        ['binary_sensor.google_com',               'Internet (google_com)'],
-        ['binary_sensor.lavanderia_internet',      'Internet (lavanderia)'],
-        ['binary_sensor.ping_internet',            'Internet (ping)'],
-        ['sensor.solarman_grid_connected_status',  'Inverter'],
-        ['sensor.speedtest_download',               'Download'],
-        ['sensor.speedtest_upload',                'Upload'],
-        ['sensor.leapmotor_battery',               'Batteria EV'],
-        ['sensor.stato_decodificato_evcc',         'EVCC stato'],
-        ['sensor.leapmotor_range',                 'Autonomia'],
-        ['sensor.1p7k_101573_potenza',             'Potenza WB'],
+        ['dm.server_uptime_minipc',                   'Uptime (Glances)'],
+        ['dm.server_uptime_home_assistant',                          'Uptime (system_monitor)'],
+        ['dm.server_cpu',                'CPU %'],
+        ['dm.server_ram',               'RAM MB'],
+        ['dm.server_disco',               'Disco %'],
+        ['dm.server_temperatura_cpu', 'Temp CPU'],
+        ['dm.server_potenza_raspberry_server',         'Potenza W'],
+        ['dm.server_stato_internet',                 'Internet (nome)'],
+        ['dm.server_raggiungibilita_google',               'Internet (google_com)'],
+        ['dm.server_internet_lavanderia',      'Internet (lavanderia)'],
+        ['dm.server_ping_internet',            'Internet (ping)'],
+        ['dm.energy_stato_rete',  'Inverter'],
+        ['dm.server_speedtest_download',               'Download'],
+        ['dm.server_speedtest_upload',                'Upload'],
+        ['dm.ev_batteria_auto',               'Batteria EV'],
+        ['dm.ev_stato_ricarica',         'EVCC stato'],
+        ['dm.ev_autonomia',                 'Autonomia'],
+        ['dm.ev_potenza_wallbox',             'Potenza WB'],
     ];
     let html = '';
     sensors.forEach(([eid, label]) => {
@@ -2785,16 +2785,16 @@ nav.tabs.bottom-nav-bar .tab.active .text {
 }
 // ================= TITANICO MOTORE DI CALCOLO E HISTORICAL DRILL-DOWN =================
 const RECAP_DEVICES = {
-    'wallbox':      { name: 'Wallbox EV',    sensor: 'sensor.energy_mese_wallbox',         icon: '🚗', color: '#06b6d4' },
-    'asciugatrice': { name: 'Asciugatrice',  sensor: 'sensor.energy_mese_asciugatrice',    icon: '💨', color: '#f59e0b' },
-    'frigo':        { name: 'Frigorifero',   sensor: 'sensor.energy_mese_frigo',           icon: '🧊', color: '#1e40af' },
-    'lavastoviglie':{ name: 'Lavastoviglie', sensor: 'sensor.energy_mese_lavastoviglie',   icon: '🍽️', color: '#10b981' },
-    'lavatrice':    { name: 'Lavatrice',     sensor: 'sensor.energy_mese_lavatrice',       icon: '🧺', color: '#7c3aed' },
-    'forno':        { name: 'Forno',         sensor: 'sensor.energy_mese_forno',           icon: '♨️', color: '#e11d48' },
-    'friggitrice':  { name: 'Friggitrice',   sensor: 'sensor.energy_mese_friggitrice',     icon: '🍟', color: '#ea580c' },
-    'frog':         { name: 'Frog',          sensor: 'sensor.energy_mese_frog',            icon: '☕', color: '#a16207' },
-    'microonde':    { name: 'Microonde',     sensor: 'sensor.energy_mese_microonde',       icon: '📡', color: '#8b5cf6' },
-    'boiler':       { name: 'Boiler',        sensor: 'sensor.energy_mese_elettrodomestici_4', icon: '🔥', color: '#f97316' },
+    'wallbox':      { name: 'Wallbox EV',    sensor: 'dm.ev_energia_wallbox_mese',         icon: '🚗', color: '#06b6d4' },
+    'asciugatrice': { name: 'Asciugatrice',  sensor: 'dm.core_007',    icon: '💨', color: '#f59e0b' },
+    'frigo':        { name: 'Frigorifero',   sensor: 'dm.core_010',           icon: '🧊', color: '#1e40af' },
+    'lavastoviglie':{ name: 'Lavastoviglie', sensor: 'dm.core_012',   icon: '🍽️', color: '#10b981' },
+    'lavatrice':    { name: 'Lavatrice',     sensor: 'dm.core_013',       icon: '🧺', color: '#7c3aed' },
+    'forno':        { name: 'Forno',         sensor: 'dm.core_008',           icon: '♨️', color: '#e11d48' },
+    'friggitrice':  { name: 'Friggitrice',   sensor: 'dm.core_009',     icon: '🍟', color: '#ea580c' },
+    'caffe':        { name: 'Macchina Caffè',          sensor: 'dm.core_011',            icon: '☕', color: '#a16207' },
+    'microonde':    { name: 'Microonde',     sensor: 'dm.core_014',       icon: '📡', color: '#8b5cf6' },
+    'boiler':       { name: 'Boiler',        sensor: 'dm.energy_boiler_mese', icon: '🔥', color: '#f97316' },
 };
 
 let recapChartInstance = null;
@@ -2803,10 +2803,10 @@ let activeRecapDeviceKey = null;
 function renderRecapView() {
     if (Object.keys(STATES).length === 0) return;
 
-    const prodMese = parseFloat(getRawState('sensor.sensor_fotovoltaico_mensile')) || 0;
-    const consMese = parseFloat(getRawState('sensor.sensor_carichi_mensile')) || 0;
-    const immessoMese = parseFloat(getRawState('sensor.sensor_grid_venduta_menesile')) || 0;
-    const prelevatoMese = parseFloat(getRawState('sensor.sensor_grid_acquistata_mensile')) || 0;
+    const prodMese = parseFloat(getRawState('dm.energy_produzione_solare_mese')) || 0;
+    const consMese = parseFloat(getRawState('dm.energy_consumo_casa_mese')) || 0;
+    const immessoMese = parseFloat(getRawState('dm.energy_rete_venduta_mese')) || 0;
+    const prelevatoMese = parseFloat(getRawState('dm.energy_rete_acquistata_mese')) || 0;
 
     document.getElementById('rec-global-prod').innerHTML = `${prodMese.toFixed(1)} <small>kWh</small>`;
     document.getElementById('rec-global-cons').innerHTML = `${consMese.toFixed(1)} <small>kWh</small>`;
@@ -2827,8 +2827,8 @@ function renderRecapView() {
     document.getElementById('rec-eco-pagato').textContent = `${spesaTeoricaSenzaFv.toFixed(2)} €`;
     document.getElementById('rec-eco-immesso').textContent = `${immessoMese.toFixed(1)} kWh`;
 
-    updateYoyBadge('sensor.fotovoltaico_anno', 'badge-yoy-prod', 'Produzione');
-    updateYoyBadge('sensor.consumo_casa_anno', 'badge-yoy-cons', 'Consumo');
+    updateYoyBadge('dm.energy_produzione_solare_anno', 'badge-yoy-prod', 'Produzione');
+    updateYoyBadge('dm.energy_consumo_casa_anno', 'badge-yoy-cons', 'Consumo');
 
     const container = document.getElementById('recap-device-list');
     if (!container) return;
@@ -3339,7 +3339,7 @@ async function refreshActiveDeviceTelemetry() {
   .synoptic-stage { height: 400px; border-radius: 18px; }
   .boiler-stats-row { grid-template-columns: repeat(2, 1fr); }
 
-  /* ── EV / LEAPMOTOR ── */
+  /* ── EV / AUTO ── */
   .ev-mod-container { padding: 14px; border-radius: 20px; }
   .ev-stats-grid { gap: 8px; }
   .ev-stat-card { padding: 10px; }
@@ -4181,7 +4181,7 @@ async function refreshActiveDeviceTelemetry() {
   .srv-hero-top { flex-direction: column; align-items: flex-start; gap: 8px; }
   .srv-hero-title { font-size: 20px; }
 }
-/* === LEAPMOTOR POPUP - REDESIGN COERENTE CON DASHBOARD === */
+/* === EV POPUP - REDESIGN COERENTE CON DASHBOARD === */
 .ev-popup-card {
   max-width: 480px;
   width: 100%;
@@ -4807,7 +4807,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
 
     <!-- v245: container per le pillole di stato (caldaia + antifurto, affiancate) -->
     <div class="dashboard-pills-row" id="dashboard-pills-row">
-      <!-- v244: Pillola caldaia accesa (visibile solo se switch.caldaia è ON) -->
+      <!-- v244: Pillola caldaia accesa (visibile solo se dm.clima_interruttore_caldaia è ON) -->
       <div id="caldaia-banner" class="status-pill caldaia-banner" onclick="apriQuickClimaCaldo()">
         <span class="caldaia-banner-icon">🔥</span>
         <span class="caldaia-banner-text">Caldaia accesa</span>
@@ -4865,7 +4865,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         <div class="icon" style="filter: drop-shadow(0 6px 12px rgba(14,165,233,0.4)); color: #0ea5e9;">🧺</div>
         Lavatrice
       </div>
-      <div class="qa-btn" onclick="confermaAzione({ icon: '⛩️', title: 'Apri Cancello', message: 'Sei sicuro di voler aprire il cancello?', confirmLabel: 'Sì, apri', cancelLabel: 'Annulla', onConfirm: () => toggle('script.apri_cancello') })">
+      <div class="qa-btn" onclick="confermaAzione({ icon: '⛩️', title: 'Apri Cancello', message: 'Sei sicuro di voler aprire il cancello?', confirmLabel: 'Sì, apri', cancelLabel: 'Annulla', onConfirm: () => toggle('dm.home_script_apertura_cancello') })">
         <div class="icon" style="filter: drop-shadow(0 6px 12px rgba(22,163,74,0.4)); color: #16a34a;">⛩️</div>
         Cancello
       </div>
@@ -5104,19 +5104,19 @@ html[data-theme="dark"] header { background: var(--card-glass); }
               <select class="ed-dev-select" id="ed-dev-selector" onchange="edCaricaDettaglio()">
                 <option value="">— Scegli —</option>
                 <optgroup label="Elettrodomestici">
-                  <option value="sensor.energy_mese_wallbox">⚡ Wallbox</option>
-                  <option value="sensor.energy_mese_frigo">🧊 Frigorifero</option>
-                  <option value="sensor.energy_mese_lavastoviglie">🍽️ Lavastoviglie</option>
-                  <option value="sensor.energy_mese_friggitrice">🍟 Friggitrice</option>
-                  <option value="sensor.energy_mese_frog">☕ Frog</option>
-                  <option value="sensor.energy_mese_asciugatrice">💨 Asciugatrice</option>
-                  <option value="sensor.energy_mese_lavatrice">🧺 Lavatrice</option>
-                  <option value="sensor.energy_mese_forno">♨️ Forno</option>
-                  <option value="sensor.energy_mese_microonde">📡 Microonde</option>
-                  <option value="sensor.energy_mese_elettrodomestici_4">🔥 Boiler</option>
+                  <option value="dm.ev_energia_wallbox_mese">⚡ Wallbox</option>
+                  <option value="dm.core_010">🧊 Frigorifero</option>
+                  <option value="dm.core_012">🍽️ Lavastoviglie</option>
+                  <option value="dm.core_009">🍟 Friggitrice</option>
+                  <option value="dm.core_011">☕ Macchina Caffè</option>
+                  <option value="dm.core_007">💨 Asciugatrice</option>
+                  <option value="dm.core_013">🧺 Lavatrice</option>
+                  <option value="dm.core_008">♨️ Forno</option>
+                  <option value="dm.core_014">📡 Microonde</option>
+                  <option value="dm.energy_boiler_mese">🔥 Boiler</option>
                 </optgroup>
                 <optgroup label="Climatizzazione">
-                  <option value="sensor.energy_mese_condizionatori">❄️ Condizionatori</option>
+                  <option value="dm.energy_condizionatori_mese">❄️ Condizionatori</option>
                 </optgroup>
               </select>
             </div>
@@ -5229,14 +5229,14 @@ html[data-theme="dark"] header { background: var(--card-glass); }
           <path id="m-line-home-lav" class="flow-line" style="--line-color: #7c3aed" d="M 500 460 Q 650 460 650 840"/>
         </svg>
 
-        <div class="node n-main hist-clickable" id="n-solar" style="left:50%; top:15%; --n-color:#f59e0b; --n-rgb: 245,158,11;" onclick="apriStorico(event, 'sensor.somma_sensori_fotovoltaico', 'Produzione Solare')"><div class="node-label">Solare</div><div class="node-icon">☀️</div><span id="v-solar">—</span></div>
-        <div class="node n-main hist-clickable" id="n-grid" style="left:25%; top:33%; --n-color:#1e40af; --n-rgb: 30,64,175;" onclick="apriStorico(event, 'sensor.solarman_external_ct_l1_power', 'Rete Elettrica')"><div class="node-label">Rete</div><div class="node-icon">⚡</div><span id="v-grid">—</span></div>
-        <div class="node n-main hist-clickable" id="n-battery" style="left:75%; top:33%; --n-color:#15803d; --n-rgb: 21, 128, 61;" onclick="apriStorico(event, 'sensor.solarman_battery_power', 'Potenza Batteria')"><div class="node-label">Batteria</div><div class="node-icon">🔋</div><span id="v-battery">—</span><div id="v-battery-soc" style="font-size:12px; font-weight:800; color:var(--text-dim); margin-top:3px; cursor:pointer; padding:1px 6px; border-radius:8px; transition:background 0.2s;" onclick="event.stopPropagation(); apriStorico(event, 'sensor.solarman_battery_soc', 'Livello Batteria (SOC)')" onmouseover="this.style.background='rgba(5,150,105,0.15)'" onmouseout="this.style.background='transparent'">—</div></div>
-        <div class="node n-home hist-clickable" id="n-home" style="left:50%; top:50%; --n-color:var(--text); --n-rgb: 10,14,23;" onclick="apriStorico(event, 'sensor.solarman_load_l1_power', 'Consumo Casa')"><div class="node-label">Casa</div><div class="node-icon">🏠</div><span id="v-home">—</span></div>
+        <div class="node n-main hist-clickable" id="n-solar" style="left:50%; top:15%; --n-color:#f59e0b; --n-rgb: 245,158,11;" onclick="apriStorico(event, 'dm.energy_potenza_fotovoltaico', 'Produzione Solare')"><div class="node-label">Solare</div><div class="node-icon">☀️</div><span id="v-solar">—</span></div>
+        <div class="node n-main hist-clickable" id="n-grid" style="left:25%; top:33%; --n-color:#1e40af; --n-rgb: 30,64,175;" onclick="apriStorico(event, 'dm.energy_potenza_scambio_rete', 'Rete Elettrica')"><div class="node-label">Rete</div><div class="node-icon">⚡</div><span id="v-grid">—</span></div>
+        <div class="node n-main hist-clickable" id="n-battery" style="left:75%; top:33%; --n-color:#15803d; --n-rgb: 21, 128, 61;" onclick="apriStorico(event, 'dm.energy_potenza_batteria', 'Potenza Batteria')"><div class="node-label">Batteria</div><div class="node-icon">🔋</div><span id="v-battery">—</span><div id="v-battery-soc" style="font-size:12px; font-weight:800; color:var(--text-dim); margin-top:3px; cursor:pointer; padding:1px 6px; border-radius:8px; transition:background 0.2s;" onclick="event.stopPropagation(); apriStorico(event, 'dm.energy_stato_carica_batteria', 'Livello Batteria (SOC)')" onmouseover="this.style.background='rgba(5,150,105,0.15)'" onmouseout="this.style.background='transparent'">—</div></div>
+        <div class="node n-home hist-clickable" id="n-home" style="left:50%; top:50%; --n-color:var(--text); --n-rgb: 10,14,23;" onclick="apriStorico(event, 'dm.energy_potenza_consumo_casa', 'Consumo Casa')"><div class="node-label">Casa</div><div class="node-icon">🏠</div><span id="v-home">—</span></div>
         
-        <div class="node n-load hist-clickable" id="n-boiler" style="left:16%; top:83%; --n-color:#ea580c; --n-rgb: 234,88,12;" onclick="apriStorico(event, 'sensor.boiler_power', 'Consumo Boiler')"><div class="node-label">Boiler</div><div class="node-icon">♨️</div><span id="v-boiler-p">—</span></div>
+        <div class="node n-load hist-clickable" id="n-boiler" style="left:16%; top:83%; --n-color:#ea580c; --n-rgb: 234,88,12;" onclick="apriStorico(event, 'dm.boiler_potenza_resistenza_boiler', 'Consumo Boiler')"><div class="node-label">Boiler</div><div class="node-icon">♨️</div><span id="v-boiler-p">—</span></div>
         <div class="node n-load hist-clickable" id="n-wb" style="left:33%; top:83%; --n-color:#06b6d4; --n-rgb: 6,182,212;" onclick="apriPopup()"><div class="node-label">Wallbox</div><div class="node-icon">🚗</div><span id="v-wb-p">—</span></div>
-        <div class="node n-load hist-clickable" id="n-clima" style="left:50%; top:83%; --n-color:#0ea5e9; --n-rgb: 14,165,233;" onclick="apriStorico(event, 'sensor.potenza_condizionatori', 'Potenza Clima')"><div class="node-label">Clima</div><div class="node-icon">❄️</div><span id="v-clima-p">—</span></div>
+        <div class="node n-load hist-clickable" id="n-clima" style="left:50%; top:83%; --n-color:#0ea5e9; --n-rgb: 14,165,233;" onclick="apriStorico(event, 'dm.energy_potenza_condizionatori', 'Potenza Clima')"><div class="node-label">Clima</div><div class="node-icon">❄️</div><span id="v-clima-p">—</span></div>
         <div class="node n-load hist-clickable" id="n-lav" style="left:67%; top:83%; --n-color:#7c3aed; --n-rgb: 124,58,237;" onclick="apriSubLoads('lavanderia')"><div class="node-label">Lavanderia</div><div class="node-icon">🧺</div><span id="v-lav-p">—</span></div>
         <div class="node n-load hist-clickable" id="n-cuc" style="left:84%; top:83%; --n-color:#e11d48; --n-rgb: 225,29,72;" onclick="apriSubLoads('cucina')"><div class="node-label">Cucina</div><div class="node-icon">🍳</div><span id="v-cuc-p">—</span></div>
       </div>
@@ -5276,7 +5276,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         
         <div class="node n-load" id="n-boiler-day" style="left:16%; top:83%; --n-color:#ea580c; --n-rgb: 234,88,12;"><div class="node-label">Boiler</div><div class="node-icon">♨️</div><span id="v-boiler-day">—</span></div>
         <div class="node n-load" id="n-wb-day" style="left:33%; top:83%; --n-color:#06b6d4; --n-rgb: 6,182,212;"><div class="node-label">Wallbox</div><div class="node-icon">🚗</div><span id="v-wb-day">—</span></div>
-        <div class="node n-load hist-clickable" id="n-clima-day" style="left:50%; top:83%; --n-color:#0ea5e9; --n-rgb: 14,165,233;" onclick="apriStorico(event, 'sensor.energy_oggi_condizionatori', 'Clima Oggi')"><div class="node-label">Clima</div><div class="node-icon">❄️</div><span id="v-clima-day">—</span></div>
+        <div class="node n-load hist-clickable" id="n-clima-day" style="left:50%; top:83%; --n-color:#0ea5e9; --n-rgb: 14,165,233;" onclick="apriStorico(event, 'dm.energy_condizionatori_oggi', 'Clima Oggi')"><div class="node-label">Clima</div><div class="node-icon">❄️</div><span id="v-clima-day">—</span></div>
         <div class="node n-load hist-clickable" id="n-lav-day" style="left:67%; top:83%; --n-color:#7c3aed; --n-rgb: 124,58,237;" onclick="apriSubLoads('lavanderia_day')"><div class="node-label">Lavanderia</div><div class="node-icon">🧺</div><span id="v-lav-day">—</span></div>
         <div class="node n-load hist-clickable" id="n-cuc-day" style="left:84%; top:83%; --n-color:#e11d48; --n-rgb: 225,29,72;" onclick="apriSubLoads('cucina_day')"><div class="node-label">Cucina</div><div class="node-icon">🍳</div><span id="v-cuc-day">—</span></div>
       </div>
@@ -5316,7 +5316,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         
         <div class="node n-load" id="n-boiler-month" style="left:16%; top:83%; --n-color:#ea580c; --n-rgb: 234,88,12;"><div class="node-label">Boiler</div><div class="node-icon">♨️</div><span id="v-boiler-month">—</span></div>
         <div class="node n-load" id="n-wb-month" style="left:33%; top:83%; --n-color:#06b6d4; --n-rgb: 6,182,212;"><div class="node-label">Wallbox</div><div class="node-icon">🚗</div><span id="v-wb-month">—</span></div>
-        <div class="node n-load hist-clickable" id="n-clima-month" style="left:50%; top:83%; --n-color:#0ea5e9; --n-rgb: 14,165,233;" onclick="apriStorico(event, 'sensor.energy_mese_condizionatori', 'Clima Mese')"><div class="node-label">Clima</div><div class="node-icon">❄️</div><span id="v-clima-month">—</span></div>
+        <div class="node n-load hist-clickable" id="n-clima-month" style="left:50%; top:83%; --n-color:#0ea5e9; --n-rgb: 14,165,233;" onclick="apriStorico(event, 'dm.energy_condizionatori_mese', 'Clima Mese')"><div class="node-label">Clima</div><div class="node-icon">❄️</div><span id="v-clima-month">—</span></div>
         <div class="node n-load hist-clickable" id="n-lav-month" style="left:67%; top:83%; --n-color:#7c3aed; --n-rgb: 124,58,237;" onclick="apriSubLoads('lavanderia_month')"><div class="node-label">Lavanderia</div><div class="node-icon">🧺</div><span id="v-lav-month">—</span></div>
         <div class="node n-load hist-clickable" id="n-cuc-month" style="left:84%; top:83%; --n-color:#e11d48; --n-rgb: 225,29,72;" onclick="apriSubLoads('cucina_month')"><div class="node-label">Cucina</div><div class="node-icon">🍳</div><span id="v-cuc-month">—</span></div>
       </div>
@@ -5341,7 +5341,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
       <!-- Card delle 3 temperature -->
       <div class="tmp-grid">
         <!-- INVERTER AC -->
-        <div class="tmp-card" id="tmp-card-ac" onclick="apriStorico(event, 'sensor.solarman_ac_temperature', 'Temperatura Inverter AC')">
+        <div class="tmp-card" id="tmp-card-ac" onclick="apriStorico(event, 'dm.energy_temperatura_ac_inverter', 'Temperatura Inverter AC')">
           <div class="tmp-card-icon">🔥</div>
           <div class="tmp-card-label">Inverter AC</div>
           <div class="tmp-gauge">
@@ -5357,7 +5357,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         </div>
 
         <!-- INVERTER DC -->
-        <div class="tmp-card" id="tmp-card-dc" onclick="apriStorico(event, 'sensor.solarman_dc_temperature', 'Temperatura Inverter DC')">
+        <div class="tmp-card" id="tmp-card-dc" onclick="apriStorico(event, 'dm.energy_temperatura_dc_inverter', 'Temperatura Inverter DC')">
           <div class="tmp-card-icon">⚡</div>
           <div class="tmp-card-label">Inverter DC</div>
           <div class="tmp-gauge">
@@ -5373,7 +5373,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         </div>
 
         <!-- BATTERIA -->
-        <div class="tmp-card" id="tmp-card-bat" onclick="apriStorico(event, 'sensor.solarman_battery_temperature', 'Temperatura Batteria')">
+        <div class="tmp-card" id="tmp-card-bat" onclick="apriStorico(event, 'dm.energy_temperatura_batteria', 'Temperatura Batteria')">
           <div class="tmp-card-icon">🔋</div>
           <div class="tmp-card-label">Batteria</div>
           <div class="tmp-gauge">
@@ -5463,17 +5463,17 @@ html[data-theme="dark"] header { background: var(--card-glass); }
 
     <!-- ── KPI principali: Autonomia · Potenza · Stato ── -->
     <div class="lm-kpi-row">
-      <div class="lm-kpi-card" style="--kc-rgb:16,185,129;" onclick="apriStorico(event,'sensor.leapmotor_range','Autonomia')">
+      <div class="lm-kpi-card" style="--kc-rgb:16,185,129;" onclick="apriStorico(event,'dm.ev_autonomia','Autonomia')">
         <span class="lm-kpi-icon">🧭</span>
         <span class="lm-kpi-val v-ev-range">—</span>
         <span class="lm-kpi-lbl">Autonomia</span>
       </div>
-      <div class="lm-kpi-card" style="--kc-rgb:6,182,212;" onclick="apriStorico(event,'sensor.1p7k_101573_potenza','Potenza Wallbox')">
+      <div class="lm-kpi-card" style="--kc-rgb:6,182,212;" onclick="apriStorico(event,'dm.ev_potenza_wallbox','Potenza Wallbox')">
         <span class="lm-kpi-icon">⚡</span>
         <span class="lm-kpi-val v-ev-pow">—</span>
         <span class="lm-kpi-lbl">Potenza WB</span>
       </div>
-      <div class="lm-kpi-card" style="--kc-rgb:245,158,11;" onclick="apriStorico(event,'sensor.evcc_lektrico_charged_energy','Energia Sessione')">
+      <div class="lm-kpi-card" style="--kc-rgb:245,158,11;" onclick="apriStorico(event,'dm.ev_energia_sessione','Energia Sessione')">
         <span class="lm-kpi-icon">📈</span>
         <span class="lm-kpi-val v-ev-energy-all">—</span>
         <span class="lm-kpi-lbl">Sessione</span>
@@ -5504,23 +5504,23 @@ html[data-theme="dark"] header { background: var(--card-glass); }
 
     <!-- ── Stats dettaglio ── -->
     <div class="lm-stats-grid">
-      <div class="lm-stat-card hist-clickable" onclick="apriStorico(event,'sensor.1p7k_101573_tensione','Tensione Wallbox')">
+      <div class="lm-stat-card hist-clickable" onclick="apriStorico(event,'dm.ev_tensione_wallbox','Tensione Wallbox')">
         <div class="lm-stat-icon">🔌</div>
         <div class="lm-stat-info"><span class="lm-stat-lbl">Tensione WB</span><span class="lm-stat-val v-ev-volt">—</span></div>
       </div>
-      <div class="lm-stat-card hist-clickable" onclick="apriStorico(event,'sensor.km_percorsi_dall_ultima_ricarica','Km da Ultima Ricarica')">
+      <div class="lm-stat-card hist-clickable" onclick="apriStorico(event,'dm.ev_km_dall_ultima_ricarica','Km da Ultima Ricarica')">
         <div class="lm-stat-icon">🔄</div>
         <div class="lm-stat-info"><span class="lm-stat-lbl">Da Ultima Ric.</span><span class="lm-stat-val v-ev-km-ric">—</span></div>
       </div>
-      <div class="lm-stat-card hist-clickable" onclick="apriStorico(event,'sensor.leapmotor_odometer','Odometro')">
+      <div class="lm-stat-card hist-clickable" onclick="apriStorico(event,'dm.ev_odometro','Odometro')">
         <div class="lm-stat-icon">🛣️</div>
         <div class="lm-stat-info"><span class="lm-stat-lbl">Odometro</span><span class="lm-stat-val v-ev-odo">—</span></div>
       </div>
-      <div class="lm-stat-card hist-clickable" onclick="apriStorico(event,'sensor.leapmotor_b10_prelievo_totale_ac_2','Prelievo AC')">
+      <div class="lm-stat-card hist-clickable" onclick="apriStorico(event,'dm.ev_prelievo_ac_totale_auto','Prelievo AC')">
         <div class="lm-stat-icon">🔋</div>
         <div class="lm-stat-info"><span class="lm-stat-lbl">Prelievo AC Tot.</span><span class="lm-stat-val v-ev-ac-tot">—</span></div>
       </div>
-      <div class="lm-stat-card hist-clickable" onclick="apriStorico(event,'sensor.1p7k_101573_temperatura','Temp. Wallbox')">
+      <div class="lm-stat-card hist-clickable" onclick="apriStorico(event,'dm.ev_temperatura_wallbox','Temp. Wallbox')">
         <div class="lm-stat-icon">🌡️</div>
         <div class="lm-stat-info"><span class="lm-stat-lbl">Temp. Wallbox</span><span class="lm-stat-val v-ev-temp-wb">—</span></div>
       </div>
@@ -5537,7 +5537,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         <div class="lm-target-lbl">Target Ricarica (SoC)</div>
         <div class="lm-target-val v-auto-limite">—</div>
       </div>
-      <select id="sel-target-soc" class="lm-target-select" onchange="changeSelect('input_select.target_soc_auto', this.value)"></select>
+      <select id="sel-target-soc" class="lm-target-select" onchange="changeSelect('input_dm.ev_target_soc', this.value)"></select>
     </div>
 
     <!-- ── Modalità EVCC ── -->
@@ -5593,13 +5593,13 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         </svg>
 
         <div class="syn-node-boiler" style="left: 25%; top: 50%;">
-          <div class="syn-solar-panel" onclick="toggle('switch.pompa_solare_termico_man')">
+          <div class="syn-solar-panel" onclick="toggle('dm.boiler_pompa_solare')">
             <div class="syn-solar-grid"></div>
             <div class="syn-solar-glass"></div>
             <div class="syn-solar-content">
               <div class="sun-icon" id="syn-sun">☀️</div>
               <div class="syn-lbl">Pannello Solare</div>
-              <div class="syn-val hist-clickable" id="syn-v-pannello" style="color:#f59e0b;" onclick="apriStorico(event, 'sensor.sonoff_1001dbde79_temperature', 'Temperatura Pannello')">--</div>
+              <div class="syn-val hist-clickable" id="syn-v-pannello" style="color:#f59e0b;" onclick="apriStorico(event, 'dm.boiler_sonda_temperatura_1', 'Temperatura Pannello')">--</div>
             </div>
           </div>
         </div>
@@ -5619,17 +5619,17 @@ html[data-theme="dark"] header { background: var(--card-glass); }
             <div class="tank-glass"></div>
             <div class="tank-water"></div>
             <div class="tank-probes">
-              <div class="probe hist-clickable" onclick="apriStorico(event, 'sensor.sonoff_10021230f6_temperature', 'Temp. Boiler Alto')">
+              <div class="probe hist-clickable" onclick="apriStorico(event, 'dm.boiler_sonda_temperatura_3', 'Temp. Boiler Alto')">
                 <span class="probe-val" id="syn-v-balto">--</span>
               </div>
-              <div class="probe hist-clickable" onclick="apriStorico(event, 'sensor.sonoff_1001e22ebd_temperature', 'Temp. Boiler Basso')">
+              <div class="probe hist-clickable" onclick="apriStorico(event, 'dm.boiler_sonda_temperatura_2', 'Temp. Boiler Basso')">
                 <span class="probe-val" id="syn-v-bbasso">--</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="syn-pump" id="syn-p-solare" style="left: 50%; top: 85%;" onclick="toggle('switch.pompa_solare_termico_man')">
+        <div class="syn-pump" id="syn-p-solare" style="left: 50%; top: 85%;" onclick="toggle('dm.boiler_pompa_solare')">
         </div>
         <div class="syn-valve" id="syn-v-chiave" style="left: 50%; top: 21.5%;" onclick="toggle('valve.chiave_solare_termico')">
           <div class="icon valve-indicator" id="valve-indicator">
@@ -5646,35 +5646,35 @@ html[data-theme="dark"] header { background: var(--card-glass); }
           </div>
           <span id="txt-chiave" style="display:none">CHIUSA</span>
         </div>
-        <div class="syn-pump" id="syn-p-ricircolo" style="left: 88%; top: 50%;" onclick="toggle('switch.pompa_di_ricircolo')">
+        <div class="syn-pump" id="syn-p-ricircolo" style="left: 88%; top: 50%;" onclick="toggle('dm.clima_pompa_di_ricircolo')">
         </div>
       </div>
       
       <div class="boiler-stats-row">
-         <div class="b-stat-card hist-clickable" onclick="apriStorico(event, 'sensor.delta_solare_termico_boiler', 'Delta Termico')">
+         <div class="b-stat-card hist-clickable" onclick="apriStorico(event, 'dm.boiler_delta_temperatura', 'Delta Termico')">
             <div class="lbl" style="color:#059669;">ΔT Solare</div>
             <div class="val" id="syn-v-delta">--</div>
          </div>
-         <div class="b-stat-card hist-clickable" onclick="apriStorico(event, 'sensor.pressione_acqua', 'Pressione Impianto')">
+         <div class="b-stat-card hist-clickable" onclick="apriStorico(event, 'dm.boiler_pressione_acqua', 'Pressione Impianto')">
             <div class="lbl" style="color:#0284c7;">Pressione</div>
             <div class="val" id="syn-v-press">--</div>
          </div>
-         <div class="b-stat-card hist-clickable" onclick="apriStorico(event, 'sensor.boiler_power', 'Potenza Elettrica')">
+         <div class="b-stat-card hist-clickable" onclick="apriStorico(event, 'dm.boiler_potenza_resistenza_boiler', 'Potenza Elettrica')">
             <div class="lbl" style="color:#ea580c;">Potenza Boiler</div>
             <div class="val" id="syn-v-power">--</div>
          </div>
       </div>
 
       <div class="b-controls-grid">
-        <div class="b-btn" id="b-c-pompasol" onclick="toggle('switch.pompa_solare_termico_man')" style="--c-rgb: 234,88,12;"><div class="icon"><span class="spin-active">🔄</span></div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-ricircolo" onclick="toggle('switch.pompa_di_ricircolo')" style="--c-rgb: 124,58,237;"><div class="icon"><span class="spin-active">🔁</span></div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-centralina" onclick="toggle('switch.centralina_solare_termico')" style="--c-rgb: 245,158,11;"><div class="icon">⚙️</div><div class="lbl">Centralina</div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-solare" onclick="toggle('switch.solare_termico')" style="--c-rgb: 245,158,11;"><div class="icon">♨️</div><div class="lbl">Ctrl Solare</div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-pompasol" onclick="toggle('dm.boiler_pompa_solare')" style="--c-rgb: 234,88,12;"><div class="icon"><span class="spin-active">🔄</span></div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-ricircolo" onclick="toggle('dm.clima_pompa_di_ricircolo')" style="--c-rgb: 124,58,237;"><div class="icon"><span class="spin-active">🔁</span></div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-centralina" onclick="toggle('dm.boiler_centralina_solare_termico')" style="--c-rgb: 245,158,11;"><div class="icon">⚙️</div><div class="lbl">Centralina</div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-solare" onclick="toggle('dm.boiler_interruttore_solare_termico')" style="--c-rgb: 245,158,11;"><div class="icon">♨️</div><div class="lbl">Ctrl Solare</div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-valvola" onclick="toggle('valve.chiave_solare_termico')" style="--c-rgb: 6,182,212;"><div class="icon">🎛️</div><div class="lbl">Valvola</div><div class="state">CHIUSA</div></div>
-        <div class="b-btn" id="b-c-boiler" onclick="toggle('switch.boiler')" style="--c-rgb: 30,64,175;"><div class="icon">🌊</div><div class="lbl">Boiler</div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-pdc" onclick="toggle('switch.pompa_di_calore')" style="--c-rgb: 124,58,237;"><div class="icon">🌬️</div><div class="lbl">PdC</div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-boost" onclick="toggle('switch.boost_pompa_di_calore')" style="--c-rgb: 236,72,153;"><div class="icon">🚀</div><div class="lbl">Boost</div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-sicurezza" onclick="toggle('cover.valvola_di_sicurezza')" style="--c-rgb: 225,29,72;"><div class="icon"><span class="blink-active">🔒</span></div><div class="lbl">V. Sicurezza</div><div class="state">CHIUSA</div></div>
+        <div class="b-btn" id="b-c-boiler" onclick="toggle('dm.boiler_interruttore_boiler')" style="--c-rgb: 30,64,175;"><div class="icon">🌊</div><div class="lbl">Boiler</div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-pdc" onclick="toggle('dm.clima_pompa_di_calore')" style="--c-rgb: 124,58,237;"><div class="icon">🌬️</div><div class="lbl">PdC</div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-boost" onclick="toggle('dm.clima_boost_pompa_di_calore')" style="--c-rgb: 236,72,153;"><div class="icon">🚀</div><div class="lbl">Boost</div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-sicurezza" onclick="toggle('dm.boiler_valvola_di_sicurezza')" style="--c-rgb: 225,29,72;"><div class="icon"><span class="blink-active">🔒</span></div><div class="lbl">V. Sicurezza</div><div class="state">CHIUSA</div></div>
       </div>
     </div>
   </section>
@@ -5741,24 +5741,24 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         <div class="srv-hero-pill"><span class="srv-hero-dot"></span><span id="v-srv-net-status">ONLINE</span></div>
       </div>
       <div class="srv-hero-metrics">
-        <div class="srv-metric" style="--m-rgb: 6, 182, 212;" onclick="apriStorico(event,'sensor.minipc_cpu_usage','CPU')">
+        <div class="srv-metric" style="--m-rgb: 6, 182, 212;" onclick="apriStorico(event,'dm.server_cpu','CPU')">
           <div class="srv-metric-top"><span class="srv-metric-lbl">CPU</span><span class="srv-metric-icon">🎛️</span></div>
           <div><span class="srv-metric-val" id="v-srv-cpu">—</span><span class="srv-metric-unit">%</span></div>
           <div class="srv-metric-bar"><div class="srv-metric-fill" id="srv-fill-cpu" style="width:0%;background:#06b6d4;"></div></div>
         </div>
-        <div class="srv-metric" style="--m-rgb: 124, 58, 237;" onclick="apriStorico(event,'sensor.minipc_memory_use','RAM')">
+        <div class="srv-metric" style="--m-rgb: 124, 58, 237;" onclick="apriStorico(event,'dm.server_ram','RAM')">
           <div class="srv-metric-top"><span class="srv-metric-lbl">RAM</span><span class="srv-metric-icon">💾</span></div>
           <div><span class="srv-metric-val" id="v-srv-ram">—</span><span class="srv-metric-unit">%</span></div>
           <div class="srv-metric-bar"><div class="srv-metric-fill" id="srv-fill-ram" style="width:0%;background:#7c3aed;"></div></div>
         </div>
-        <div class="srv-metric" style="--m-rgb: 16, 185, 129;" onclick="apriStorico(event,'sensor.minipc_disk_usage','Disco')">
+        <div class="srv-metric" style="--m-rgb: 16, 185, 129;" onclick="apriStorico(event,'dm.server_disco','Disco')">
           <div class="srv-metric-top"><span class="srv-metric-lbl">Disco</span><span class="srv-metric-icon">💽</span></div>
           <div><span class="srv-metric-val" id="v-srv-disk">—</span><span class="srv-metric-unit">%</span></div>
           <div class="srv-metric-bar"><div class="srv-metric-fill" id="srv-fill-disk" style="width:0%;background:#10b981;"></div></div>
         </div>
       </div>
     </div>
-    <div class="srv-temp-card" onclick="apriStorico(event,'sensor.minipc_package_id_0_temperature','Temperatura CPU')">
+    <div class="srv-temp-card" onclick="apriStorico(event,'dm.server_temperatura_cpu','Temperatura CPU')">
       <div class="srv-temp-ring">
         <svg viewBox="0 0 90 90" width="90" height="90">
           <circle cx="45" cy="45" r="36" fill="none" stroke="#f1f5f9" stroke-width="7"/>
@@ -5776,22 +5776,22 @@ html[data-theme="dark"] header { background: var(--card-glass); }
       </div>
     </div>
     <div class="srv-tel-grid">
-      <div class="srv-tel-card" style="--tc-rgb:239,68,68;" onclick="apriStorico(event,'sensor.raspberry_current_power','Potenza')">
+      <div class="srv-tel-card" style="--tc-rgb:239,68,68;" onclick="apriStorico(event,'dm.server_potenza_raspberry_server','Potenza')">
         <div class="srv-tel-top"><span class="srv-tel-lbl">Alimentazione</span><div class="srv-tel-icon">⚡</div></div>
         <div class="srv-tel-val" id="v-srv-pwr">—</div>
         <div class="srv-tel-sub">Consumo istantaneo</div>
       </div>
-      <div class="srv-tel-card" style="--tc-rgb:99,102,241;" onclick="apriStorico(event,'sensor.uptime','Uptime')">
+      <div class="srv-tel-card" style="--tc-rgb:99,102,241;" onclick="apriStorico(event,'dm.server_uptime_home_assistant','Uptime')">
         <div class="srv-tel-top"><span class="srv-tel-lbl">Uptime</span><div class="srv-tel-icon">🕐</div></div>
         <div class="srv-tel-val" id="v-srv-uptime">—</div>
         <div class="srv-tel-sub" id="v-srv-uptime-sub">Dall'ultimo riavvio</div>
       </div>
-      <div class="srv-tel-card" style="--tc-rgb:16,185,129;" onclick="apriStorico(event,'sensor.speedtest_download','Download')">
+      <div class="srv-tel-card" style="--tc-rgb:16,185,129;" onclick="apriStorico(event,'dm.server_speedtest_download','Download')">
         <div class="srv-tel-top"><span class="srv-tel-lbl">Download</span><div class="srv-tel-icon">⬇️</div></div>
         <div class="srv-tel-val" id="v-srv-dl">—</div>
         <div class="srv-tel-sub">Speedtest downlink</div>
       </div>
-      <div class="srv-tel-card" style="--tc-rgb:124,58,237;" onclick="apriStorico(event,'sensor.speedtest_upload','Upload')">
+      <div class="srv-tel-card" style="--tc-rgb:124,58,237;" onclick="apriStorico(event,'dm.server_speedtest_upload','Upload')">
         <div class="srv-tel-top"><span class="srv-tel-lbl">Upload</span><div class="srv-tel-icon">⬆️</div></div>
         <div class="srv-tel-val" id="v-srv-ul">—</div>
         <div class="srv-tel-sub">Speedtest uplink</div>
@@ -5803,7 +5803,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         <div class="srv-status-badge online" id="waw-net-badge"><div class="srv-status-indicator"></div><span id="v-srv-net-status2">ONLINE</span></div>
       </div>
       <div class="srv-status-card" onclick="apriSrvHistory('inverter')">
-        <div class="srv-status-left"><span class="srv-status-lbl">Inverter Solarman</span><span class="srv-status-val" id="v-srv-inv-text">—</span></div>
+        <div class="srv-status-left"><span class="srv-status-lbl">Inverter Fotovoltaico</span><span class="srv-status-val" id="v-srv-inv-text">—</span></div>
         <div class="srv-status-badge" id="waw-inv-badge"><div class="srv-status-indicator"></div><span id="v-srv-inv-status">—</span></div>
       </div>
       <!-- v256: le card Editor Plancia e Configura Entità sono state spostate nella pagina Configurazione -->
@@ -5889,7 +5889,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
       <div class="clima-zone clima-zone-freddo show">
       <div class="clima-premium-grid">
         
-        <div class="cp-card" id="card-climate-salone" onclick="apriClimaPopup('climate.salone', event)" style="--cp-rgb: 148, 163, 184;">
+        <div class="cp-card" id="card-climate-salone" onclick="apriClimaPopup('dm.clima_condizionatore_salone', event)" style="--cp-rgb: 148, 163, 184;">
            <div class="cp-header">
               <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-salone">❄️</div><div class="cp-name">Salone</div></div>
               <div class="cp-badge" id="badge-climate-salone">SPENTO</div>
@@ -5899,13 +5899,13 @@ html[data-theme="dark"] header { background: var(--card-glass); }
               <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-salone">--°</span></div>
            </div>
            <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('climate.salone', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-salone" onclick="toggleClima('climate.salone')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('climate.salone', 'up')">➕</button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_salone', 'down')">➖</button>
+              <button class="cp-btn cp-pwr" id="btn-climate-salone" onclick="toggleClima('dm.clima_condizionatore_salone')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_salone', 'up')">➕</button>
            </div>
         </div>
 
-        <div class="cp-card" id="card-climate-cucina" onclick="apriClimaPopup('climate.cucina', event)" style="--cp-rgb: 148, 163, 184;">
+        <div class="cp-card" id="card-climate-cucina" onclick="apriClimaPopup('dm.clima_condizionatore_cucina', event)" style="--cp-rgb: 148, 163, 184;">
            <div class="cp-header">
               <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-cucina">❄️</div><div class="cp-name">Cucina</div></div>
               <div class="cp-badge" id="badge-climate-cucina">SPENTO</div>
@@ -5915,13 +5915,13 @@ html[data-theme="dark"] header { background: var(--card-glass); }
               <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-cucina">--°</span></div>
            </div>
            <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('climate.cucina', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-cucina" onclick="toggleClima('climate.cucina')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('climate.cucina', 'up')">➕</button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_cucina', 'down')">➖</button>
+              <button class="cp-btn cp-pwr" id="btn-climate-cucina" onclick="toggleClima('dm.clima_condizionatore_cucina')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_cucina', 'up')">➕</button>
            </div>
         </div>
 
-        <div class="cp-card" id="card-climate-camera_da_letto" onclick="apriClimaPopup('climate.camera_da_letto', event)" style="--cp-rgb: 148, 163, 184;">
+        <div class="cp-card" id="card-climate-camera_da_letto" onclick="apriClimaPopup('dm.clima_condizionatore_camera', event)" style="--cp-rgb: 148, 163, 184;">
            <div class="cp-header">
               <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-camera_da_letto">❄️</div><div class="cp-name">Matrimoniale</div></div>
               <div class="cp-badge" id="badge-climate-camera_da_letto">SPENTO</div>
@@ -5931,13 +5931,13 @@ html[data-theme="dark"] header { background: var(--card-glass); }
               <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-camera_da_letto">--°</span></div>
            </div>
            <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('climate.camera_da_letto', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-camera_da_letto" onclick="toggleClima('climate.camera_da_letto')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('climate.camera_da_letto', 'up')">➕</button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_camera', 'down')">➖</button>
+              <button class="cp-btn cp-pwr" id="btn-climate-camera_da_letto" onclick="toggleClima('dm.clima_condizionatore_camera')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_camera', 'up')">➕</button>
            </div>
         </div>
 
-        <div class="cp-card" id="card-climate-cameretta" onclick="apriClimaPopup('climate.cameretta', event)" style="--cp-rgb: 148, 163, 184;">
+        <div class="cp-card" id="card-climate-cameretta" onclick="apriClimaPopup('dm.clima_condizionatore_cameretta', event)" style="--cp-rgb: 148, 163, 184;">
            <div class="cp-header">
               <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-cameretta">❄️</div><div class="cp-name">Cameretta</div></div>
               <div class="cp-badge" id="badge-climate-cameretta">SPENTO</div>
@@ -5947,9 +5947,9 @@ html[data-theme="dark"] header { background: var(--card-glass); }
               <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-cameretta">--°</span></div>
            </div>
            <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('climate.cameretta', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-cameretta" onclick="toggleClima('climate.cameretta')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('climate.cameretta', 'up')">➕</button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_cameretta', 'down')">➖</button>
+              <button class="cp-btn cp-pwr" id="btn-climate-cameretta" onclick="toggleClima('dm.clima_condizionatore_cameretta')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_condizionatore_cameretta', 'up')">➕</button>
            </div>
         </div>
 
@@ -5961,7 +5961,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
       <div class="clima-zone clima-zone-caldo">
       <div class="clima-premium-grid">
         
-        <div class="cp-card" id="card-climate-termosifone_salone" onclick="apriClimaPopup('climate.termosifone_salone', event)" style="--cp-rgb: 148, 163, 184;">
+        <div class="cp-card" id="card-climate-termosifone_salone" onclick="apriClimaPopup('dm.clima_termosifone_salone', event)" style="--cp-rgb: 148, 163, 184;">
            <div class="cp-header">
               <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-termosifone_salone">🔥</div><div class="cp-name">Salone</div></div>
               <div class="cp-badge" id="badge-climate-termosifone_salone">SPENTO</div>
@@ -5971,13 +5971,13 @@ html[data-theme="dark"] header { background: var(--card-glass); }
               <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-termosifone_salone">--°</span></div>
            </div>
            <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('climate.termosifone_salone', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_salone" onclick="toggleClima('climate.termosifone_salone')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('climate.termosifone_salone', 'up')">➕</button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_salone', 'down')">➖</button>
+              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_salone" onclick="toggleClima('dm.clima_termosifone_salone')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_salone', 'up')">➕</button>
            </div>
         </div>
 
-        <div class="cp-card" id="card-climate-termosifone_cucina" onclick="apriClimaPopup('climate.termosifone_cucina', event)" style="--cp-rgb: 148, 163, 184;">
+        <div class="cp-card" id="card-climate-termosifone_cucina" onclick="apriClimaPopup('dm.clima_termosifone_cucina', event)" style="--cp-rgb: 148, 163, 184;">
            <div class="cp-header">
               <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-termosifone_cucina">🔥</div><div class="cp-name">Cucina</div></div>
               <div class="cp-badge" id="badge-climate-termosifone_cucina">SPENTO</div>
@@ -5987,13 +5987,13 @@ html[data-theme="dark"] header { background: var(--card-glass); }
               <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-termosifone_cucina">--°</span></div>
            </div>
            <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('climate.termosifone_cucina', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_cucina" onclick="toggleClima('climate.termosifone_cucina')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('climate.termosifone_cucina', 'up')">➕</button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_cucina', 'down')">➖</button>
+              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_cucina" onclick="toggleClima('dm.clima_termosifone_cucina')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_cucina', 'up')">➕</button>
            </div>
         </div>
 
-        <div class="cp-card" id="card-climate-termosifone_camera_da_letto" onclick="apriClimaPopup('climate.termosifone_camera_da_letto', event)" style="--cp-rgb: 148, 163, 184;">
+        <div class="cp-card" id="card-climate-termosifone_camera_da_letto" onclick="apriClimaPopup('dm.clima_termosifone_camera', event)" style="--cp-rgb: 148, 163, 184;">
            <div class="cp-header">
               <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-termosifone_camera_da_letto">🔥</div><div class="cp-name">Matrimoniale</div></div>
               <div class="cp-badge" id="badge-climate-termosifone_camera_da_letto">SPENTO</div>
@@ -6003,13 +6003,13 @@ html[data-theme="dark"] header { background: var(--card-glass); }
               <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-termosifone_camera_da_letto">--°</span></div>
            </div>
            <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('climate.termosifone_camera_da_letto', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_camera_da_letto" onclick="toggleClima('climate.termosifone_camera_da_letto')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('climate.termosifone_camera_da_letto', 'up')">➕</button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_camera', 'down')">➖</button>
+              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_camera_da_letto" onclick="toggleClima('dm.clima_termosifone_camera')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_camera', 'up')">➕</button>
            </div>
         </div>
 
-        <div class="cp-card" id="card-climate-termosifone_cameretta" onclick="apriClimaPopup('climate.termosifone_cameretta', event)" style="--cp-rgb: 148, 163, 184;">
+        <div class="cp-card" id="card-climate-termosifone_cameretta" onclick="apriClimaPopup('dm.clima_termosifone_cameretta', event)" style="--cp-rgb: 148, 163, 184;">
            <div class="cp-header">
               <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-termosifone_cameretta">🔥</div><div class="cp-name">Cameretta</div></div>
               <div class="cp-badge" id="badge-climate-termosifone_cameretta">SPENTO</div>
@@ -6019,13 +6019,13 @@ html[data-theme="dark"] header { background: var(--card-glass); }
               <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-termosifone_cameretta">--°</span></div>
            </div>
            <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('climate.termosifone_cameretta', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_cameretta" onclick="toggleClima('climate.termosifone_cameretta')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('climate.termosifone_cameretta', 'up')">➕</button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_cameretta', 'down')">➖</button>
+              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_cameretta" onclick="toggleClima('dm.clima_termosifone_cameretta')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_cameretta', 'up')">➕</button>
            </div>
         </div>
 
-        <div class="cp-card" id="card-climate-termosifone_bagno" onclick="apriClimaPopup('climate.termosifone_bagno', event)" style="--cp-rgb: 148, 163, 184;">
+        <div class="cp-card" id="card-climate-termosifone_bagno" onclick="apriClimaPopup('dm.clima_termosifone_bagno', event)" style="--cp-rgb: 148, 163, 184;">
            <div class="cp-header">
               <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-termosifone_bagno">🔥</div><div class="cp-name">Bagno</div></div>
               <div class="cp-badge" id="badge-climate-termosifone_bagno">SPENTO</div>
@@ -6035,13 +6035,13 @@ html[data-theme="dark"] header { background: var(--card-glass); }
               <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-termosifone_bagno">--°</span></div>
            </div>
            <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('climate.termosifone_bagno', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_bagno" onclick="toggleClima('climate.termosifone_bagno')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('climate.termosifone_bagno', 'up')">➕</button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_bagno', 'down')">➖</button>
+              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_bagno" onclick="toggleClima('dm.clima_termosifone_bagno')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_bagno', 'up')">➕</button>
            </div>
         </div>
 
-        <div class="cp-card" id="card-climate-termosifone_studio" onclick="apriClimaPopup('climate.termosifone_studio', event)" style="--cp-rgb: 148, 163, 184;">
+        <div class="cp-card" id="card-climate-termosifone_studio" onclick="apriClimaPopup('dm.clima_termosifone_studio', event)" style="--cp-rgb: 148, 163, 184;">
            <div class="cp-header">
               <div class="cp-title-wrap"><div class="cp-icon" id="icn-climate-termosifone_studio">🔥</div><div class="cp-name">Studio</div></div>
               <div class="cp-badge" id="badge-climate-termosifone_studio">SPENTO</div>
@@ -6051,9 +6051,9 @@ html[data-theme="dark"] header { background: var(--card-glass); }
               <div class="cp-temp-current-wrap"><span class="cp-temp-current-lbl">Ambiente</span><span class="cp-temp-current" id="cur-climate-termosifone_studio">--°</span></div>
            </div>
            <div class="cp-controls">
-              <button class="cp-btn" onclick="setTemp('climate.termosifone_studio', 'down')">➖</button>
-              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_studio" onclick="toggleClima('climate.termosifone_studio')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
-              <button class="cp-btn" onclick="setTemp('climate.termosifone_studio', 'up')">➕</button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_studio', 'down')">➖</button>
+              <button class="cp-btn cp-pwr" id="btn-climate-termosifone_studio" onclick="toggleClima('dm.clima_termosifone_studio')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
+              <button class="cp-btn" onclick="setTemp('dm.clima_termosifone_studio', 'up')">➕</button>
            </div>
         </div>
 
@@ -6192,21 +6192,21 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         <div class="lav-area-quick">
             <h4 style="font-family: 'Inter', sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; font-size: 11px; color: var(--text-dim); margin-bottom: 12px;">Programmi Rapidi</h4>
             <div class="lav-preset-grid">
-              <button class="lav-preset-btn" onclick="toggle('script.programma_59_2')"><div class="icon-wrap">⏱️</div><div class="name">Rapido 59'</div></button>
-              <button class="lav-preset-btn" onclick="toggle('script.programma_14_2')"><div class="icon-wrap">⚡</div><div class="name">Rapido 14'</div></button>
-              <button class="lav-preset-btn" onclick="toggle('script.programma_30_2')"><div class="icon-wrap">⏲️</div><div class="name">Rapido 30'</div></button>
-              <button class="lav-preset-btn" onclick="toggle('script.programma_misto_colorati')"><div class="icon-wrap">👕</div><div class="name">Colorati</div></button>
+              <button class="lav-preset-btn" onclick="toggle('dm.lavatrice_script_programma_59')"><div class="icon-wrap">⏱️</div><div class="name">Rapido 59'</div></button>
+              <button class="lav-preset-btn" onclick="toggle('dm.lavatrice_script_programma_rapido_14')"><div class="icon-wrap">⚡</div><div class="name">Rapido 14'</div></button>
+              <button class="lav-preset-btn" onclick="toggle('dm.lavatrice_script_programma_30')"><div class="icon-wrap">⏲️</div><div class="name">Rapido 30'</div></button>
+              <button class="lav-preset-btn" onclick="toggle('dm.lavatrice_script_programma_misto_colorati')"><div class="icon-wrap">👕</div><div class="name">Colorati</div></button>
             </div>
             <div class="ev-actions-grid" style="margin-top: auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-               <div class="ev-act-btn" id="lav-btn-power" onclick="toggle('switch.lavatrice')" style="--btn-col: #0ea5e9; --btn-bg: #e0f2fe;"><div class="icon" style="font-size: 22px;">🔌</div><div class="txt" id="lav-txt-power" style="font-size: 11px;">SPENTA</div></div>
-               <div class="ev-act-btn" id="lav-btn-play" onclick="toggle('switch.lavatrice_lavatrice')" style="--btn-col: #0ea5e9; --btn-bg: #e0f2fe;"><div class="icon" style="font-size: 22px;">▶️</div><div class="txt" id="lav-txt-play" style="font-size: 11px;">PAUSA</div></div>
+               <div class="ev-act-btn" id="lav-btn-power" onclick="toggle('dm.lavatrice_presa_avvio_lavatrice')" style="--btn-col: #0ea5e9; --btn-bg: #e0f2fe;"><div class="icon" style="font-size: 22px;">🔌</div><div class="txt" id="lav-txt-power" style="font-size: 11px;">SPENTA</div></div>
+               <div class="ev-act-btn" id="lav-btn-play" onclick="toggle('dm.lavatrice_avvio_ciclo')" style="--btn-col: #0ea5e9; --btn-bg: #e0f2fe;"><div class="icon" style="font-size: 22px;">▶️</div><div class="txt" id="lav-txt-play" style="font-size: 11px;">PAUSA</div></div>
             </div>
         </div>
 
         <div class="lav-area-mon">
            <div class="lav-mon-card"><div class="lbl">FASE ATTUALE</div><div class="val" id="v-lav-fase" style="color: var(--accent);">—</div></div>
            <div class="lav-mon-card"><div class="lbl">TEMPO RIMANENTE</div><div class="val" id="v-lav-tempo" style="color: var(--load);">—</div></div>
-           <div class="lav-mon-card hist-clickable" onclick="apriStorico(event, 'sensor.lavatrice_power', 'Consumo Lavatrice')"><div class="lbl">ASSORBIMENTO</div><div class="val" id="v-lav-power-w" style="color: #f59e0b;">—</div></div>
+           <div class="lav-mon-card hist-clickable" onclick="apriStorico(event, 'dm.core_015', 'Consumo Lavatrice')"><div class="lbl">ASSORBIMENTO</div><div class="val" id="v-lav-power-w" style="color: #f59e0b;">—</div></div>
         </div>
 
         <div class="lav-area-manual">
@@ -6214,19 +6214,19 @@ html[data-theme="dark"] header { background: var(--card-glass); }
             <div class="detail-row" style="padding: 12px 18px;">
                 <div style="display:flex; align-items:center; width: 100%; gap: 15px;">
                     <div class="d-icon" style="font-size: 18px; width: 40px; height: 40px;">📋</div>
-                    <div class="d-info" style="flex: 1;"><div class="d-name" style="font-size: 13px;">Programma</div><select id="sel-lav-prog" class="ha-select" onchange="changeSelect('select.lavatrice_programma', this.value)"></select></div>
+                    <div class="d-info" style="flex: 1;"><div class="d-name" style="font-size: 13px;">Programma</div><select id="sel-lav-prog" class="ha-select" onchange="changeSelect('dm.lavatrice_programma', this.value)"></select></div>
                 </div>
             </div>
             <div class="detail-row" style="padding: 12px 18px;">
                 <div style="display:flex; align-items:center; width: 100%; gap: 15px;">
                     <div class="d-icon" style="font-size: 18px; width: 40px; height: 40px;">🌡️</div>
-                    <div class="d-info" style="flex: 1;"><div class="d-name" style="font-size: 13px;">Temperatura</div><select id="sel-lav-temp" class="ha-select" onchange="changeSelect('select.lavatrice_temperatura', this.value)"></select></div>
+                    <div class="d-info" style="flex: 1;"><div class="d-name" style="font-size: 13px;">Temperatura</div><select id="sel-lav-temp" class="ha-select" onchange="changeSelect('dm.lavatrice_temperatura', this.value)"></select></div>
                 </div>
             </div>
             <div class="detail-row" style="padding: 12px 18px;">
                 <div style="display:flex; align-items:center; width: 100%; gap: 15px;">
                     <div class="d-icon" style="font-size: 18px; width: 40px; height: 40px;">🌀</div>
-                    <div class="d-info" style="flex: 1;"><div class="d-name" style="font-size: 13px;">Centrifuga</div><select id="sel-lav-cent" class="ha-select" onchange="changeSelect('select.lavatrice_centrifuga', this.value)"></select></div>
+                    <div class="d-info" style="flex: 1;"><div class="d-name" style="font-size: 13px;">Centrifuga</div><select id="sel-lav-cent" class="ha-select" onchange="changeSelect('dm.lavatrice_centrifuga', this.value)"></select></div>
                 </div>
             </div>
         </div>
@@ -6255,7 +6255,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
     </div>
 
     <!-- Hero card batteria -->
-    <div class="ev-popup-batt-card hist-clickable" onclick="apriStorico(event, 'sensor.leapmotor_battery', 'Livello Batteria EV')">
+    <div class="ev-popup-batt-card hist-clickable" onclick="apriStorico(event, 'dm.ev_batteria_auto', 'Livello Batteria EV')">
       <div class="ev-popup-batt-top">
         <div class="ev-popup-batt-icon">🔋</div>
         <div class="ev-popup-batt-info">
@@ -6270,12 +6270,12 @@ html[data-theme="dark"] header { background: var(--card-glass); }
 
     <!-- 3 stat cards in riga -->
     <div class="ev-popup-stats">
-      <div class="ev-popup-stat hist-clickable" onclick="apriStorico(event, 'sensor.leapmotor_range', 'Autonomia EV')" style="--m-rgb: 6, 182, 212;">
+      <div class="ev-popup-stat hist-clickable" onclick="apriStorico(event, 'dm.ev_autonomia', 'Autonomia EV')" style="--m-rgb: 6, 182, 212;">
         <div class="ev-popup-stat-icon">📈</div>
         <div class="ev-popup-stat-lbl">Autonomia</div>
         <div class="ev-popup-stat-val v-ev-range">—</div>
       </div>
-      <div class="ev-popup-stat hist-clickable" onclick="apriStorico(event, 'sensor.1p7k_101573_potenza', 'Potenza Wallbox')" style="--m-rgb: 16, 185, 129;">
+      <div class="ev-popup-stat hist-clickable" onclick="apriStorico(event, 'dm.ev_potenza_wallbox', 'Potenza Wallbox')" style="--m-rgb: 16, 185, 129;">
         <div class="ev-popup-stat-icon">⚡</div>
         <div class="ev-popup-stat-lbl">Potenza</div>
         <div class="ev-popup-stat-val v-ev-pow">—</div>
@@ -6309,7 +6309,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
     <!-- Target SoC -->
     <div class="ev-popup-target">
       <span class="ev-popup-target-lbl"><span class="lbl-icon">🎯</span> Target SoC</span>
-      <select id="sel-target-soc-popup" class="ha-select target-select" onchange="changeSelect('input_select.target_soc_auto', this.value)"></select>
+      <select id="sel-target-soc-popup" class="ha-select target-select" onchange="changeSelect('input_dm.ev_target_soc', this.value)"></select>
     </div>
 
     <!-- Mode buttons EVCC -->
@@ -6394,7 +6394,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.2.3';
+const DASHBOARD_VERSION = '0.2.4';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6598,11 +6598,11 @@ function switchEnergyView(view) {
 // ════════════════════════════════════════════════════════════════════
 function renderInverterTemp() {
   const ENTITIES = {
-    ac:  'sensor.solarman_ac_temperature',
-    dc:  'sensor.solarman_dc_temperature',
-    bat: 'sensor.solarman_battery_temperature',
-    fanP:'sensor.ventola_superiore_inverter_power',
-    fanS:'switch.ventola_superiore_inverter'
+    ac:  'dm.energy_temperatura_ac_inverter',
+    dc:  'dm.energy_temperatura_dc_inverter',
+    bat: 'dm.energy_temperatura_batteria',
+    fanP:'dm.energy_potenza_ventola_inverter',
+    fanS:'dm.energy_interruttore_ventola_inverter'
   };
 
   const acT  = parseFloat(getRawState(ENTITIES.ac));
@@ -6720,7 +6720,7 @@ function toggleVentola() {
     type: 'call_service',
     domain: 'switch',
     service: 'toggle',
-    target: { entity_id: 'switch.ventola_superiore_inverter' }
+    target: { entity_id: 'dm.energy_interruttore_ventola_inverter' }
   }));
 }
 
@@ -6809,12 +6809,12 @@ async function connect() {
             renderQuickClima();
           }
           // Switch termici → re-render pannello stato (visibile solo in modalità caldo)
-          if (eid === 'switch.caldaia' || eid === 'switch.termocamino' || eid === 'switch.aspiratore_canna_fumaria') {
+          if (eid === 'dm.clima_interruttore_caldaia' || eid === 'dm.clima_termocamino' || eid === 'dm.clima_aspiratore_canna_fumaria') {
             if (currentClimaMode === 'caldo') renderThermalPanel();
           }
         }
         // v240: aggiorna popup antifurto se aperto e l'entità cambiata è l'alarm panel
-        if (eid === 'alarm_control_panel.casa' && document.getElementById('quick-alarm-modal')?.classList.contains('show')) {
+        if (eid === 'dm.security_centrale_allarme' && document.getElementById('quick-alarm-modal')?.classList.contains('show')) {
           renderQuickAntifurto();
         }
     }
@@ -6837,7 +6837,7 @@ function setEVMode(mode) {
   const btnPopup = document.getElementById('p-btn-' + mode);
   if(btnMod) btnMod.classList.add('active');
   if(btnPopup) btnPopup.classList.add('active');
-  ws.send(JSON.stringify({ id: msgId++, type: 'call_service', domain: 'select', service: 'select_option', service_data: { entity_id: 'select.evcc_lektrico_mode', option: mode } }));
+  ws.send(JSON.stringify({ id: msgId++, type: 'call_service', domain: 'select', service: 'select_option', service_data: { entity_id: 'dm.ev_modalita_ricarica_evcc', option: mode } }));
 }
 
 window.changeSelect = function(entityId, value) {
@@ -6850,7 +6850,7 @@ window.changeSelect = function(entityId, value) {
 function apriPopup() {
     document.getElementById('ev-popup').classList.add('show');
     // Aggiorna subito la barra batteria con il valore corrente
-    const socNum = parseFloat(getRawState('sensor.leapmotor_battery')) || 0;
+    const socNum = parseFloat(getRawState('dm.ev_batteria_auto')) || 0;
     const battSvg = document.getElementById('ev-mod-batt-fill-popup-svg');
     if (battSvg && socNum > 0) {
         battSvg.style.width = socNum.toFixed(1) + '%';
@@ -7479,7 +7479,7 @@ function wzRender() {
                 const cur = (WIZ.entities && WIZ.entities[sl.ref]) || ENTITY_OVERRIDES[sl.ref] || '';
                 return `<div class="ed-slot"><div class="ed-slot-lbl">${sl.lbl}</div>
                   <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" list="wz-entity-list"
-                         data-ref="${sl.ref}" value="${cur}" placeholder="es. ${sl.ref.split('.')[0]}.mia_entita" onchange="wzSetSlot(this)"></div>`;
+                         data-ref="${sl.ref}" value="${cur}" placeholder="${sl.ref}" onchange="wzSetSlot(this)"></div>`;
             }).join('');
             return `<details class="ed-acc"><summary class="ed-acc-head">${sec.label} <span class="ed-acc-n">${sec.slots.length}</span></summary><div class="ed-acc-body">${rows}</div></details>`;
         }).join('');
@@ -7652,136 +7652,136 @@ function wzFinish() {
    sceglie la propria entità e il sistema salva un override. Il motore non cambia. ═══ */
 const CD_SLOTS = {
     home: { label: '🏠 Home', slots: [
-        { ref: 'weather.casa',                 lbl: 'Meteo (entità weather)' },
-        { ref: 'alarm_control_panel.casa', lbl: 'Allarme (alarm_control_panel)' },
-        { ref: 'switch.allarme_antifurto',     lbl: 'Interruttore antifurto (switch)' },
-        { ref: 'script.apri_cancello',         lbl: 'Script apertura cancello' },
-        { ref: 'sensor.luci_accese',           lbl: 'Contatore luci accese' },
-        { ref: 'sensor.finestre_aperte',       lbl: 'Contatore aperture' },
-        { ref: 'sensor.batterie_scariche',     lbl: 'Contatore batterie scariche' },
-        { ref: 'sensor.condizionatori_accesi', lbl: 'Contatore condizionatori accesi' },
-        { ref: 'sensor.termosifoni_accesi',    lbl: 'Contatore termosifoni accesi' },
+        { ref: 'dm.home_meteo',                 lbl: 'Meteo (entità weather)' },
+        { ref: 'dm.security_centrale_allarme', lbl: 'Allarme (alarm_control_panel)' },
+        { ref: 'dm.home_interruttore_antifurto',     lbl: 'Interruttore antifurto (switch)' },
+        { ref: 'dm.home_script_apertura_cancello',         lbl: 'Script apertura cancello' },
+        { ref: 'dm.home_contatore_luci_accese',           lbl: 'Contatore luci accese' },
+        { ref: 'dm.home_contatore_aperture',       lbl: 'Contatore aperture' },
+        { ref: 'dm.home_contatore_batterie_scariche',     lbl: 'Contatore batterie scariche' },
+        { ref: 'dm.home_contatore_condizionatori_accesi', lbl: 'Contatore condizionatori accesi' },
+        { ref: 'dm.home_contatore_termosifoni_accesi',    lbl: 'Contatore termosifoni accesi' },
     ]},
     energy: { label: '⚡ Energia', slots: [
-        { ref: 'sensor.solarman_daily_production',        lbl: 'Produzione solare oggi (kWh)' },
-        { ref: 'sensor.solarman_daily_load_consumption',  lbl: 'Consumo casa oggi (kWh)' },
-        { ref: 'sensor.solarman_daily_energy_bought',     lbl: 'Energia prelevata oggi (kWh)' },
-        { ref: 'sensor.solarman_daily_energy_sold',       lbl: 'Energia immessa oggi (kWh)' },
-        { ref: 'sensor.solarman_daily_battery_charge',    lbl: 'Batteria caricata oggi (kWh)' },
-        { ref: 'sensor.solarman_daily_battery_discharge', lbl: 'Batteria scaricata oggi (kWh)' },
-        { ref: 'sensor.solarman_battery_soc',             lbl: 'Stato carica batteria (%)' },
-        { ref: 'sensor.solarman_battery_power',           lbl: 'Potenza batteria (W)' },
-        { ref: 'sensor.solarman_load_l1_power',           lbl: 'Potenza consumo casa (W)' },
-        { ref: 'sensor.solarman_external_ct_l1_power',    lbl: 'Potenza scambio rete (W)' },
-        { ref: 'sensor.somma_sensori_fotovoltaico',       lbl: 'Potenza fotovoltaico (W)' },
-        { ref: 'sensor.solarman_grid_connected_status',   lbl: 'Stato rete (on/off-grid)' },
-        { ref: 'sensor.solarman_dc_temperature',          lbl: 'Temperatura DC inverter (°C)' },
-        { ref: 'sensor.solarman_ac_temperature',          lbl: 'Temperatura AC inverter (°C)' },
-        { ref: 'sensor.solarman_battery_temperature',     lbl: 'Temperatura batteria (°C)' },
-        { ref: 'sensor.fotovoltaico_anno',                lbl: 'Produzione solare anno (kWh)' },
-        { ref: 'sensor.consumo_casa_anno',                lbl: 'Consumo casa anno (kWh)' },
-        { ref: 'sensor.sensor_fotovoltaico_mensile',      lbl: 'Produzione solare mese (kWh)' },
-        { ref: 'sensor.sensor_carichi_mensile',           lbl: 'Consumo casa mese (kWh)' },
-        { ref: 'sensor.sensor_grid_acquistata_mensile',   lbl: 'Rete acquistata mese (kWh)' },
-        { ref: 'sensor.sensor_grid_venduta_menesile',     lbl: 'Rete venduta mese (kWh)' },
-        { ref: 'sensor.sensor_batteria_caricata_mensile', lbl: 'Batteria caricata mese (kWh)' },
-        { ref: 'sensor.sensor_batteria_usata_mensile',    lbl: 'Batteria usata mese (kWh)' },
-        { ref: 'sensor.somma_elettrodomestici_cucinina_tutto_istantanei', lbl: 'Somma cucina istantanea (W)' },
-        { ref: 'sensor.somma_elettrodomestici_cucinina_tutto_giornaliero',lbl: 'Somma cucina oggi (kWh)' },
-        { ref: 'sensor.somma_elettrodomestici_cucinina_tutto_mensile',    lbl: 'Somma cucina mese (kWh)' },
-        { ref: 'sensor.somma_elettrodomestici_lavanderia_istantanei',     lbl: 'Somma lavanderia istantanea (W)' },
-        { ref: 'sensor.somma_elettrodomestici_lavanderia_giornaliero',    lbl: 'Somma lavanderia oggi (kWh)' },
-        { ref: 'sensor.somma_elettrodomestici_lavanderia_mensile',        lbl: 'Somma lavanderia mese (kWh)' },
-        { ref: 'sensor.energy_oggi_condizionatori',       lbl: 'Condizionatori oggi (kWh)' },
-        { ref: 'sensor.energy_mese_condizionatori',       lbl: 'Condizionatori mese (kWh)' },
-        { ref: 'sensor.potenza_condizionatori',           lbl: 'Potenza condizionatori (W)' },
-        { ref: 'sensor.energy_oggi_elettrodomestici_4',   lbl: 'Boiler oggi (kWh)' },
-        { ref: 'sensor.energy_mese_elettrodomestici_4',   lbl: 'Boiler mese (kWh)' },
-        { ref: 'sensor.ventola_superiore_inverter_power', lbl: 'Potenza ventola inverter (W)' },
-        { ref: 'switch.ventola_superiore_inverter',       lbl: 'Interruttore ventola inverter' },
+        { ref: 'dm.energy_produzione_solare_oggi',        lbl: 'Produzione solare oggi (kWh)' },
+        { ref: 'dm.energy_consumo_casa_oggi',  lbl: 'Consumo casa oggi (kWh)' },
+        { ref: 'dm.energy_energia_prelevata_oggi',     lbl: 'Energia prelevata oggi (kWh)' },
+        { ref: 'dm.energy_energia_immessa_oggi',       lbl: 'Energia immessa oggi (kWh)' },
+        { ref: 'dm.energy_batteria_caricata_oggi',    lbl: 'Batteria caricata oggi (kWh)' },
+        { ref: 'dm.energy_batteria_scaricata_oggi', lbl: 'Batteria scaricata oggi (kWh)' },
+        { ref: 'dm.energy_stato_carica_batteria',             lbl: 'Stato carica batteria (%)' },
+        { ref: 'dm.energy_potenza_batteria',           lbl: 'Potenza batteria (W)' },
+        { ref: 'dm.energy_potenza_consumo_casa',           lbl: 'Potenza consumo casa (W)' },
+        { ref: 'dm.energy_potenza_scambio_rete',    lbl: 'Potenza scambio rete (W)' },
+        { ref: 'dm.energy_potenza_fotovoltaico',       lbl: 'Potenza fotovoltaico (W)' },
+        { ref: 'dm.energy_stato_rete',   lbl: 'Stato rete (on/off-grid)' },
+        { ref: 'dm.energy_temperatura_dc_inverter',          lbl: 'Temperatura DC inverter (°C)' },
+        { ref: 'dm.energy_temperatura_ac_inverter',          lbl: 'Temperatura AC inverter (°C)' },
+        { ref: 'dm.energy_temperatura_batteria',     lbl: 'Temperatura batteria (°C)' },
+        { ref: 'dm.energy_produzione_solare_anno',                lbl: 'Produzione solare anno (kWh)' },
+        { ref: 'dm.energy_consumo_casa_anno',                lbl: 'Consumo casa anno (kWh)' },
+        { ref: 'dm.energy_produzione_solare_mese',      lbl: 'Produzione solare mese (kWh)' },
+        { ref: 'dm.energy_consumo_casa_mese',           lbl: 'Consumo casa mese (kWh)' },
+        { ref: 'dm.energy_rete_acquistata_mese',   lbl: 'Rete acquistata mese (kWh)' },
+        { ref: 'dm.energy_rete_venduta_mese',     lbl: 'Rete venduta mese (kWh)' },
+        { ref: 'dm.energy_batteria_caricata_mese', lbl: 'Batteria caricata mese (kWh)' },
+        { ref: 'dm.energy_batteria_usata_mese',    lbl: 'Batteria usata mese (kWh)' },
+        { ref: 'dm.energy_somma_cucina_istantanea', lbl: 'Somma cucina istantanea (W)' },
+        { ref: 'dm.energy_somma_cucina_oggi',lbl: 'Somma cucina oggi (kWh)' },
+        { ref: 'dm.energy_somma_cucina_mese',    lbl: 'Somma cucina mese (kWh)' },
+        { ref: 'dm.energy_somma_lavanderia_istantanea',     lbl: 'Somma lavanderia istantanea (W)' },
+        { ref: 'dm.energy_somma_lavanderia_oggi',    lbl: 'Somma lavanderia oggi (kWh)' },
+        { ref: 'dm.energy_somma_lavanderia_mese',        lbl: 'Somma lavanderia mese (kWh)' },
+        { ref: 'dm.energy_condizionatori_oggi',       lbl: 'Condizionatori oggi (kWh)' },
+        { ref: 'dm.energy_condizionatori_mese',       lbl: 'Condizionatori mese (kWh)' },
+        { ref: 'dm.energy_potenza_condizionatori',           lbl: 'Potenza condizionatori (W)' },
+        { ref: 'dm.energy_boiler_oggi',   lbl: 'Boiler oggi (kWh)' },
+        { ref: 'dm.energy_boiler_mese',   lbl: 'Boiler mese (kWh)' },
+        { ref: 'dm.energy_potenza_ventola_inverter', lbl: 'Potenza ventola inverter (W)' },
+        { ref: 'dm.energy_interruttore_ventola_inverter',       lbl: 'Interruttore ventola inverter' },
     ]},
     clima: { label: '❄️ Clima', slots: [
-        { ref: 'climate.salone',          lbl: 'Condizionatore Salone' },
-        { ref: 'climate.cucina',          lbl: 'Condizionatore Cucina' },
-        { ref: 'climate.camera_da_letto', lbl: 'Condizionatore Camera' },
-        { ref: 'climate.cameretta',       lbl: 'Condizionatore Cameretta' },
-        { ref: 'climate.termosifone_salone',          lbl: 'Termosifone Salone' },
-        { ref: 'climate.termosifone_cucina',          lbl: 'Termosifone Cucina' },
-        { ref: 'climate.termosifone_bagno',           lbl: 'Termosifone Bagno' },
-        { ref: 'climate.termosifone_camera_da_letto', lbl: 'Termosifone Camera' },
-        { ref: 'climate.termosifone_cameretta',       lbl: 'Termosifone Cameretta' },
-        { ref: 'climate.termosifone_studio',          lbl: 'Termosifone Studio' },
-        { ref: 'switch.caldaia',                      lbl: 'Interruttore caldaia' },
-        { ref: 'switch.pompa_di_calore',              lbl: 'Pompa di calore' },
-        { ref: 'switch.boost_pompa_di_calore',        lbl: 'Boost pompa di calore' },
-        { ref: 'switch.termocamino',                  lbl: 'Termocamino' },
-        { ref: 'switch.aspiratore_canna_fumaria',     lbl: 'Aspiratore canna fumaria' },
-        { ref: 'switch.pompa_di_ricircolo',           lbl: 'Pompa di ricircolo' },
+        { ref: 'dm.clima_condizionatore_salone',          lbl: 'Condizionatore Salone' },
+        { ref: 'dm.clima_condizionatore_cucina',          lbl: 'Condizionatore Cucina' },
+        { ref: 'dm.clima_condizionatore_camera', lbl: 'Condizionatore Camera' },
+        { ref: 'dm.clima_condizionatore_cameretta',       lbl: 'Condizionatore Cameretta' },
+        { ref: 'dm.clima_termosifone_salone',          lbl: 'Termosifone Salone' },
+        { ref: 'dm.clima_termosifone_cucina',          lbl: 'Termosifone Cucina' },
+        { ref: 'dm.clima_termosifone_bagno',           lbl: 'Termosifone Bagno' },
+        { ref: 'dm.clima_termosifone_camera', lbl: 'Termosifone Camera' },
+        { ref: 'dm.clima_termosifone_cameretta',       lbl: 'Termosifone Cameretta' },
+        { ref: 'dm.clima_termosifone_studio',          lbl: 'Termosifone Studio' },
+        { ref: 'dm.clima_interruttore_caldaia',                      lbl: 'Interruttore caldaia' },
+        { ref: 'dm.clima_pompa_di_calore',              lbl: 'Pompa di calore' },
+        { ref: 'dm.clima_boost_pompa_di_calore',        lbl: 'Boost pompa di calore' },
+        { ref: 'dm.clima_termocamino',                  lbl: 'Termocamino' },
+        { ref: 'dm.clima_aspiratore_canna_fumaria',     lbl: 'Aspiratore canna fumaria' },
+        { ref: 'dm.clima_pompa_di_ricircolo',           lbl: 'Pompa di ricircolo' },
     ]},
     ev: { label: '🚗 Auto elettrica', slots: [
-        { ref: 'sensor.leapmotor_battery',  lbl: 'Batteria auto (%)' },
-        { ref: 'sensor.leapmotor_range',    lbl: 'Autonomia (km)' },
-        { ref: 'sensor.leapmotor_odometer', lbl: 'Odometro (km)' },
-        { ref: 'sensor.evcc_autonomia_al_limite',  lbl: 'Autonomia al limite di carica (km)' },
-        { ref: 'sensor.km_percorsi_dall_ultima_ricarica', lbl: 'Km dall\'ultima ricarica' },
-        { ref: 'sensor.stato_decodificato_evcc',   lbl: 'Stato ricarica (testo)' },
-        { ref: 'select.evcc_lektrico_mode',        lbl: 'Modalità ricarica EVCC (select)' },
-        { ref: 'select.target_soc_auto',           lbl: 'Target SOC (select)' },
-        { ref: 'sensor.evcc_lektrico_charged_energy',           lbl: 'Energia sessione (kWh)' },
-        { ref: 'sensor.evcc_lektrico_session_solar_percentage', lbl: 'Percentuale solare sessione (%)' },
-        { ref: 'sensor.1p7k_101573_potenza',       lbl: 'Potenza wallbox (W)' },
-        { ref: 'sensor.1p7k_101573_temperatura',   lbl: 'Temperatura wallbox (°C)' },
-        { ref: 'sensor.1p7k_101573_tensione',      lbl: 'Tensione wallbox (V)' },
-        { ref: 'sensor.leapmotor_b10_prelievo_totale_ac_2', lbl: 'Prelievo AC totale auto (kWh)' },
-        { ref: 'sensor.energy_oggi_wallbox',  lbl: 'Energia wallbox oggi (kWh)' },
-        { ref: 'sensor.energy_mese_wallbox',  lbl: 'Energia wallbox mese (kWh)' },
+        { ref: 'dm.ev_batteria_auto',  lbl: 'Batteria auto (%)' },
+        { ref: 'dm.ev_autonomia',    lbl: 'Autonomia (km)' },
+        { ref: 'dm.ev_odometro', lbl: 'Odometro (km)' },
+        { ref: 'dm.ev_autonomia_al_limite_di_carica',  lbl: 'Autonomia al limite di carica (km)' },
+        { ref: 'dm.ev_km_dall_ultima_ricarica', lbl: 'Km dall\'ultima ricarica' },
+        { ref: 'dm.ev_stato_ricarica',   lbl: 'Stato ricarica (testo)' },
+        { ref: 'dm.ev_modalita_ricarica_evcc',        lbl: 'Modalità ricarica EVCC (select)' },
+        { ref: 'dm.ev_target_soc',           lbl: 'Target SOC (select)' },
+        { ref: 'dm.ev_energia_sessione',           lbl: 'Energia sessione (kWh)' },
+        { ref: 'dm.ev_percentuale_solare_sessione', lbl: 'Percentuale solare sessione (%)' },
+        { ref: 'dm.ev_potenza_wallbox',       lbl: 'Potenza wallbox (W)' },
+        { ref: 'dm.ev_temperatura_wallbox',   lbl: 'Temperatura wallbox (°C)' },
+        { ref: 'dm.ev_tensione_wallbox',      lbl: 'Tensione wallbox (V)' },
+        { ref: 'dm.ev_prelievo_ac_totale_auto', lbl: 'Prelievo AC totale auto (kWh)' },
+        { ref: 'dm.ev_energia_wallbox_oggi',  lbl: 'Energia wallbox oggi (kWh)' },
+        { ref: 'dm.ev_energia_wallbox_mese',  lbl: 'Energia wallbox mese (kWh)' },
     ]},
     boiler: { label: '🌞 Solare termico', slots: [
-        { ref: 'sensor.boiler_power',                lbl: 'Potenza resistenza boiler (W)' },
-        { ref: 'switch.boiler',                      lbl: 'Interruttore boiler' },
-        { ref: 'switch.solare_termico',              lbl: 'Interruttore solare termico' },
-        { ref: 'switch.centralina_solare_termico',   lbl: 'Centralina solare termico' },
-        { ref: 'switch.pompa_solare_termico_man',    lbl: 'Pompa solare (manuale)' },
-        { ref: 'binary_sensor.pompa_solare_termico', lbl: 'Stato pompa solare' },
-        { ref: 'sensor.pompa_solare_termico',        lbl: 'Sensore pompa solare' },
-        { ref: 'sensor.delta_solare_termico_boiler', lbl: 'Delta temperatura (°C)' },
-        { ref: 'sensor.pressione_acqua',             lbl: 'Pressione acqua (bar)' },
-        { ref: 'cover.valvola_di_sicurezza',         lbl: 'Valvola di sicurezza (cover)' },
-        { ref: 'sensor.sonoff_1001dbde79_temperature', lbl: 'Sonda temperatura 1 (°C)' },
-        { ref: 'sensor.sonoff_1001e22ebd_temperature', lbl: 'Sonda temperatura 2 (°C)' },
-        { ref: 'sensor.sonoff_10021230f6_temperature', lbl: 'Sonda temperatura 3 (°C)' },
+        { ref: 'dm.boiler_potenza_resistenza_boiler',                lbl: 'Potenza resistenza boiler (W)' },
+        { ref: 'dm.boiler_interruttore_boiler',                      lbl: 'Interruttore boiler' },
+        { ref: 'dm.boiler_interruttore_solare_termico',              lbl: 'Interruttore solare termico' },
+        { ref: 'dm.boiler_centralina_solare_termico',   lbl: 'Centralina solare termico' },
+        { ref: 'dm.boiler_pompa_solare',    lbl: 'Pompa solare (manuale)' },
+        { ref: 'dm.boiler_stato_pompa_solare', lbl: 'Stato pompa solare' },
+        { ref: 'dm.boiler_sensore_pompa_solare',        lbl: 'Sensore pompa solare' },
+        { ref: 'dm.boiler_delta_temperatura', lbl: 'Delta temperatura (°C)' },
+        { ref: 'dm.boiler_pressione_acqua',             lbl: 'Pressione acqua (bar)' },
+        { ref: 'dm.boiler_valvola_di_sicurezza',         lbl: 'Valvola di sicurezza (cover)' },
+        { ref: 'dm.boiler_sonda_temperatura_1', lbl: 'Sonda temperatura 1 (°C)' },
+        { ref: 'dm.boiler_sonda_temperatura_2', lbl: 'Sonda temperatura 2 (°C)' },
+        { ref: 'dm.boiler_sonda_temperatura_3', lbl: 'Sonda temperatura 3 (°C)' },
     ]},
     security: { label: '🛡️ Sicurezza', slots: [
-        { ref: 'alarm_control_panel.casa', lbl: 'Centrale allarme' },
+        { ref: 'dm.security_centrale_allarme', lbl: 'Centrale allarme' },
     ]},
     lavatrice: { label: '🧺 Lavatrice', slots: [
-        { ref: 'switch.lavatrice',                lbl: 'Presa/avvio lavatrice (switch)' },
-        { ref: 'switch.lavatrice_lavatrice',      lbl: 'Avvio ciclo (switch dispositivo)' },
-        { ref: 'sensor.lavatrice_fase',           lbl: 'Fase corrente (testo)' },
-        { ref: 'sensor.lavatrice_tempo_rimanente',lbl: 'Tempo rimanente' },
-        { ref: 'select.lavatrice_programma',      lbl: 'Programma (select)' },
-        { ref: 'select.lavatrice_temperatura',    lbl: 'Temperatura (select)' },
-        { ref: 'select.lavatrice_centrifuga',     lbl: 'Centrifuga (select)' },
-        { ref: 'script.programma_14_2',           lbl: 'Script programma rapido 14\'' },
-        { ref: 'script.programma_30_2',           lbl: 'Script programma 30\'' },
-        { ref: 'script.programma_59_2',           lbl: 'Script programma 59\'' },
-        { ref: 'script.programma_misto_colorati', lbl: 'Script programma misto/colorati' },
+        { ref: 'dm.lavatrice_presa_avvio_lavatrice',                lbl: 'Presa/avvio lavatrice (switch)' },
+        { ref: 'dm.lavatrice_avvio_ciclo',      lbl: 'Avvio ciclo (switch dispositivo)' },
+        { ref: 'dm.lavatrice_fase_corrente',           lbl: 'Fase corrente (testo)' },
+        { ref: 'dm.lavatrice_tempo_rimanente',lbl: 'Tempo rimanente' },
+        { ref: 'dm.lavatrice_programma',      lbl: 'Programma (select)' },
+        { ref: 'dm.lavatrice_temperatura',    lbl: 'Temperatura (select)' },
+        { ref: 'dm.lavatrice_centrifuga',     lbl: 'Centrifuga (select)' },
+        { ref: 'dm.lavatrice_script_programma_rapido_14',           lbl: 'Script programma rapido 14\'' },
+        { ref: 'dm.lavatrice_script_programma_30',           lbl: 'Script programma 30\'' },
+        { ref: 'dm.lavatrice_script_programma_59',           lbl: 'Script programma 59\'' },
+        { ref: 'dm.lavatrice_script_programma_misto_colorati', lbl: 'Script programma misto/colorati' },
     ]},
     server: { label: '🖥️ MiniPC', slots: [
-        { ref: 'sensor.minipc_cpu_usage',    lbl: 'CPU (%)' },
-        { ref: 'sensor.minipc_memory_use',   lbl: 'RAM (%)' },
-        { ref: 'sensor.minipc_disk_usage',   lbl: 'Disco (%)' },
-        { ref: 'sensor.minipc_uptime',       lbl: 'Uptime MiniPC' },
-        { ref: 'sensor.minipc_package_id_0_temperature', lbl: 'Temperatura CPU (°C)' },
-        { ref: 'sensor.uptime',              lbl: 'Uptime Home Assistant' },
-        { ref: 'sensor.raspberry_current_power', lbl: 'Potenza Raspberry/server (W)' },
-        { ref: 'binary_sensor.internet',        lbl: 'Stato Internet (binary)' },
-        { ref: 'binary_sensor.ping_internet',   lbl: 'Ping Internet (binary)' },
-        { ref: 'binary_sensor.google_com',      lbl: 'Raggiungibilità Google (binary)' },
-        { ref: 'binary_sensor.lavanderia_internet', lbl: 'Internet lavanderia (binary)' },
-        { ref: 'sensor.speedtest_download',  lbl: 'Speedtest Download (Mbit/s)' },
-        { ref: 'sensor.speedtest_upload',    lbl: 'Speedtest Upload (Mbit/s)' },
-        { ref: 'sensor.speedtest_ping',      lbl: 'Speedtest Ping (ms)' },
+        { ref: 'dm.server_cpu',    lbl: 'CPU (%)' },
+        { ref: 'dm.server_ram',   lbl: 'RAM (%)' },
+        { ref: 'dm.server_disco',   lbl: 'Disco (%)' },
+        { ref: 'dm.server_uptime_minipc',       lbl: 'Uptime MiniPC' },
+        { ref: 'dm.server_temperatura_cpu', lbl: 'Temperatura CPU (°C)' },
+        { ref: 'dm.server_uptime_home_assistant',              lbl: 'Uptime Home Assistant' },
+        { ref: 'dm.server_potenza_raspberry_server', lbl: 'Potenza Raspberry/server (W)' },
+        { ref: 'dm.server_stato_internet',        lbl: 'Stato Internet (binary)' },
+        { ref: 'dm.server_ping_internet',   lbl: 'Ping Internet (binary)' },
+        { ref: 'dm.server_raggiungibilita_google',      lbl: 'Raggiungibilità Google (binary)' },
+        { ref: 'dm.server_internet_lavanderia', lbl: 'Internet lavanderia (binary)' },
+        { ref: 'dm.server_speedtest_download',  lbl: 'Speedtest Download (Mbit/s)' },
+        { ref: 'dm.server_speedtest_upload',    lbl: 'Speedtest Upload (Mbit/s)' },
+        { ref: 'dm.server_speedtest_ping',      lbl: 'Speedtest Ping (ms)' },
     ]},
 };
 
@@ -7810,7 +7810,7 @@ function editorRenderSezioni() {
             return `<div class="ed-slot">
               <div class="ed-slot-lbl">${sl.lbl}</div>
               <input class="ed-input mono ed-slot-in" list="ed-entity-list" 
-                     data-ref="${sl.ref}" value="${cur}" placeholder="es. ${sl.ref.split('.')[0]}.mia_entita"
+                     data-ref="${sl.ref}" value="${cur}" placeholder="${sl.ref}"
                      onchange="edSetSlot(this)">
             </div>`;
         }).join('');
@@ -8062,7 +8062,7 @@ function forceClose(id) {
 function closeModal(e, id) { if (e && e.target.id === id) forceClose(id); }
 
 // v254: Modal conferma azione generico riutilizzabile
-// Uso: confermaAzione({ icon: '⛩️', iconRgb: '16,185,129', title: 'Apri Cancello', message: 'Sei sicuro?', confirmLabel: 'Sì, apri', onConfirm: () => toggle('script.apri_cancello') })
+// Uso: confermaAzione({ icon: '⛩️', iconRgb: '16,185,129', title: 'Apri Cancello', message: 'Sei sicuro?', confirmLabel: 'Sì, apri', onConfirm: () => toggle('dm.home_script_apertura_cancello') })
 function confermaAzione(opts) {
   if (navigator.vibrate) navigator.vibrate(10);
   const modal = document.getElementById('confirm-modal');
@@ -8686,7 +8686,7 @@ async function apriMeteo() {
   document.getElementById('weather-modal').classList.add('show');
   const list = document.getElementById('weather-forecast-list');
   list.innerHTML = '<div style="text-align:center; padding: 30px; font-weight:800; color:var(--text-dim);">Caricamento Previsioni...</div>';
-  const entityId = 'weather.forecast_casa'; currentWeatherEntity = entityId;
+  const entityId = 'dm.core_016'; currentWeatherEntity = entityId;
 
   if (ws && ws.readyState === WebSocket.OPEN) {
       const reqId = msgId++;
@@ -8868,7 +8868,7 @@ let currentPin = ''; let targetAlarmService = '';
 function updatePinDisplay() { for(let i=1; i<=4; i++) { const dot = document.getElementById('dot-'+i); if(i <= currentPin.length) dot.classList.add('filled'); else dot.classList.remove('filled'); } }
 function kp(num) { if(navigator.vibrate) navigator.vibrate(15); if(currentPin.length < 4) { currentPin += num; updatePinDisplay(); } }
 function kpDel() { if(navigator.vibrate) navigator.vibrate(10); if(currentPin.length > 0) { currentPin = currentPin.slice(0, -1); updatePinDisplay(); } }
-function kpOk() { if(!ws) return; if(navigator.vibrate) navigator.vibrate([15, 30, 15]); let data = { entity_id: 'alarm_control_panel.casa' }; if(currentPin.length > 0) data.code = currentPin; ws.send(JSON.stringify({ id: msgId++, type: 'call_service', domain: 'alarm_control_panel', service: targetAlarmService, service_data: data })); forceClose('custom-keypad'); }
+function kpOk() { if(!ws) return; if(navigator.vibrate) navigator.vibrate([15, 30, 15]); let data = { entity_id: 'dm.security_centrale_allarme' }; if(currentPin.length > 0) data.code = currentPin; ws.send(JSON.stringify({ id: msgId++, type: 'call_service', domain: 'alarm_control_panel', service: targetAlarmService, service_data: data })); forceClose('custom-keypad'); }
 function promptPinAndSet(service) { if(navigator.vibrate) navigator.vibrate(15); currentPin = ''; targetAlarmService = service; updatePinDisplay(); const labels = { 'alarm_arm_away': 'Armamento Totale', 'alarm_arm_night': 'Armamento Notturno', 'alarm_disarm': 'Disinserimento Antifurto' }; document.getElementById('keypad-action-name').textContent = labels[service] || 'Azione'; document.getElementById('custom-keypad').classList.add('show'); }
 
 const errorImgSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='225'><rect width='400' height='225' fill='%23f0f4f8'/><text x='50%' y='50%' fill='%23a1a1a1' font-family='sans-serif' font-weight='800' font-size='20' text-anchor='middle' dominant-baseline='middle'>NESSUN SEGNALE</text></svg>";
@@ -8940,7 +8940,7 @@ function render() {
       if (panoramicaView && panoramicaView.classList.contains('active')) {
           edUpdateKpiOnly();
       }
-      const weatherEnt = STATES['weather.forecast_casa'] || STATES['weather.home'] || STATES['weather.casa'] || null;
+      const weatherEnt = STATES['dm.core_016'] || STATES['weather.home'] || STATES['dm.home_meteo'] || null;
       if(weatherEnt) {
         const wLangMap = { 'clear-night': 'Sereno (Notte)', 'cloudy': 'Nuvoloso', 'fog': 'Nebbia', 'hail': 'Grandine', 'lightning': 'Fulmini', 'lightning-rainy': 'Temporale', 'partlycloudy': 'Poco Nuvoloso', 'pouring': 'Acquazzone', 'rainy': 'Pioggia', 'snowy': 'Neve', 'snowy-rainy': 'Nevischio', 'sunny': 'Soleggiato', 'windy': 'Ventoso', 'windy-variant': 'Vento Forte' };
         document.getElementById('w-temp').textContent = (weatherEnt.attributes?.temperature !== undefined ? weatherEnt.attributes.temperature : '--') + '°C';
@@ -8952,16 +8952,16 @@ function render() {
       }
 
       const updateGlance = (id, sensor) => { let val = parseInt(getRawState(sensor)) || 0; let el = document.getElementById(id); if(el) { el.style.display = val > 0 ? 'flex' : 'none'; const valEl = document.getElementById(id.replace('glance-', 'g-val-')); if(valEl) valEl.textContent = val; } };
-      updateGlance('glance-luci', 'sensor.luci_accese'); updateGlance('glance-clima', 'sensor.condizionatori_accesi'); updateGlance('glance-risc', 'sensor.termosifoni_accesi'); updateGlance('glance-win', 'sensor.finestre_aperte'); updateGlance('glance-batt', 'sensor.batterie_scariche');
+      updateGlance('glance-luci', 'dm.home_contatore_luci_accese'); updateGlance('glance-clima', 'dm.home_contatore_condizionatori_accesi'); updateGlance('glance-risc', 'dm.home_contatore_termosifoni_accesi'); updateGlance('glance-win', 'dm.home_contatore_aperture'); updateGlance('glance-batt', 'dm.home_contatore_batterie_scariche');
       
       // ── Card Antifurto: stile coerente con altre card Quadro Avvisi ──
-      // Logica: switch.allarme_antifurto = ON → priorità ALLARME SCATTATO (rosso, urgente)
-      //         altrimenti alarm_control_panel.casa → modalità (NOTTE/CASA/TOTALE)
+      // Logica: dm.home_interruttore_antifurto = ON → priorità ALLARME SCATTATO (rosso, urgente)
+      //         altrimenti dm.security_centrale_allarme → modalità (NOTTE/CASA/TOTALE)
       (function() {
-        const alarmTriggered = (getRawState('switch.allarme_antifurto') || '').toLowerCase() === 'on';
-        const alarmHomeState = getRawState('alarm_control_panel.casa');
-        const alarmStateObj  = STATES['alarm_control_panel.casa'];
-        const triggerObj     = STATES['switch.allarme_antifurto'];
+        const alarmTriggered = (getRawState('dm.home_interruttore_antifurto') || '').toLowerCase() === 'on';
+        const alarmHomeState = getRawState('dm.security_centrale_allarme');
+        const alarmStateObj  = STATES['dm.security_centrale_allarme'];
+        const triggerObj     = STATES['dm.home_interruttore_antifurto'];
         
         const glanceAlarm    = document.getElementById('glance-alarm');
         const gValAlarm      = document.getElementById('g-val-alarm');
@@ -9024,51 +9024,51 @@ function render() {
         }
       })();
 
-      document.getElementById('v-solar').textContent = getDisplay('sensor.somma_sensori_fotovoltaico'); document.getElementById('v-grid').textContent = getDisplay('sensor.solarman_external_ct_l1_power'); document.getElementById('v-battery').textContent = getDisplay('sensor.solarman_battery_power'); document.getElementById('v-battery-soc').textContent = getDisplay('sensor.solarman_battery_soc'); document.getElementById('v-home').textContent = getDisplay('sensor.solarman_load_l1_power'); document.getElementById('v-boiler-p').textContent = getDisplay('sensor.boiler_power'); document.getElementById('v-wb-p').textContent = getDisplay('sensor.1p7k_101573_potenza'); document.getElementById('v-clima-p').textContent = getDisplay('sensor.potenza_condizionatori'); document.getElementById('v-lav-p').textContent = getDisplay('sensor.somma_elettrodomestici_lavanderia_istantanei'); document.getElementById('v-cuc-p').textContent = getDisplay('sensor.somma_elettrodomestici_cucinina_tutto_istantanei');
-      const pwrSol = getPowerInWatts('sensor.somma_sensori_fotovoltaico'); const pwrGri = getPowerInWatts('sensor.solarman_external_ct_l1_power'); const pwrBat = getPowerInWatts('sensor.solarman_battery_power'); const pwrWb = Math.abs(getPowerInWatts('sensor.1p7k_101573_potenza')); const pwrBoiler = Math.abs(getPowerInWatts('sensor.boiler_power')); const pwrClima = Math.abs(getPowerInWatts('sensor.potenza_condizionatori')); const pwrLav = Math.abs(getPowerInWatts('sensor.somma_elettrodomestici_lavanderia_istantanei')); const pwrCuc = Math.abs(getPowerInWatts('sensor.somma_elettrodomestici_cucinina_tutto_istantanei'));
+      document.getElementById('v-solar').textContent = getDisplay('dm.energy_potenza_fotovoltaico'); document.getElementById('v-grid').textContent = getDisplay('dm.energy_potenza_scambio_rete'); document.getElementById('v-battery').textContent = getDisplay('dm.energy_potenza_batteria'); document.getElementById('v-battery-soc').textContent = getDisplay('dm.energy_stato_carica_batteria'); document.getElementById('v-home').textContent = getDisplay('dm.energy_potenza_consumo_casa'); document.getElementById('v-boiler-p').textContent = getDisplay('dm.boiler_potenza_resistenza_boiler'); document.getElementById('v-wb-p').textContent = getDisplay('dm.ev_potenza_wallbox'); document.getElementById('v-clima-p').textContent = getDisplay('dm.energy_potenza_condizionatori'); document.getElementById('v-lav-p').textContent = getDisplay('dm.energy_somma_lavanderia_istantanea'); document.getElementById('v-cuc-p').textContent = getDisplay('dm.energy_somma_cucina_istantanea');
+      const pwrSol = getPowerInWatts('dm.energy_potenza_fotovoltaico'); const pwrGri = getPowerInWatts('dm.energy_potenza_scambio_rete'); const pwrBat = getPowerInWatts('dm.energy_potenza_batteria'); const pwrWb = Math.abs(getPowerInWatts('dm.ev_potenza_wallbox')); const pwrBoiler = Math.abs(getPowerInWatts('dm.boiler_potenza_resistenza_boiler')); const pwrClima = Math.abs(getPowerInWatts('dm.energy_potenza_condizionatori')); const pwrLav = Math.abs(getPowerInWatts('dm.energy_somma_lavanderia_istantanea')); const pwrCuc = Math.abs(getPowerInWatts('dm.energy_somma_cucina_istantanea'));
       setNode('n-solar', pwrSol > 20); setNode('n-grid', Math.abs(pwrGri) > 20); setNode('n-battery', Math.abs(pwrBat) > 20); setNode('n-home', true); setNode('n-wb', pwrWb > 5); setNode('n-boiler', pwrBoiler > 5); setNode('n-clima', pwrClima > 5); setNode('n-lav', pwrLav > 5); setNode('n-cuc', pwrCuc > 5);
       setLine('line-solar-home', pwrSol > 20); setLine('line-grid-home', pwrGri > 20); setLine('line-solar-grid', pwrGri < -20); setLine('line-battery-home', pwrBat > 20); setLine('line-solar-battery', pwrBat < -20); setLine('line-home-wb', pwrWb > 5); setLine('line-home-boiler', pwrBoiler > 5); setLine('line-home-clima', pwrClima > 5); setLine('line-home-lav', pwrLav > 5); setLine('line-home-cuc', pwrCuc > 5);
 
-      const dSol = parseFloat(getRawState('sensor.solarman_daily_production')) || 0; const dHome = parseFloat(getRawState('sensor.solarman_daily_load_consumption')) || 0; const dBoiler = parseFloat(getRawState('sensor.energy_oggi_elettrodomestici_4')) || 0; const dWb = parseFloat(getRawState('sensor.energy_oggi_wallbox')) || 0; const dClima = parseFloat(getRawState('sensor.energy_oggi_condizionatori')) || 0; const dLav = parseFloat(getRawState('sensor.somma_elettrodomestici_lavanderia_giornaliero')) || 0; const dCuc = parseFloat(getRawState('sensor.somma_elettrodomestici_cucinina_tutto_giornaliero')) || 0; const dGridB = getRawState('sensor.solarman_daily_energy_bought'); const dGridS = getRawState('sensor.solarman_daily_energy_sold'); const dBatC = getRawState('sensor.solarman_daily_battery_charge'); const dBatD = getRawState('sensor.solarman_daily_battery_discharge');
-      document.getElementById('v-solar-day').textContent = getDisplay('sensor.solarman_daily_production'); document.getElementById('v-home-day').textContent = getDisplay('sensor.solarman_daily_load_consumption'); document.getElementById('v-boiler-day').textContent = getDisplay('sensor.energy_oggi_elettrodomestici_4'); document.getElementById('v-wb-day').textContent = getDisplay('sensor.energy_oggi_wallbox'); document.getElementById('v-clima-day').textContent = getDisplay('sensor.energy_oggi_condizionatori'); document.getElementById('v-lav-day').textContent = getDisplay('sensor.somma_elettrodomestici_lavanderia_giornaliero'); document.getElementById('v-cuc-day').textContent = getDisplay('sensor.somma_elettrodomestici_cucinina_tutto_giornaliero'); document.getElementById('v-grid-day').innerHTML = `<span style="color:#e11d48">↓ ${dGridB !== '—' ? dGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${dGridS !== '—' ? dGridS : 0} kWh</span>`; document.getElementById('v-battery-day').innerHTML = `<span style="color:#10b981">↓ ${dBatC !== '—' ? dBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${dBatD !== '—' ? dBatD : 0} kWh</span>`;
+      const dSol = parseFloat(getRawState('dm.energy_produzione_solare_oggi')) || 0; const dHome = parseFloat(getRawState('dm.energy_consumo_casa_oggi')) || 0; const dBoiler = parseFloat(getRawState('dm.energy_boiler_oggi')) || 0; const dWb = parseFloat(getRawState('dm.ev_energia_wallbox_oggi')) || 0; const dClima = parseFloat(getRawState('dm.energy_condizionatori_oggi')) || 0; const dLav = parseFloat(getRawState('dm.energy_somma_lavanderia_oggi')) || 0; const dCuc = parseFloat(getRawState('dm.energy_somma_cucina_oggi')) || 0; const dGridB = getRawState('dm.energy_energia_prelevata_oggi'); const dGridS = getRawState('dm.energy_energia_immessa_oggi'); const dBatC = getRawState('dm.energy_batteria_caricata_oggi'); const dBatD = getRawState('dm.energy_batteria_scaricata_oggi');
+      document.getElementById('v-solar-day').textContent = getDisplay('dm.energy_produzione_solare_oggi'); document.getElementById('v-home-day').textContent = getDisplay('dm.energy_consumo_casa_oggi'); document.getElementById('v-boiler-day').textContent = getDisplay('dm.energy_boiler_oggi'); document.getElementById('v-wb-day').textContent = getDisplay('dm.ev_energia_wallbox_oggi'); document.getElementById('v-clima-day').textContent = getDisplay('dm.energy_condizionatori_oggi'); document.getElementById('v-lav-day').textContent = getDisplay('dm.energy_somma_lavanderia_oggi'); document.getElementById('v-cuc-day').textContent = getDisplay('dm.energy_somma_cucina_oggi'); document.getElementById('v-grid-day').innerHTML = `<span style="color:#e11d48">↓ ${dGridB !== '—' ? dGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${dGridS !== '—' ? dGridS : 0} kWh</span>`; document.getElementById('v-battery-day').innerHTML = `<span style="color:#10b981">↓ ${dBatC !== '—' ? dBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${dBatD !== '—' ? dBatD : 0} kWh</span>`;
       setNode('n-solar-day', dSol > 0.1); setNode('n-grid-day', parseFloat(dGridB) > 0.1 || parseFloat(dGridS) > 0.1); setNode('n-battery-day', parseFloat(dBatC) > 0.1 || parseFloat(dBatD) > 0.1); setNode('n-home-day', true); setNode('n-wb-day', dWb > 0.1); setNode('n-boiler-day', dBoiler > 0.1); setNode('n-clima-day', dClima > 0.1); setNode('n-lav-day', dLav > 0.1); setNode('n-cuc-day', dCuc > 0.1); setLine('line-solar-home-day', dSol > 0.1); setLine('line-grid-home-day', parseFloat(dGridB) > 0.1); setLine('line-solar-grid-day', parseFloat(dGridS) > 0.1); setLine('line-battery-home-day', parseFloat(dBatD) > 0.1); setLine('line-solar-battery-day', parseFloat(dBatC) > 0.1); setLine('line-home-wb-day', dWb > 0.1); setLine('line-home-boiler-day', dBoiler > 0.1); setLine('line-home-clima-day', dClima > 0.1); setLine('line-home-lav-day', dLav > 0.1); setLine('line-home-cuc-day', dCuc > 0.1);
 
-      const mSol = parseFloat(getRawState('sensor.sensor_fotovoltaico_mensile')) || 0; const mHome = parseFloat(getRawState('sensor.sensor_carichi_mensile')) || 0; const mBoiler = parseFloat(getRawState('sensor.energy_mese_elettrodomestici_4')) || 0; const mWb = parseFloat(getRawState('sensor.energy_mese_wallbox')) || 0; const mClima = parseFloat(getRawState('sensor.energy_mese_condizionatori')) || 0; const mLav = parseFloat(getRawState('sensor.somma_elettrodomestici_lavanderia_mensile')) || 0; const mCuc = parseFloat(getRawState('sensor.somma_elettrodomestici_cucinina_tutto_mensile')) || 0; const mGridB = getRawState('sensor.sensor_grid_acquistata_mensile'); const mGridS = getRawState('sensor.sensor_grid_venduta_menesile'); const mBatC = getRawState('sensor.sensor_batteria_caricata_mensile'); const mBatD = getRawState('sensor.sensor_batteria_usata_mensile');
-      document.getElementById('v-solar-month').textContent = getDisplay('sensor.sensor_fotovoltaico_mensile'); document.getElementById('v-home-month').textContent = getDisplay('sensor.sensor_carichi_mensile'); document.getElementById('v-boiler-month').textContent = getDisplay('sensor.energy_mese_elettrodomestici_4'); document.getElementById('v-wb-month').textContent = getDisplay('sensor.energy_mese_wallbox'); document.getElementById('v-clima-month').textContent = getDisplay('sensor.energy_mese_condizionatori'); document.getElementById('v-lav-month').textContent = getDisplay('sensor.somma_elettrodomestici_lavanderia_mensile'); document.getElementById('v-cuc-month').textContent = getDisplay('sensor.somma_elettrodomestici_cucinina_tutto_mensile'); document.getElementById('v-grid-month').innerHTML = `<span style="color:#e11d48">↓ ${mGridB !== '—' ? mGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${mGridS !== '—' ? mGridS : 0} kWh</span>`; document.getElementById('v-battery-month').innerHTML = `<span style="color:#10b981">↓ ${mBatC !== '—' ? mBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${mBatD !== '—' ? mBatD : 0} kWh</span>`;
+      const mSol = parseFloat(getRawState('dm.energy_produzione_solare_mese')) || 0; const mHome = parseFloat(getRawState('dm.energy_consumo_casa_mese')) || 0; const mBoiler = parseFloat(getRawState('dm.energy_boiler_mese')) || 0; const mWb = parseFloat(getRawState('dm.ev_energia_wallbox_mese')) || 0; const mClima = parseFloat(getRawState('dm.energy_condizionatori_mese')) || 0; const mLav = parseFloat(getRawState('dm.energy_somma_lavanderia_mese')) || 0; const mCuc = parseFloat(getRawState('dm.energy_somma_cucina_mese')) || 0; const mGridB = getRawState('dm.energy_rete_acquistata_mese'); const mGridS = getRawState('dm.energy_rete_venduta_mese'); const mBatC = getRawState('dm.energy_batteria_caricata_mese'); const mBatD = getRawState('dm.energy_batteria_usata_mese');
+      document.getElementById('v-solar-month').textContent = getDisplay('dm.energy_produzione_solare_mese'); document.getElementById('v-home-month').textContent = getDisplay('dm.energy_consumo_casa_mese'); document.getElementById('v-boiler-month').textContent = getDisplay('dm.energy_boiler_mese'); document.getElementById('v-wb-month').textContent = getDisplay('dm.ev_energia_wallbox_mese'); document.getElementById('v-clima-month').textContent = getDisplay('dm.energy_condizionatori_mese'); document.getElementById('v-lav-month').textContent = getDisplay('dm.energy_somma_lavanderia_mese'); document.getElementById('v-cuc-month').textContent = getDisplay('dm.energy_somma_cucina_mese'); document.getElementById('v-grid-month').innerHTML = `<span style="color:#e11d48">↓ ${mGridB !== '—' ? mGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${mGridS !== '—' ? mGridS : 0} kWh</span>`; document.getElementById('v-battery-month').innerHTML = `<span style="color:#10b981">↓ ${mBatC !== '—' ? mBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${mBatD !== '—' ? mBatD : 0} kWh</span>`;
       setNode('n-solar-month', mSol > 0.1); setNode('n-grid-month', parseFloat(mGridB) > 0.1 || parseFloat(mGridS) > 0.1); setNode('n-battery-month', parseFloat(mBatC) > 0.1 || parseFloat(mBatD) > 0.1); setNode('n-home-month', true); setNode('n-wb-month', mWb > 0.1); setNode('n-boiler-month', mBoiler > 0.1); setNode('n-clima-month', mClima > 0.1); setNode('n-lav-month', mLav > 0.1); setNode('n-cuc-month', mCuc > 0.1); setLine('line-solar-home-month', mSol > 0.1); setLine('line-grid-home-month', parseFloat(mGridB) > 0.1); setLine('line-solar-grid-month', parseFloat(mGridS) > 0.1); setLine('line-battery-home-month', parseFloat(mBatD) > 0.1); setLine('line-solar-battery-month', parseFloat(mBatC) > 0.1); setLine('line-home-wb-month', mWb > 0.1); setLine('line-home-boiler-month', mBoiler > 0.1); setLine('line-home-clima-month', mClima > 0.1); setLine('line-home-lav-month', mLav > 0.1); setLine('line-home-cuc-month', mCuc > 0.1);
       const statiEV = {'A':'Non Connessa','B':'🔌 Collegata','C':'⚡ In Carica','D':'⚡ In Carica','F':'⚠️ Errore'}; 
-      const codeEV = getRawState('sensor.stato_decodificato_evcc'); 
-      const socCarNum = parseFloat(getRawState('sensor.leapmotor_battery')) || 0; 
+      const codeEV = getRawState('dm.ev_stato_ricarica'); 
+      const socCarNum = parseFloat(getRawState('dm.ev_batteria_auto')) || 0; 
       const isCharging = (codeEV === 'C' || codeEV === 'D');
       // ── EV valori dettaglio wallbox ──────────────────────
-      const voltRaw   = getRawState('sensor.1p7k_101573_tensione');
-      const kmRicRaw  = getRawState('sensor.km_percorsi_dall_ultima_ricarica');
-      const odoRaw    = getRawState('sensor.leapmotor_odometer');
-      const acTotRaw  = getRawState('sensor.leapmotor_b10_prelievo_totale_ac_2');
-      const tempWbRaw = getRawState('sensor.1p7k_101573_temperatura');
+      const voltRaw   = getRawState('dm.ev_tensione_wallbox');
+      const kmRicRaw  = getRawState('dm.ev_km_dall_ultima_ricarica');
+      const odoRaw    = getRawState('dm.ev_odometro');
+      const acTotRaw  = getRawState('dm.ev_prelievo_ac_totale_auto');
+      const tempWbRaw = getRawState('dm.ev_temperatura_wallbox');
       document.querySelectorAll('.v-ev-volt').forEach(el => el.textContent = voltRaw !== '—' ? parseFloat(voltRaw).toFixed(1)+' V' : '—');
       document.querySelectorAll('.v-ev-km-ric').forEach(el => el.textContent = kmRicRaw !== '—' ? kmRicRaw+' km' : '—');
       document.querySelectorAll('.v-ev-odo').forEach(el => el.textContent = odoRaw !== '—' ? parseFloat(odoRaw).toFixed(0)+' km' : '—');
       document.querySelectorAll('.v-ev-ac-tot').forEach(el => el.textContent = acTotRaw !== '—' ? parseFloat(acTotRaw).toFixed(2)+' kWh' : '—');
       document.querySelectorAll('.v-ev-temp-wb').forEach(el => el.textContent = tempWbRaw !== '—' ? parseFloat(tempWbRaw).toFixed(1)+' °C' : '—');
-      const autoLimRaw = getRawState('sensor.evcc_autonomia_al_limite');
+      const autoLimRaw = getRawState('dm.ev_autonomia_al_limite_di_carica');
       document.querySelectorAll('.v-auto-limite').forEach(el => el.textContent = autoLimRaw !== '—' ? parseFloat(autoLimRaw).toFixed(0)+' km' : '—');
       // Modo EVCC
-      const evccModeRaw = getRawState('select.evcc_lektrico_mode');
+      const evccModeRaw = getRawState('dm.ev_modalita_ricarica_evcc');
       document.querySelectorAll('.lm-evcc-btn').forEach(b => b.classList.remove('active'));
       const modeMap2 = { 'off':'m-btn-off','pv':'m-btn-pv','minpv':'m-btn-minpv','now':'m-btn-now' };
       const activeM = modeMap2[evccModeRaw?.toLowerCase()];
       if (activeM) { const el = document.getElementById(activeM); if(el) el.classList.add('active'); }
       // Target SoC select
       const tSocSel = document.getElementById('sel-target-soc');
-      const tSocVal = getRawState('input_select.target_soc_auto');
+      const tSocVal = getRawState('input_dm.ev_target_soc');
       if (tSocSel && tSocSel.options.length === 0) {
-          const opts = STATES['input_select.target_soc_auto']?.attributes?.options || ['60','70','80','90','100'];
+          const opts = STATES['input_dm.ev_target_soc']?.attributes?.options || ['60','70','80','90','100'];
           opts.forEach(o => { const opt = document.createElement('option'); opt.value=o; opt.textContent=o+'%'; tSocSel.appendChild(opt); });
       }
       if (tSocSel && tSocVal !== '—') tSocSel.value = tSocVal; 
-      const energyKwhRaw = getRawState('sensor.evcc_lektrico_charged_energy');
-      const solarMixRaw = getRawState('sensor.evcc_lektrico_session_solar_percentage'); 
+      const energyKwhRaw = getRawState('dm.ev_energia_sessione');
+      const solarMixRaw = getRawState('dm.ev_percentuale_solare_sessione'); 
       
       document.querySelectorAll('.v-ev-solar-mix').forEach(el => {
           el.textContent = solarMixRaw !== '—' ? Math.round(parseFloat(solarMixRaw)) + '%' : '—';
@@ -9155,7 +9155,7 @@ function render() {
           }
       }
       
-      let targetSocStr = getRawState('input_select.target_soc_auto');
+      let targetSocStr = getRawState('input_dm.ev_target_soc');
       let targetSoc = parseInt(targetSocStr);
       if (isNaN(targetSoc)) targetSoc = 100;
       
@@ -9208,20 +9208,20 @@ function render() {
       
       // ── MiniPC barre CPU/RAM/Disco colorate ──
       // ── MiniPC: tutte le variabili PRIMA di usarle ──────────
-      const cpuVal  = parseFloat(getRawState('sensor.minipc_cpu_usage'))  || 0;
-      const ramVal  = parseFloat(getRawState('sensor.minipc_memory_use')) || 0;
-      const ramTot  = parseFloat(STATES['sensor.minipc_memory_use']?.attributes?.total) || 32768;
-      const diskVal = parseFloat(getRawState('sensor.minipc_disk_usage')) || 0;
-      const tempVal = parseFloat(getRawState('sensor.minipc_package_id_0_temperature')) || 0;
+      const cpuVal  = parseFloat(getRawState('dm.server_cpu'))  || 0;
+      const ramVal  = parseFloat(getRawState('dm.server_ram')) || 0;
+      const ramTot  = parseFloat(STATES['dm.server_ram']?.attributes?.total) || 32768;
+      const diskVal = parseFloat(getRawState('dm.server_disco')) || 0;
+      const tempVal = parseFloat(getRawState('dm.server_temperatura_cpu')) || 0;
       const ramPct  = ramTot > 0 ? Math.min(100, (ramVal / ramTot) * 100) : 0;
 
       // Valori testuali nei ring
       const cpuEl  = document.getElementById('v-srv-cpu');
       const ramEl  = document.getElementById('v-srv-ram');
       const diskEl = document.getElementById('v-srv-disk');
-      if (cpuEl)  cpuEl.textContent  = cpuVal  > 0 ? cpuVal.toFixed(1)  : getDisplay('sensor.minipc_cpu_usage').replace('%','').trim() || '—';
+      if (cpuEl)  cpuEl.textContent  = cpuVal  > 0 ? cpuVal.toFixed(1)  : getDisplay('dm.server_cpu').replace('%','').trim() || '—';
       if (ramEl)  ramEl.textContent  = ramPct  > 0 ? ramPct.toFixed(0)  : '—';
-      if (diskEl) diskEl.textContent = diskVal > 0 ? diskVal.toFixed(0) : getDisplay('sensor.minipc_disk_usage').replace('%','').trim() || '—';
+      if (diskEl) diskEl.textContent = diskVal > 0 ? diskVal.toFixed(0) : getDisplay('dm.server_disco').replace('%','').trim() || '—';
 
       // Ring animati SVG  — circonferenza r=42: 2π×42 ≈ 264
       const circ264 = 2 * Math.PI * 42;
@@ -9259,41 +9259,41 @@ function render() {
           if (stEl) stEl.textContent = tempVal > 75 ? '🔴 Alta — Controllare' : tempVal > 55 ? '🟡 Nella norma' : '🟢 Ottimale';
       }
 
-      document.querySelectorAll('.v-ev-pow').forEach(el => el.textContent = getDisplay('sensor.1p7k_101573_potenza')); document.querySelectorAll('.v-ev-volt').forEach(el => el.textContent = getDisplay('sensor.1p7k_101573_tensione')); document.querySelectorAll('.v-ev-range').forEach(el => el.textContent = getDisplay('sensor.leapmotor_range')); document.querySelectorAll('.v-ev-km-ric').forEach(el => el.textContent = getDisplay('sensor.km_percorsi_dall_ultima_ricarica')); document.querySelectorAll('.v-ev-odo').forEach(el => el.textContent = getDisplay('sensor.leapmotor_odometer')); document.querySelectorAll('.v-ev-ac-tot').forEach(el => el.textContent = getDisplay('sensor.leapmotor_b10_prelievo_totale_ac_2')); document.querySelectorAll('.v-ev-temp-wb').forEach(el => el.textContent = getDisplay('sensor.1p7k_101573_temperatura'));
-      updateSelectOptions('input_select.target_soc_auto', 'sel-target-soc'); updateSelectOptions('input_select.target_soc_auto', 'sel-target-soc-popup'); document.querySelectorAll('.v-auto-limite').forEach(el => el.textContent = getDisplay('sensor.evcc_autonomia_al_limite'));
-      const evccMode = getRawState('select.evcc_lektrico_mode'); document.querySelectorAll('.evcc-mode-btn').forEach(btn => btn.classList.remove('active')); if(evccMode && evccMode !== '—') { const md = evccMode.toLowerCase(); const b1 = document.getElementById('m-btn-' + md); if(b1) b1.classList.add('active'); const b2 = document.getElementById('p-btn-' + md); if(b2) b2.classList.add('active'); }
+      document.querySelectorAll('.v-ev-pow').forEach(el => el.textContent = getDisplay('dm.ev_potenza_wallbox')); document.querySelectorAll('.v-ev-volt').forEach(el => el.textContent = getDisplay('dm.ev_tensione_wallbox')); document.querySelectorAll('.v-ev-range').forEach(el => el.textContent = getDisplay('dm.ev_autonomia')); document.querySelectorAll('.v-ev-km-ric').forEach(el => el.textContent = getDisplay('dm.ev_km_dall_ultima_ricarica')); document.querySelectorAll('.v-ev-odo').forEach(el => el.textContent = getDisplay('dm.ev_odometro')); document.querySelectorAll('.v-ev-ac-tot').forEach(el => el.textContent = getDisplay('dm.ev_prelievo_ac_totale_auto')); document.querySelectorAll('.v-ev-temp-wb').forEach(el => el.textContent = getDisplay('dm.ev_temperatura_wallbox'));
+      updateSelectOptions('input_dm.ev_target_soc', 'sel-target-soc'); updateSelectOptions('input_dm.ev_target_soc', 'sel-target-soc-popup'); document.querySelectorAll('.v-auto-limite').forEach(el => el.textContent = getDisplay('dm.ev_autonomia_al_limite_di_carica'));
+      const evccMode = getRawState('dm.ev_modalita_ricarica_evcc'); document.querySelectorAll('.evcc-mode-btn').forEach(btn => btn.classList.remove('active')); if(evccMode && evccMode !== '—') { const md = evccMode.toLowerCase(); const b1 = document.getElementById('m-btn-' + md); if(b1) b1.classList.add('active'); const b2 = document.getElementById('p-btn-' + md); if(b2) b2.classList.add('active'); }
 
       if(currentPopupType && currentPopupType.startsWith('subloads_')) { renderSubLoads(currentPopupType.replace('subloads_', '')); }
       if(currentPopupType === 'gestione_luci' && document.getElementById('details-modal').classList.contains('show')) { apriGestioneLuci(false); }
 
       if(document.getElementById('lavatrice-modal').classList.contains('show')) {
-          updateSelectOptions('select.lavatrice_programma', 'sel-lav-prog'); updateSelectOptions('select.lavatrice_temperatura', 'sel-lav-temp'); updateSelectOptions('select.lavatrice_centrifuga', 'sel-lav-cent');
-          document.getElementById('v-lav-fase').textContent = getDisplay('sensor.lavatrice_fase'); document.getElementById('v-lav-tempo').textContent = getDisplay('sensor.lavatrice_tempo_rimanente');
-          const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('sensor.lavatrice_power');
-          const mainPwrSwitch = STATES['switch.lavatrice']; const btnMainPwr = document.getElementById('lav-btn-power'); const txtMainPwr = document.getElementById('lav-txt-power');
+          updateSelectOptions('dm.lavatrice_programma', 'sel-lav-prog'); updateSelectOptions('dm.lavatrice_temperatura', 'sel-lav-temp'); updateSelectOptions('dm.lavatrice_centrifuga', 'sel-lav-cent');
+          document.getElementById('v-lav-fase').textContent = getDisplay('dm.lavatrice_fase_corrente'); document.getElementById('v-lav-tempo').textContent = getDisplay('dm.lavatrice_tempo_rimanente');
+          const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('dm.core_015');
+          const mainPwrSwitch = STATES['dm.lavatrice_presa_avvio_lavatrice']; const btnMainPwr = document.getElementById('lav-btn-power'); const txtMainPwr = document.getElementById('lav-txt-power');
           if (btnMainPwr && mainPwrSwitch) { const isOn = mainPwrSwitch.state === 'on'; btnMainPwr.classList.toggle('active', isOn); txtMainPwr.textContent = isOn ? 'ACCESA' : 'SPENTA'; btnMainPwr.querySelector('.icon').textContent = isOn ? '⚡' : '🔌'; if(isOn) { btnMainPwr.style.setProperty('--btn-col', '#0ea5e9'); btnMainPwr.style.setProperty('--btn-bg', '#e0f2fe'); } else { btnMainPwr.style.setProperty('--btn-col', '#64748b'); btnMainPwr.style.setProperty('--btn-bg', '#fff'); } }
-          const playSwitch = STATES['switch.lavatrice_lavatrice']; const btnPlay = document.getElementById('lav-txt-play');
+          const playSwitch = STATES['dm.lavatrice_avvio_ciclo']; const btnPlay = document.getElementById('lav-txt-play');
           if (btnPlay && playSwitch) { const isPlaying = playSwitch.state === 'on'; btnPlay.classList.toggle('active', isPlaying); btnPlay.textContent = isPlaying ? 'IN CORSO' : 'PAUSA'; btnPlay.querySelector('.icon').textContent = isPlaying ? '🔄' : '▶️'; if(isPlaying) { btnPlay.style.setProperty('--btn-col', '#ea580c'); btnPlay.style.setProperty('--btn-bg', '#ffedd5'); } else { btnPlay.style.setProperty('--btn-col', '#10b981'); btnPlay.style.setProperty('--btn-bg', '#d1fae5'); } }
-          const acLav = STATES['binary_sensor.ac_elettrodomestici_1']; const imgLav = document.getElementById('img-lavatrice'); if(imgLav && acLav && imgLav.style.display !== 'none') { imgLav.src = acLav.state === 'on' ? '/local/foto-pkg/lavatrice_on.gif' : '/local/foto-pkg/lavatrice_off.png'; }
+          const acLav = STATES['dm.core_001']; const imgLav = document.getElementById('img-lavatrice'); if(imgLav && acLav && imgLav.style.display !== 'none') { imgLav.src = acLav.state === 'on' ? '/local/foto-pkg/lavatrice_on.gif' : '/local/foto-pkg/lavatrice_off.png'; }
       }
 
-      const tAlto = getRawState('sensor.sonoff_10021230f6_temperature'); const tBasso = getRawState('sensor.sonoff_1001e22ebd_temperature'); document.getElementById('syn-v-pannello').textContent = getDisplay('sensor.sonoff_1001dbde79_temperature'); document.getElementById('syn-v-balto').textContent = tAlto !== '—' ? tAlto + ' °C' : '—'; document.getElementById('syn-v-bbasso').textContent = tBasso !== '—' ? tBasso + ' °C' : '—'; document.getElementById('syn-v-delta').textContent = getDisplay('sensor.delta_solare_termico_boiler'); document.getElementById('syn-v-press').textContent = getDisplay('sensor.pressione_acqua'); document.getElementById('syn-v-power').textContent = getDisplay('sensor.boiler_power'); document.documentElement.style.setProperty('--tank-top', getTempColor(tAlto)); document.documentElement.style.setProperty('--tank-bottom', getTempColor(tBasso));
+      const tAlto = getRawState('dm.boiler_sonda_temperatura_3'); const tBasso = getRawState('dm.boiler_sonda_temperatura_2'); document.getElementById('syn-v-pannello').textContent = getDisplay('dm.boiler_sonda_temperatura_1'); document.getElementById('syn-v-balto').textContent = tAlto !== '—' ? tAlto + ' °C' : '—'; document.getElementById('syn-v-bbasso').textContent = tBasso !== '—' ? tBasso + ' °C' : '—'; document.getElementById('syn-v-delta').textContent = getDisplay('dm.boiler_delta_temperatura'); document.getElementById('syn-v-press').textContent = getDisplay('dm.boiler_pressione_acqua'); document.getElementById('syn-v-power').textContent = getDisplay('dm.boiler_potenza_resistenza_boiler'); document.documentElement.style.setProperty('--tank-top', getTempColor(tAlto)); document.documentElement.style.setProperty('--tank-bottom', getTempColor(tBasso));
       const setActiveState = (id, isActive) => { const el = document.getElementById(id); if(el) el.classList.toggle('active', isActive); };
       const updateBoilerBtn = (id, isActive, tOn='ON', tOff='OFF') => { const el = document.getElementById(id); if(el) { el.classList.toggle('active', isActive); const st = el.querySelector('.state'); if(st) st.textContent = isActive ? tOn : tOff; } };
-      const isPompaSolActive = getRawState('binary_sensor.pompa_solare_termico') === 'on'; setActiveState('syn-p-solare', isPompaSolActive); updateBoilerBtn('b-c-pompasol', isPompaSolActive); const sun = document.getElementById('syn-sun'); if(sun) sun.classList.toggle('active', isPompaSolActive); setLine('flow-sol-hot', isPompaSolActive); setLine('flow-sol-cold', isPompaSolActive);
-      const isPannelloSolActive = getRawState('switch.solare_termico') === 'on'; const sPanel = document.querySelector('.syn-solar-panel'); if(sPanel) sPanel.classList.toggle('active', isPannelloSolActive);
-      const isRicircoloActive = getRawState('switch.pompa_di_ricircolo') === 'on'; setActiveState('syn-p-ricircolo', isRicircoloActive); updateBoilerBtn('b-c-ricircolo', isRicircoloActive); setLine('flow-ricircolo', isRicircoloActive); 
+      const isPompaSolActive = getRawState('dm.boiler_stato_pompa_solare') === 'on'; setActiveState('syn-p-solare', isPompaSolActive); updateBoilerBtn('b-c-pompasol', isPompaSolActive); const sun = document.getElementById('syn-sun'); if(sun) sun.classList.toggle('active', isPompaSolActive); setLine('flow-sol-hot', isPompaSolActive); setLine('flow-sol-cold', isPompaSolActive);
+      const isPannelloSolActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; const sPanel = document.querySelector('.syn-solar-panel'); if(sPanel) sPanel.classList.toggle('active', isPannelloSolActive);
+      const isRicircoloActive = getRawState('dm.clima_pompa_di_ricircolo') === 'on'; setActiveState('syn-p-ricircolo', isRicircoloActive); updateBoilerBtn('b-c-ricircolo', isRicircoloActive); setLine('flow-ricircolo', isRicircoloActive); 
       const chiaveState = getRawState('valve.chiave_solare_termico'); const isChiaveOpen = chiaveState === 'open'; setActiveState('syn-v-chiave', isChiaveOpen); updateBoilerBtn('b-c-valvola', isChiaveOpen, 'APERTA', 'CHIUSA'); document.getElementById('txt-chiave').textContent = isChiaveOpen ? 'APERTA' : 'CHIUSA';
-      const isCtrlSolareActive = getRawState('switch.solare_termico') === 'on'; updateBoilerBtn('b-c-solare', isCtrlSolareActive); 
-      let isCoverOpen = false; let coverPos = 0; const coverObj = STATES['cover.valvola_di_sicurezza']; if(coverObj && coverObj.attributes) { coverPos = coverObj.attributes.current_position; if(coverPos !== undefined && coverPos > 0) isCoverOpen = true; } const synSafety = document.getElementById('syn-safety-icon'); if(synSafety) synSafety.classList.toggle('active', isCoverOpen); const synFaucet = document.getElementById('syn-faucet-wrap'); if(synFaucet) synFaucet.classList.toggle('open', isCoverOpen); const sBtn = document.getElementById('b-c-sicurezza'); if(sBtn) { sBtn.classList.toggle('active', isCoverOpen); const stNode = sBtn.querySelector('.state'); if(stNode) stNode.textContent = isCoverOpen ? `${coverPos}%` : 'CHIUSA'; }
-      updateBoilerBtn('b-c-centralina', getRawState('switch.centralina_solare_termico') === 'on'); updateBoilerBtn('b-c-boiler', getRawState('switch.boiler') === 'on'); updateBoilerBtn('b-c-pdc', getRawState('switch.pompa_di_calore') === 'on'); updateBoilerBtn('b-c-boost', getRawState('switch.boost_pompa_di_calore') === 'on');
+      const isCtrlSolareActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; updateBoilerBtn('b-c-solare', isCtrlSolareActive); 
+      let isCoverOpen = false; let coverPos = 0; const coverObj = STATES['dm.boiler_valvola_di_sicurezza']; if(coverObj && coverObj.attributes) { coverPos = coverObj.attributes.current_position; if(coverPos !== undefined && coverPos > 0) isCoverOpen = true; } const synSafety = document.getElementById('syn-safety-icon'); if(synSafety) synSafety.classList.toggle('active', isCoverOpen); const synFaucet = document.getElementById('syn-faucet-wrap'); if(synFaucet) synFaucet.classList.toggle('open', isCoverOpen); const sBtn = document.getElementById('b-c-sicurezza'); if(sBtn) { sBtn.classList.toggle('active', isCoverOpen); const stNode = sBtn.querySelector('.state'); if(stNode) stNode.textContent = isCoverOpen ? `${coverPos}%` : 'CHIUSA'; }
+      updateBoilerBtn('b-c-centralina', getRawState('dm.boiler_centralina_solare_termico') === 'on'); updateBoilerBtn('b-c-boiler', getRawState('dm.boiler_interruttore_boiler') === 'on'); updateBoilerBtn('b-c-pdc', getRawState('dm.clima_pompa_di_calore') === 'on'); updateBoilerBtn('b-c-boost', getRawState('dm.clima_boost_pompa_di_calore') === 'on');
 
       // ═══════ AGGIORNAMENTO PANNELLO ANTIFURTO PREMIUM ═══════
       (function() {
-        const alarmState     = getRawState('alarm_control_panel.casa');
-        const alarmTriggered = (getRawState('switch.allarme_antifurto') || '').toLowerCase() === 'on';
-        const alarmStateObj  = STATES['alarm_control_panel.casa'];
-        const triggerObj     = STATES['switch.allarme_antifurto'];
+        const alarmState     = getRawState('dm.security_centrale_allarme');
+        const alarmTriggered = (getRawState('dm.home_interruttore_antifurto') || '').toLowerCase() === 'on';
+        const alarmStateObj  = STATES['dm.security_centrale_allarme'];
+        const triggerObj     = STATES['dm.home_interruttore_antifurto'];
         const alStage  = document.getElementById('alarm-stage');
         const alTextEl = document.getElementById('alarm-state-text-new');
         const alIconEl = document.getElementById('alarm-icon-new');
@@ -9363,28 +9363,28 @@ function render() {
         }
       })();
 
-      const lights = ['light.salone', 'light.cucina', 'light.camera_da_letto', 'light.luce_studio', 'light.lavanderia']; lights.forEach(l => { const el = document.getElementById('t-' + l.replace('.', '-')); if(el) el.classList.toggle('on', getRawState(l) === 'on'); });
+      const lights = ['dm.core_006', 'dm.core_003', 'dm.core_002', 'dm.core_005', 'dm.core_004']; lights.forEach(l => { const el = document.getElementById('t-' + l.replace('.', '-')); if(el) el.classList.toggle('on', getRawState(l) === 'on'); });
 
       // CPU gestita sopra
 
       // RAM + temperatura display
       // ram display gestito nel ring JS
-      document.getElementById('v-srv-cputemp').textContent = (parseFloat(getRawState('sensor.minipc_package_id_0_temperature')) || 0).toFixed(0);
+      document.getElementById('v-srv-cputemp').textContent = (parseFloat(getRawState('dm.server_temperatura_cpu')) || 0).toFixed(0);
       // disk display gestito nel ring JS
-      document.getElementById('v-srv-pwr').textContent    = getDisplay('sensor.raspberry_current_power');
-      document.getElementById('v-srv-dl').textContent     = getDisplay('sensor.speedtest_download');
-      document.getElementById('v-srv-ul').textContent     = getDisplay('sensor.speedtest_upload');
+      document.getElementById('v-srv-pwr').textContent    = getDisplay('dm.server_potenza_raspberry_server');
+      document.getElementById('v-srv-dl').textContent     = getDisplay('dm.server_speedtest_download');
+      document.getElementById('v-srv-ul').textContent     = getDisplay('dm.server_speedtest_upload');
 
       // Uptime — gestito nel blocco MiniPC sotto
       // (aggiornato dalla IIFE sotto)
 
       // ── MiniPC barre colorate + ring temperatura ──
       (function() {
-          const cpuPct  = parseFloat(getRawState('sensor.minipc_cpu_usage'))    || 0;
-          const ramMb   = parseFloat(getRawState('sensor.minipc_memory_use'))   || 0;
-          const ramTot  = parseFloat(STATES['sensor.minipc_memory_use']?.attributes?.total) || 16000;
-          const diskPct = parseFloat(getRawState('sensor.minipc_disk_usage'))   || 0;
-          const tempC   = parseFloat(getRawState('sensor.minipc_package_id_0_temperature')) || 0;
+          const cpuPct  = parseFloat(getRawState('dm.server_cpu'))    || 0;
+          const ramMb   = parseFloat(getRawState('dm.server_ram'))   || 0;
+          const ramTot  = parseFloat(STATES['dm.server_ram']?.attributes?.total) || 16000;
+          const diskPct = parseFloat(getRawState('dm.server_disco'))   || 0;
+          const tempC   = parseFloat(getRawState('dm.server_temperatura_cpu')) || 0;
 
           const colorCls = p => p < 60 ? 'low' : p < 80 ? 'medium' : 'high';
           const setBar = (id, pct) => {
@@ -9408,10 +9408,10 @@ function render() {
           }
       })(); // fine IIFE MiniPC metriche
 
-      // Uptime — sensor.uptime (Glances) restituisce datetime ISO del boot
+      // Uptime — dm.server_uptime_home_assistant (Glances) restituisce datetime ISO del boot
           // Es: "2026-06-09T21:59:23+00:00"
           (function() {
-              const raw = STATES['sensor.uptime'];
+              const raw = STATES['dm.server_uptime_home_assistant'];
               if (!raw || !raw.state) return;
               const upEl  = document.getElementById('v-srv-uptime');
               const subEl = document.getElementById('v-srv-uptime-sub');
@@ -9433,9 +9433,9 @@ function render() {
               subEl.textContent = 'Riavviato: ' + bootLocal + staleStr;
           })();
       // Rete
-      // Connettività: binary_sensor.google_com (confermato dall'utente)
-      const netStat    = getRawState('binary_sensor.google_com');
-      const netEntityId = 'binary_sensor.google_com';
+      // Connettività: dm.server_raggiungibilita_google (confermato dall'utente)
+      const netStat    = getRawState('dm.server_raggiungibilita_google');
+      const netEntityId = 'dm.server_raggiungibilita_google';
       const netText = document.getElementById('v-srv-net-text');
       const netText2 = document.getElementById('v-srv-net-text2');
       const netStatus = document.getElementById('v-srv-net-status');
@@ -9455,7 +9455,7 @@ function render() {
 
       // Inverter — v254 fix: distingue correttamente ON-GRID da OFF-GRID
       // (Bug precedente: includes('grid') matchava entrambi perché "off-grid" contiene "grid")
-      const invStat = getRawState('sensor.solarman_grid_connected_status');
+      const invStat = getRawState('dm.energy_stato_rete');
       const invText  = document.getElementById('v-srv-inv-text');
       const invStatus = document.getElementById('v-srv-inv-status');
       const invBadge  = document.getElementById('waw-inv-badge');
@@ -9469,9 +9469,9 @@ function render() {
       if(currentPopupType && document.getElementById('details-modal').classList.contains('show') && !currentPopupType.startsWith('subloads_') && currentPopupType !== 'gestione_luci' && currentPopupType !== 'camera_view') { apriDettagli(null, currentPopupType); }
 
       const climas = [
-          'climate.salone', 'climate.cucina', 'climate.camera_da_letto', 'climate.cameretta',
-          'climate.termosifone_salone', 'climate.termosifone_bagno', 'climate.termosifone_cucina', 
-          'climate.termosifone_studio', 'climate.termosifone_camera_da_letto', 'climate.termosifone_cameretta'
+          'dm.clima_condizionatore_salone', 'dm.clima_condizionatore_cucina', 'dm.clima_condizionatore_camera', 'dm.clima_condizionatore_cameretta',
+          'dm.clima_termosifone_salone', 'dm.clima_termosifone_bagno', 'dm.clima_termosifone_cucina', 
+          'dm.clima_termosifone_studio', 'dm.clima_termosifone_camera', 'dm.clima_termosifone_cameretta'
       ];
       
       climas.forEach(id => {
@@ -9558,12 +9558,12 @@ function toggleClima(entity) {
 // v241: aggiunto switch FREDDO/CALDO. Stessa lista stanze, lo switch decide se
 //       il tap accende il condizionatore (climate.*) o il termosifone (input_boolean.*)
 const QUICK_STANZE = [
-  { nome: 'Matrimoniale', icona: '🛌', clima: 'climate.camera_da_letto', term: 'input_boolean.termosifone_camera_matrimoniale' },
-  { nome: 'Cameretta',    icona: '🛏️', clima: 'climate.cameretta',       term: 'input_boolean.termosifone_cameretta' },
-  { nome: 'Cucina',       icona: '🍽️', clima: 'climate.cucina',          term: 'input_boolean.cucina' },
-  { nome: 'Salone',       icona: '🛋️', clima: 'climate.salone',          term: null },
-  { nome: 'Bagno',        icona: '🛁', clima: null,                       term: 'input_boolean.termosifone_bagno' },
-  { nome: 'Studio',       icona: '💼', clima: null,                       term: 'input_boolean.termosifone_studio' }
+  { nome: 'Matrimoniale', icona: '🛌', clima: 'dm.clima_condizionatore_camera', term: 'dm.clima_toggle_termosifone_camera' },
+  { nome: 'Cameretta',    icona: '🛏️', clima: 'dm.clima_condizionatore_cameretta',       term: 'dm.clima_toggle_termosifone_cameretta' },
+  { nome: 'Cucina',       icona: '🍽️', clima: 'dm.clima_condizionatore_cucina',          term: 'dm.clima_toggle_cucina' },
+  { nome: 'Salone',       icona: '🛋️', clima: 'dm.clima_condizionatore_salone',          term: null },
+  { nome: 'Bagno',        icona: '🛁', clima: null,                       term: 'dm.clima_toggle_termosifone_bagno' },
+  { nome: 'Studio',       icona: '💼', clima: null,                       term: 'dm.clima_toggle_termosifone_studio' }
 ];
 
 // Modalità corrente del popup: 'freddo' (default) o 'caldo'
@@ -9607,8 +9607,8 @@ function apriQuickClimaCaldo() {
 // v244: render del pannello termico (caldaia/termocamino/aspiratore canna fumaria)
 function renderThermalPanel() {
     const map = [
-      { entityId: 'switch.caldaia',                   rowEl: 'ns-thermal-row-caldaia',     stateEl: 'ns-thermal-caldaia',     textEl: 'ns-thermal-caldaia-text' },
-      { entityId: 'switch.termocamino',               rowEl: 'ns-thermal-row-termocamino', stateEl: 'ns-thermal-termocamino', textEl: 'ns-thermal-termocamino-text' }
+      { entityId: 'dm.clima_interruttore_caldaia',                   rowEl: 'ns-thermal-row-caldaia',     stateEl: 'ns-thermal-caldaia',     textEl: 'ns-thermal-caldaia-text' },
+      { entityId: 'dm.clima_termocamino',               rowEl: 'ns-thermal-row-termocamino', stateEl: 'ns-thermal-termocamino', textEl: 'ns-thermal-termocamino-text' }
     ];
     map.forEach(m => {
       const s = STATES[m.entityId];
@@ -9624,7 +9624,7 @@ function renderThermalPanel() {
       else                        { el.classList.add('unavail'); txt.textContent = 'N/D';   if (row) row.classList.add('is-unavail'); }
     });
     // Aspiratore (riga cliccabile)
-    const aspiratore = STATES['switch.aspiratore_canna_fumaria'];
+    const aspiratore = STATES['dm.clima_aspiratore_canna_fumaria'];
     const aspRow = document.getElementById('ns-thermal-row-aspiratore');
     const aspBtn = document.getElementById('ns-thermal-aspiratore-btn');
     const aspText = document.getElementById('ns-thermal-aspiratore-text');
@@ -9650,11 +9650,11 @@ function renderThermalPanel() {
 function toggleAspiratoreCF() {
     if (!ws) return;
     if (navigator.vibrate) navigator.vibrate(15);
-    const cur = STATES['switch.aspiratore_canna_fumaria']?.state;
+    const cur = STATES['dm.clima_aspiratore_canna_fumaria']?.state;
     const service = (cur === 'on') ? 'turn_off' : 'turn_on';
     ws.send(JSON.stringify({
       id: msgId++, type: 'call_service', domain: 'switch', service: service,
-      service_data: { entity_id: 'switch.aspiratore_canna_fumaria' }
+      service_data: { entity_id: 'dm.clima_aspiratore_canna_fumaria' }
     }));
     setTimeout(renderThermalPanel, 300);
 }
@@ -9663,7 +9663,7 @@ function toggleAspiratoreCF() {
 function renderCaldaiaBanner() {
     const banner = document.getElementById('caldaia-banner');
     if (!banner) return;
-    const stato = STATES['switch.caldaia']?.state;
+    const stato = STATES['dm.clima_interruttore_caldaia']?.state;
     banner.classList.toggle('show', stato === 'on');
 }
 
@@ -9674,8 +9674,8 @@ function renderAllarmeBanner() {
     if (!banner) return;
     const iconEl = document.getElementById('allarme-banner-icon');
     const textEl = document.getElementById('allarme-banner-text');
-    const stato  = STATES['alarm_control_panel.casa']?.state;
-    const triggerOn = STATES['switch.allarme_antifurto']?.state === 'on';
+    const stato  = STATES['dm.security_centrale_allarme']?.state;
+    const triggerOn = STATES['dm.home_interruttore_antifurto']?.state === 'on';
 
     // Reset classi stato
     banner.classList.remove('triggered');
@@ -9814,7 +9814,7 @@ function apriQuickAntifurto() {
 }
 
 function renderQuickAntifurto() {
-    const stateObj = STATES['alarm_control_panel.casa'];
+    const stateObj = STATES['dm.security_centrale_allarme'];
     const cur = stateObj?.state || 'unknown';
 
     // Aggiorna banner stato in cima al popup
@@ -9864,44 +9864,44 @@ let activeRecapDeviceKey = null;
 
 // Sensori MESE CORRENTE (lettura diretta da STATES)
 const ED_SENSORS_CURR = {
-    prod:       'sensor.sensor_fotovoltaico_mensile',
-    cons:       'sensor.sensor_carichi_mensile',
-    immesso:    'sensor.sensor_grid_venduta_menesile',
-    prelevato:  'sensor.sensor_grid_acquistata_mensile',
-    batCarico:  'sensor.sensor_batteria_caricata_mensile',
-    batScarico: 'sensor.sensor_batteria_usata_mensile',
-    wbOn:       'sensor.energy_mese_wallbox',
-    wbKwPeak:   'sensor.1p7k_101573_potenza',
-    solarPrev:  'sensor.fotovoltaico_anno',
-    consPrev:   'sensor.consumo_casa_anno',
+    prod:       'dm.energy_produzione_solare_mese',
+    cons:       'dm.energy_consumo_casa_mese',
+    immesso:    'dm.energy_rete_venduta_mese',
+    prelevato:  'dm.energy_rete_acquistata_mese',
+    batCarico:  'dm.energy_batteria_caricata_mese',
+    batScarico: 'dm.energy_batteria_usata_mese',
+    wbOn:       'dm.ev_energia_wallbox_mese',
+    wbKwPeak:   'dm.ev_potenza_wallbox',
+    solarPrev:  'dm.energy_produzione_solare_anno',
+    consPrev:   'dm.energy_consumo_casa_anno',
 };
 
 // Sensori dispositivi mese corrente → usati anche per mesi precedenti via History
 const ED_DEV_SENSORS_CURR = {
-    wallbox:      'sensor.energy_mese_wallbox',
-    asciugatrice: 'sensor.energy_mese_asciugatrice',
-    frigo:        'sensor.energy_mese_frigo',
-    lavastoviglie:'sensor.energy_mese_lavastoviglie',
-    lavatrice:    'sensor.energy_mese_lavatrice',
-    forno:        'sensor.energy_mese_forno',
-    friggitrice:  'sensor.energy_mese_friggitrice',
-    frog:         'sensor.energy_mese_frog',
-    microonde:    'sensor.energy_mese_microonde',
-    boiler:       'sensor.energy_mese_elettrodomestici_4',
+    wallbox:      'dm.ev_energia_wallbox_mese',
+    asciugatrice: 'dm.core_007',
+    frigo:        'dm.core_010',
+    lavastoviglie:'dm.core_012',
+    lavatrice:    'dm.core_013',
+    forno:        'dm.core_008',
+    friggitrice:  'dm.core_009',
+    caffe:        'dm.core_011',
+    microonde:    'dm.core_014',
+    boiler:       'dm.energy_boiler_mese',
 };
 
 const ED_DEVICES = [
-    { key:'wallbox',      name:'Wallbox',          icon:'⚡', color:'#06b6d4', sensor:'sensor.energy_mese_wallbox',               bg:'rgba(6,182,212,0.1)' },
-    { key:'clima',        name:'Condizionatori',   icon:'❄️', color:'#0ea5e9', sensor:'sensor.energy_mese_condizionatori',         bg:'rgba(14,165,233,0.1)' },
-    { key:'frigo',        name:'Frigorifero',      icon:'🧊', color:'#1e40af', sensor:'sensor.energy_mese_frigo',                 bg:'rgba(30,64,175,0.1)' },
-    { key:'lavastoviglie',name:'Lavastoviglie',    icon:'🍽️', color:'#059669', sensor:'sensor.energy_mese_lavastoviglie',         bg:'rgba(5,150,105,0.1)' },
-    { key:'friggitrice',  name:'Friggitrice',      icon:'🍟', color:'#ea580c', sensor:'sensor.energy_mese_friggitrice',           bg:'rgba(234,88,12,0.1)' },
-    { key:'frog',         name:'Frog',             icon:'☕', color:'#a16207', sensor:'sensor.energy_mese_frog',                  bg:'rgba(161,98,7,0.1)' },
-    { key:'asciugatrice', name:'Asciugatrice',     icon:'💨', color:'#f59e0b', sensor:'sensor.energy_mese_asciugatrice',          bg:'rgba(245,158,11,0.1)' },
-    { key:'lavatrice',    name:'Lavatrice',        icon:'🧺', color:'#7c3aed', sensor:'sensor.energy_mese_lavatrice',             bg:'rgba(124,58,237,0.1)' },
-    { key:'forno',        name:'Forno',            icon:'♨️', color:'#e11d48', sensor:'sensor.energy_mese_forno',                 bg:'rgba(225,29,72,0.1)' },
-    { key:'microonde',    name:'Microonde',        icon:'📡', color:'#8b5cf6', sensor:'sensor.energy_mese_microonde',             bg:'rgba(139,92,246,0.1)' },
-    { key:'boiler',       name:'Boiler Elettrico', icon:'🔥', color:'#f97316', sensor:'sensor.energy_mese_elettrodomestici_4',    bg:'rgba(249,115,22,0.1)' },
+    { key:'wallbox',      name:'Wallbox',          icon:'⚡', color:'#06b6d4', sensor:'dm.ev_energia_wallbox_mese',               bg:'rgba(6,182,212,0.1)' },
+    { key:'clima',        name:'Condizionatori',   icon:'❄️', color:'#0ea5e9', sensor:'dm.energy_condizionatori_mese',         bg:'rgba(14,165,233,0.1)' },
+    { key:'frigo',        name:'Frigorifero',      icon:'🧊', color:'#1e40af', sensor:'dm.core_010',                 bg:'rgba(30,64,175,0.1)' },
+    { key:'lavastoviglie',name:'Lavastoviglie',    icon:'🍽️', color:'#059669', sensor:'dm.core_012',         bg:'rgba(5,150,105,0.1)' },
+    { key:'friggitrice',  name:'Friggitrice',      icon:'🍟', color:'#ea580c', sensor:'dm.core_009',           bg:'rgba(234,88,12,0.1)' },
+    { key:'caffe',        name:'Macchina Caffè',             icon:'☕', color:'#a16207', sensor:'dm.core_011',                  bg:'rgba(161,98,7,0.1)' },
+    { key:'asciugatrice', name:'Asciugatrice',     icon:'💨', color:'#f59e0b', sensor:'dm.core_007',          bg:'rgba(245,158,11,0.1)' },
+    { key:'lavatrice',    name:'Lavatrice',        icon:'🧺', color:'#7c3aed', sensor:'dm.core_013',             bg:'rgba(124,58,237,0.1)' },
+    { key:'forno',        name:'Forno',            icon:'♨️', color:'#e11d48', sensor:'dm.core_008',                 bg:'rgba(225,29,72,0.1)' },
+    { key:'microonde',    name:'Microonde',        icon:'📡', color:'#8b5cf6', sensor:'dm.core_014',             bg:'rgba(139,92,246,0.1)' },
+    { key:'boiler',       name:'Boiler Elettrico', icon:'🔥', color:'#f97316', sensor:'dm.energy_boiler_mese',    bg:'rgba(249,115,22,0.1)' },
 ];
 
 const COSTO_KWH  = 0.25;
@@ -10147,7 +10147,7 @@ async function edCalcolaSettimanale(selMonth, selYear, isCurrentMonth) {
     const refLunPre = new Date(refLun); refLunPre.setDate(refLun.getDate() - 7);
     const refDomPre = new Date(refLun); refDomPre.setDate(refLun.getDate() - 1); refDomPre.setHours(23,59,59,0);
 
-    const sensor = 'sensor.solarman_daily_production';
+    const sensor = 'dm.energy_produzione_solare_oggi';
 
     // Somma kWh di un periodo da History
     const sumPeriod = async (start, end) => {
@@ -10605,8 +10605,8 @@ async function renderEdDailyChart(daysInMonth, selMonth, selYear, isCurrentMonth
 
     // ── METODO 1: Long-Term Statistics (mantiene dati per anni, non purgato) ──
     try {
-        const prodId = 'sensor.solarman_daily_production';
-        const consId = 'sensor.solarman_daily_load_consumption';
+        const prodId = 'dm.energy_produzione_solare_oggi';
+        const consId = 'dm.energy_consumo_casa_oggi';
         const stats = await fetchHAStatistics([prodId, consId], tStart, tEnd, 'day');
         const prodStats = stats[prodId] || [];
         const consStats = stats[consId] || [];
@@ -10640,7 +10640,7 @@ async function renderEdDailyChart(daysInMonth, selMonth, selYear, isCurrentMonth
     // ── METODO 2: History API (fallback - solo ultimi 10 giorni di default) ──
     if (!fetchOk) {
         try {
-            const sensors = 'sensor.solarman_daily_production,sensor.solarman_daily_load_consumption';
+            const sensors = 'dm.energy_produzione_solare_oggi,dm.energy_consumo_casa_oggi';
             const res = await fetch(
                 `${HA_HTTP_URL}/api/history/period/${tStart}?filter_entity_id=${sensors}&minimal_response&end_time=${tEnd}`,
                 { headers: { 'Authorization': `Bearer ${LONG_LIVED_TOKEN}` } }
@@ -10880,7 +10880,7 @@ function renderTemperature() {
 }
 
 
-// ── Canvas particelle ricarica Leapmotor ──────────────────────
+// ── Canvas particelle ricarica EV ──────────────────────
 function lmStartParticles(canvas) {
     const ctx = canvas.getContext('2d');
     const particles = [];
@@ -10972,7 +10972,7 @@ async function apriSrvHistory(tipo) {
     // Config per tipo
     const config = {
         connettivita: {
-            sensor: 'binary_sensor.google_com',
+            sensor: 'dm.server_raggiungibilita_google',
             title:    '📡 Connettività',
             subtitle: 'Internet · Ultimi 7 giorni',
             stateMap: {
@@ -10980,11 +10980,11 @@ async function apriSrvHistory(tipo) {
                 'off':         { label: '🔴 Offline',     cls: 'disconnected', col: '#ef4444' },
                 'unavailable': { label: '⚫ Non disp.',   cls: 'unknown',      col: '#94a3b8' },
             },
-            currState: () => getRawState('binary_sensor.google_com'),
+            currState: () => getRawState('dm.server_raggiungibilita_google'),
         },
         inverter: {
-            sensor:   'sensor.solarman_grid_connected_status',
-            title:    '⚡ Inverter Solarman',
+            sensor:   'dm.energy_stato_rete',
+            title:    '⚡ Inverter Fotovoltaico',
             subtitle: 'Stato griglia · Ultimi 7 giorni',
             stateMap: {
                 'on':          { label: '🟢 On-Grid',     cls: 'ongrid',       col: '#10b981' },
@@ -10995,7 +10995,7 @@ async function apriSrvHistory(tipo) {
                 'off_grid':    { label: '🟡 Off-Grid',    cls: 'offgrid',      col: '#f59e0b' },
                 'unavailable': { label: '⚫ Non disp.',   cls: 'unknown',      col: '#94a3b8' },
             },
-            currState: () => getRawState('sensor.solarman_grid_connected_status'),
+            currState: () => getRawState('dm.energy_stato_rete'),
         }
     };
 
@@ -11116,16 +11116,16 @@ function apriClimaPopup(entity, event) {
     const fanMode   = s.attributes?.fan_mode ?? 'auto';
     const hvacMode  = s.attributes?.hvac_mode ?? s.state;
     const names     = {
-        'climate.salone':                    ['❄️ Condizionatore','Salone'],
-        'climate.cucina':                    ['❄️ Condizionatore','Cucina'],
-        'climate.camera_da_letto':           ['❄️ Condizionatore','Camera da Letto'],
-        'climate.cameretta':                 ['❄️ Condizionatore','Cameretta'],
-        'climate.termosifone_salone':        ['🔥 Termosifone','Salone'],
-        'climate.termosifone_cucina':        ['🔥 Termosifone','Cucina'],
-        'climate.termosifone_camera_da_letto':['🔥 Termosifone','Camera da Letto'],
-        'climate.termosifone_cameretta':     ['🔥 Termosifone','Cameretta'],
-        'climate.termosifone_bagno':         ['🔥 Termosifone','Bagno'],
-        'climate.termosifone_studio':        ['🔥 Termosifone','Studio'],
+        'dm.clima_condizionatore_salone':                    ['❄️ Condizionatore','Salone'],
+        'dm.clima_condizionatore_cucina':                    ['❄️ Condizionatore','Cucina'],
+        'dm.clima_condizionatore_camera':           ['❄️ Condizionatore','Camera da Letto'],
+        'dm.clima_condizionatore_cameretta':                 ['❄️ Condizionatore','Cameretta'],
+        'dm.clima_termosifone_salone':        ['🔥 Termosifone','Salone'],
+        'dm.clima_termosifone_cucina':        ['🔥 Termosifone','Cucina'],
+        'dm.clima_termosifone_camera':['🔥 Termosifone','Camera da Letto'],
+        'dm.clima_termosifone_cameretta':     ['🔥 Termosifone','Cameretta'],
+        'dm.clima_termosifone_bagno':         ['🔥 Termosifone','Bagno'],
+        'dm.clima_termosifone_studio':        ['🔥 Termosifone','Studio'],
     };
     const [room, name] = names[entity] || ['🌡️ Clima', entity.split('.')[1]];
 
@@ -11294,7 +11294,7 @@ async function edCaricaDettaglio() {
     const wbGrid  = document.getElementById('ed-bottom-grid');
     
     // Mostra la sezione Wallbox SOLO se il dispositivo selezionato è la wallbox
-    const isWallbox = sensor === 'sensor.energy_mese_wallbox';
+    const isWallbox = sensor === 'dm.ev_energia_wallbox_mese';
     if (wbGrid) wbGrid.style.display = isWallbox ? 'grid' : 'none';
     
     if (!sensor) {

@@ -6214,7 +6214,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.3.5';
+const DASHBOARD_VERSION = '0.3.7';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -8732,6 +8732,25 @@ function cdAutoHide() {
     });
 }
 document.addEventListener('DOMContentLoaded', () => setTimeout(cdAutoHide, 300));
+
+/* v264: se la dashboard è "vuota" (nessuna entità configurata) guida l'utente al wizard
+   invece di mostrare pagine deserte. Solo build pubblica. */
+function cdEmptyStateCheck() {
+    if (typeof CD_REQUIRE_MAPPING === 'undefined' || !CD_REQUIRE_MAPPING) return;
+    const noSlots = !Object.keys(ENTITY_OVERRIDES || {}).length;
+    const noRooms = !(cdCfg('cd_stanze') || []).length;
+    const noClima = !(cdCfg('cd_clima_units') || []).length;
+    const noLights = !Object.keys(cdCfg('cd_luci') || {}).length;
+    if (!(noSlots && noRooms && noClima && noLights)) return;
+    const home = document.getElementById('page-home');
+    if (!home || document.getElementById('cd-empty-banner')) return;
+    const b = document.createElement('div');
+    b.id = 'cd-empty-banner';
+    b.style.cssText = 'margin:14px 0; padding:18px 20px; border-radius:20px; background:linear-gradient(135deg,#e0f2fe,#bae6fd); border:1px solid #7dd3fc; color:#0c4a6e; font-size:13.5px; line-height:1.65; box-shadow:0 4px 14px rgba(2,132,199,0.12);';
+    b.innerHTML = '<b style="font-size:15px;">👋 La dashboard è quasi pronta!</b><br>Non hai ancora collegato le tue entità, quindi le card sono nascoste.<br><b>Fai 7 tap veloci sul titolo in alto</b> per aprire la configurazione guidata e collegare luci, sensori e dispositivi.<br><span style="opacity:0.75; font-size:12px;">Suggerimento: nello step "Collega le tue entità" trovi tutte le sezioni con autocomplete.</span>';
+    home.insertBefore(b, home.firstChild);
+}
+document.addEventListener('DOMContentLoaded', () => setTimeout(cdEmptyStateCheck, 500));
 /* v262: ri-applico l'occultamento sezioni anche dopo load (doppia sicurezza) */
 window.addEventListener('load', () => {
     try {

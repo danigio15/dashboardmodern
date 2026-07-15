@@ -5380,7 +5380,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
           <div class="fan-status-row">
             <span class="fan-status-badge" id="fan-status-badge">
               <span class="fan-status-dot" id="fan-status-dot"></span>
-              <span id="fan-status-txt">Spenta</span>
+              <span id="fan-status-txt">Off</span>
             </span>
             <span class="fan-power-badge">
               <span id="fan-power-val">0</span> <small>W</small>
@@ -6214,7 +6214,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.3.12';
+const DASHBOARD_VERSION = '0.3.13';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6249,12 +6249,18 @@ let ENTITY_OVERRIDES = cdCfg('cd_entity_overrides');
 function resolveEntity(id) { return ENTITY_OVERRIDES[id] || id; }
 
 const _RAW_STATES = {};
+/* v270: oggetto "fantasma" per i riferimenti non mappati — evita che un singolo
+   accesso a .state/.attributes interrompa l'aggiornamento dell'intera dashboard. */
+const CD_GHOST = Object.freeze({ state: 'unavailable', attributes: Object.freeze({}), entity_id: 'dm.unmapped' });
 let STATES = new Proxy(_RAW_STATES, {
     get(target, key) {
         if (typeof key !== 'string') return target[key];
         if (ENTITY_OVERRIDES[key]) return target[ENTITY_OVERRIDES[key]];
-        // v259: build pubblica — i ref di sezione non mappati non risolvono
-        if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING && typeof CD_SLOT_REFS !== 'undefined' && CD_SLOT_REFS.has(key)) return undefined;
+        // v270: build pubblica — ref dm.* non mappato → stato fantasma sicuro (mai crash)
+        if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
+            if (key.startsWith('dm.')) return CD_GHOST;
+            if (typeof CD_SLOT_REFS !== 'undefined' && CD_SLOT_REFS.has(key)) return CD_GHOST;
+        }
         return target[key];
     },
     set(target, key, value) { target[key] = value; return true; },
@@ -6533,7 +6539,7 @@ function renderInverterTemp() {
   const fanStat = document.getElementById('fan-status-txt');
   const fanPow  = document.getElementById('fan-power-val');
   if (fanCard) fanCard.classList.toggle('on', fanS);
-  if (fanStat) fanStat.textContent = fanS ? 'Accesa' : 'Spenta';
+  if (fanStat) fanStat.textContent = fanS ? 'Accesa' : 'Off';
   if (fanPow)  fanPow.textContent  = fanP.toFixed(1);
 }
 
@@ -7194,7 +7200,11 @@ function edResetAll() {
 }
 
 /* ─────────── Toast ─────────── */
+let _cdSyncT = null;
 function edToast(msg) {
+    // v270: ogni modifica dall'editor viene sincronizzata su HA (debounce 2s)
+    clearTimeout(_cdSyncT);
+    _cdSyncT = setTimeout(() => { try { cdSyncPush(); } catch(e){} }, 2000);
     let t = document.getElementById('ed-toast');
     if (!t) { t = document.createElement('div'); t.id = 'ed-toast'; document.body.appendChild(t); }
     t.textContent = msg;
@@ -7429,6 +7439,49 @@ function wzRender() {
     if (WIZ.step === 4) wzRenderLights();
 }
 
+
+/* ═══ v270: SINCRONIZZAZIONE MULTI-DISPOSITIVO ═══
+   La configurazione viene salvata anche nell'archivio utente di Home Assistant
+   (frontend user_data): configuri una volta, la ritrovi su ogni dispositivo. */
+const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'];
+
+function cdSyncCollect() {
+    const out = { _savedAt: Date.now() };
+    CD_SYNC_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v !== null) out[k] = v; });
+    return out;
+}
+function cdSyncApply(data) {
+    if (!data) return 0;
+    let n = 0;
+    CD_SYNC_KEYS.forEach(k => { if (data[k] !== undefined) { localStorage.setItem(k, data[k]); n++; } });
+    return n;
+}
+/* Push sul WS principale (dashboard già connessa) */
+function cdSyncPush(silent = true) {
+    try {
+        if (!ws || ws.readyState !== 1) return;
+        ws.send(JSON.stringify({ id: msgId++, type: 'frontend/set_user_data', key: 'dashboard_modern_config', value: cdSyncCollect() }));
+        if (!silent && typeof edToast === 'function') edToast('☁️ Configuration saved to Home Assistant');
+        console.log('[Sync] configurazione inviata a HA');
+    } catch(e) { console.warn('[Sync] push fallito:', e); }
+}
+/* Pull con WS dedicato (usato dal wizard, dove serve il token appena inserito) */
+function cdSyncPull(token, cb) {
+    try {
+        const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const tws = new WebSocket(`${proto}//${location.host}/api/websocket`);
+        let mid = 1;
+        const timer = setTimeout(() => { try { tws.close(); } catch(e){}; cb(null); }, 6000);
+        tws.onmessage = (ev) => {
+            const m = JSON.parse(ev.data);
+            if (m.type === 'auth_required') tws.send(JSON.stringify({ type: 'auth', access_token: token }));
+            if (m.type === 'auth_ok') tws.send(JSON.stringify({ id: mid++, type: 'frontend/get_user_data', key: 'dashboard_modern_config' }));
+            if (m.type === 'result') { clearTimeout(timer); try { tws.close(); } catch(e){}; cb(m.result && m.result.value ? m.result.value : null); }
+        };
+        tws.onerror = () => { clearTimeout(timer); cb(null); };
+    } catch(e) { cb(null); }
+}
+
 function wzTestToken() {
     WIZ.remoteUrl = (document.getElementById('wz-remote') ? document.getElementById('wz-remote').value.trim() : WIZ.remoteUrl || '');
     const tk = (document.getElementById('wz-token').value || '').trim();
@@ -7442,7 +7495,23 @@ function wzTestToken() {
         tws.onmessage = (ev) => {
             const m = JSON.parse(ev.data);
             if (m.type === 'auth_required') tws.send(JSON.stringify({ type: 'auth', access_token: tk }));
-            if (m.type === 'auth_ok') { done = true; WIZ.token = tk; res.innerHTML = '<div class="wz-ok">✅ Connected to Home Assistant!</div>'; tws.close(); setTimeout(() => { WIZ.step = 2; wzRender(); }, 700); }
+            if (m.type === 'auth_ok') { done = true; WIZ.token = tk; res.innerHTML = '<div class="wz-ok">✅ Connected to Home Assistant!</div>'; tws.close();
+                // v270: config trovata su HA (da un altro dispositivo)? Proponi l'importazione
+                cdSyncPull(tk, (data) => {
+                    if (data && data.cd_sections) {
+                        const when = data._savedAt ? new Date(data._savedAt).toLocaleString() : '';
+                        if (confirm('📦 Found a configuration saved on Home Assistant' + (when ? ' (' + when + ')' : '') + '.\n\nImport it on this device?\nYou skip the whole setup: the dashboard will match your other devices.')) {
+                            const n = cdSyncApply(data);
+                            try { const conn = JSON.parse(localStorage.getItem('cd_connection') || '{}'); conn.token = tk; localStorage.setItem('cd_connection', JSON.stringify(conn)); } catch(e) { localStorage.setItem('cd_connection', JSON.stringify({ token: tk })); }
+                            alert('✅ Imported ' + n + ' settings. The dashboard will reload.');
+                            document.getElementById('setup-wizard')?.remove();
+                            location.reload();
+                            return;
+                        }
+                    }
+                    setTimeout(() => { WIZ.step = 2; wzRender(); }, 300);
+                });
+            }
             if (m.type === 'auth_invalid') { done = true; res.innerHTML = '<div class="wz-err">❌ Token rejected by HA. Make sure you copied it entirely.</div>'; tws.close(); }
         };
         tws.onerror = () => { if (!done) res.innerHTML = '<div class="wz-err">❌ Cannot reach HA. Open the dashboard FROM WITHIN Home Assistant.</div>'; };
@@ -7948,6 +8017,7 @@ const CD_SLOTS = {
     ]},
     lavatrice: { label: '🧺 Lavatrice', slots: [
         { ref: 'dm.lavatrice_presa_avvio_lavatrice',                lbl: 'Presa/avvio lavatrice (switch)' },
+        { ref: 'dm.lavatrice_potenza_presa_lavatrice_per_lavatrici_no', lbl: 'Washer plug power (W) — for non-smart washers: >5W = running' },
         { ref: 'dm.lavatrice_avvio_ciclo',      lbl: 'Avvio ciclo (switch dispositivo)' },
         { ref: 'dm.lavatrice_fase_corrente',           lbl: 'Fase corrente (testo)' },
         { ref: 'dm.lavatrice_tempo_rimanente',lbl: 'Tempo rimanente' },
@@ -8935,7 +9005,11 @@ function buildClimaCards() {
     if (gF) gF.innerHTML = units.filter(u => u.type !== 'termo').map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1;">No air conditioner configured</div>';
     if (gC) gC.innerHTML = units.filter(u => u.type === 'termo').map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1;">No radiator configured</div>';
 }
-document.addEventListener('DOMContentLoaded', buildClimaCards);
+document.addEventListener('DOMContentLoaded', () => {
+    buildClimaCards();
+    // v270 (issue #1): se gli stati sono già arrivati prima della costruzione delle card, applicali subito
+    try { if (Object.keys(_RAW_STATES).length) render(); } catch(e) {}
+});
 
 /* ═══ v263: AUTO-AGGIORNAMENTO — dopo un update HACS la dashboard si ricarica da sola.
    Al load (e ogni 6h) legge il proprio sorgente dal server con cache disabilitata:
@@ -9327,13 +9401,19 @@ function apriDettagli(e, tipo) {
     if(tipo === 'luci' && st === 'on') items.push({ id, nm, st: 'ON', icon: '💡', canOff: true });
     else if(tipo === 'clima' && !['off', 'unavailable', 'unknown'].includes(st)) items.push({ id, nm, st: st.toUpperCase(), icon: '❄️', canOff: true });
     else if(tipo === 'risc' && ['heat', 'heating', 'on'].includes(st)) items.push({ id, nm, st: 'ACCESO', icon: '🔥', canOff: true });
-    else if(tipo === 'win' && st === 'on') {
-      // v254: icona in base al tipo — porta 🚪, finestra 🪟
+    else if(tipo === 'win') {
+      // v271 (issue #2): mostra TUTTE le aperture con lo stato, aperte in cima
       const winIcon = /porta/i.test(nm) ? '🚪' : '🪟';
-      items.push({ id, nm, st: 'APERTA', icon: winIcon, canOff: false });
+      const open = st === 'on';
+      items.push({ id, nm, st: open ? 'OPEN' : 'Closed', icon: winIcon, canOff: false, ok: !open, ord: open ? 0 : 1 });
     }
-    else if(tipo === 'batt') { let v = parseFloat(st); if(!isNaN(v) && v <= 20) items.push({ id, nm, st: v + '%', icon: '🔋', canOff: false }); }
+    else if(tipo === 'batt') {
+      // v271 (issue #2): mostra TUTTE le batterie con la %, le più scariche in cima
+      let v = parseFloat(st);
+      if(!isNaN(v)) items.push({ id, nm, st: v + '%', icon: v <= 20 ? '🪫' : '🔋', canOff: false, ok: v > 20, ord: v });
+    }
   });
+  if (tipo === 'win' || tipo === 'batt') items.sort((a, b) => (a.ord ?? 0) - (b.ord ?? 0));
 
   if(items.length === 0) { html = '<div style="text-align:center; padding: 30px; color:var(--text-dim); font-weight:800; text-transform:uppercase; letter-spacing:1px; font-size:13px;">Nessun elemento attivo.</div>'; } 
   else { items.forEach(it => {
@@ -9350,7 +9430,8 @@ function apriDettagli(e, tipo) {
     const modeIT = { 'COOL':'❄️ Raffresca', 'HEAT':'🔥 Riscalda', 'FAN_ONLY':'💨 Ventola',
                        'DRY':'💧 Deumidifica', 'AUTO':'⚙️ Auto', 'HEAT_COOL':'🔄 Auto' };
     const stateDisplay = modeIT[it.st] || it.st;
-    html += `<div class="detail-row"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;overflow:hidden;"><div class="d-icon" style="flex-shrink:0;${it.icon === '💡' ? 'background:#fef08a;border-color:#fde047;' : it.icon === '❄️' ? 'background:#e0f2fe;' : it.icon === '🔥' ? 'background:#fff7ed;' : ''}">${it.icon}</div><div class="d-info" style="min-width:0;flex:1;overflow:hidden;"><div class="d-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;">${it.nm}</div><div class="d-state">${stateDisplay}</div></div></div>${btnHtml}</div>`;
+    const stStyle = it.ok === true ? 'opacity:0.55;' : (it.ok === false ? 'color:#dc2626; font-weight:900;' : '');
+    html += `<div class="detail-row"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;overflow:hidden;"><div class="d-icon" style="flex-shrink:0;${it.icon === '💡' ? 'background:#fef08a;border-color:#fde047;' : it.icon === '❄️' ? 'background:#e0f2fe;' : it.icon === '🔥' ? 'background:#fff7ed;' : ''}">${it.icon}</div><div class="d-info" style="min-width:0;flex:1;overflow:hidden;"><div class="d-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;">${it.nm}</div><div class="d-state"><span style="${stStyle}">${stateDisplay}</span></div></div></div>${btnHtml}</div>`;
   }); }
   list.innerHTML = html; list.scrollTop = scrollTop; document.getElementById('details-modal').classList.add('show');
 }
@@ -9768,7 +9849,14 @@ function render() {
 
       if(document.getElementById('lavatrice-modal').classList.contains('show')) {
           updateSelectOptions('dm.lavatrice_programma', 'sel-lav-prog'); updateSelectOptions('dm.lavatrice_temperatura', 'sel-lav-temp'); updateSelectOptions('dm.lavatrice_centrifuga', 'sel-lav-cent');
-          document.getElementById('v-lav-fase').textContent = getDisplay('dm.lavatrice_fase_corrente'); document.getElementById('v-lav-tempo').textContent = getDisplay('dm.lavatrice_tempo_rimanente');
+          /* v271 (issue #2): lavatrici non smart — se la fase non è disponibile ma c'è la
+             potenza della presa, lo stato è derivato dalla soglia (>5W = in funzione) */
+          let lavFase = getDisplay('dm.lavatrice_fase_corrente');
+          const lavPw = parseFloat(STATES['dm.lavatrice_potenza_presa_lavatrice_per_lavatrici_no']?.state);
+          if ((lavFase === '—' || lavFase === '--' || !lavFase) && !isNaN(lavPw)) {
+              lavFase = lavPw > 5 ? '🌀 Running (' + Math.round(lavPw) + ' W)' : 'Off';
+          }
+          document.getElementById('v-lav-fase').textContent = lavFase; document.getElementById('v-lav-tempo').textContent = getDisplay('dm.lavatrice_tempo_rimanente');
           const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('dm.core_031');
           const mainPwrSwitch = STATES['dm.lavatrice_presa_avvio_lavatrice']; const btnMainPwr = document.getElementById('lav-btn-power'); const txtMainPwr = document.getElementById('lav-txt-power');
           if (btnMainPwr && mainPwrSwitch) { const isOn = mainPwrSwitch.state === 'on'; btnMainPwr.classList.toggle('active', isOn); txtMainPwr.textContent = isOn ? 'ON' : 'OFF'; btnMainPwr.querySelector('.icon').textContent = isOn ? '⚡' : '🔌'; if(isOn) { btnMainPwr.style.setProperty('--btn-col', '#0ea5e9'); btnMainPwr.style.setProperty('--btn-bg', '#e0f2fe'); } else { btnMainPwr.style.setProperty('--btn-col', '#64748b'); btnMainPwr.style.setProperty('--btn-bg', '#fff'); } }
@@ -9783,7 +9871,7 @@ function render() {
       const isPompaSolActive = getRawState('dm.boiler_stato_pompa_solare') === 'on'; setActiveState('syn-p-solare', isPompaSolActive); updateBoilerBtn('b-c-pompasol', isPompaSolActive); const sun = document.getElementById('syn-sun'); if(sun) sun.classList.toggle('active', isPompaSolActive); setLine('flow-sol-hot', isPompaSolActive); setLine('flow-sol-cold', isPompaSolActive);
       const isPannelloSolActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; const sPanel = document.querySelector('.syn-solar-panel'); if(sPanel) sPanel.classList.toggle('active', isPannelloSolActive);
       const isRicircoloActive = getRawState('dm.core_037') === 'on'; setActiveState('syn-p-ricircolo', isRicircoloActive); updateBoilerBtn('b-c-ricircolo', isRicircoloActive); setLine('flow-ricircolo', isRicircoloActive); 
-      const chiaveState = getRawState('valve.chiave_solare_termico'); const isChiaveOpen = chiaveState === 'open'; setActiveState('syn-v-chiave', isChiaveOpen); updateBoilerBtn('b-c-valvola', isChiaveOpen, 'APERTA', 'CHIUSA'); document.getElementById('txt-chiave').textContent = isChiaveOpen ? 'APERTA' : 'CHIUSA';
+      const chiaveState = getRawState('valve.chiave_solare_termico'); const isChiaveOpen = chiaveState === 'open'; setActiveState('syn-v-chiave', isChiaveOpen); updateBoilerBtn('b-c-valvola', isChiaveOpen, 'OPEN', 'CHIUSA'); document.getElementById('txt-chiave').textContent = isChiaveOpen ? 'OPEN' : 'CHIUSA';
       const isCtrlSolareActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; updateBoilerBtn('b-c-solare', isCtrlSolareActive); 
       let isCoverOpen = false; let coverPos = 0; const coverObj = STATES['dm.boiler_valvola_di_sicurezza']; if(coverObj && coverObj.attributes) { coverPos = coverObj.attributes.current_position; if(coverPos !== undefined && coverPos > 0) isCoverOpen = true; } const synSafety = document.getElementById('syn-safety-icon'); if(synSafety) synSafety.classList.toggle('active', isCoverOpen); const synFaucet = document.getElementById('syn-faucet-wrap'); if(synFaucet) synFaucet.classList.toggle('open', isCoverOpen); const sBtn = document.getElementById('b-c-sicurezza'); if(sBtn) { sBtn.classList.toggle('active', isCoverOpen); const stNode = sBtn.querySelector('.state'); if(stNode) stNode.textContent = isCoverOpen ? `${coverPos}%` : 'CHIUSA'; }
       updateBoilerBtn('b-c-centralina', getRawState('dm.boiler_centralina_solare_termico') === 'on'); updateBoilerBtn('b-c-boiler', getRawState('dm.boiler_interruttore_boiler') === 'on'); updateBoilerBtn('b-c-pdc', getRawState('dm.core_036') === 'on'); updateBoilerBtn('b-c-boost', getRawState('dm.core_034') === 'on');

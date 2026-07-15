@@ -6,6 +6,24 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.3.13] — 2026-07-15
+
+### ✨ Aggiunto
+- **☁️ Sincronizzazione multi-dispositivo** *(issue #1)* — la configurazione ora si salva automaticamente su Home Assistant. Su un nuovo dispositivo basta inserire il token: il wizard trova la configurazione esistente e propone di importarla — dashboard identica ovunque, senza rifare nulla. Pulsanti manuali "Salva su HA / Carica da HA" in Configura Entità → Esporta.
+
+### 🐛 Corretto
+- **Card clima/stanze vuote al primo caricamento** *(issue #1)* — su dispositivi lenti gli stati arrivavano prima della costruzione delle card, che restavano su "SPENTO/--°" finché qualcosa non cambiava. Ora gli stati vengono applicati subito dopo la costruzione.
+
+## [0.3.13] — 2026-07-15
+
+### 🐛 Corretto — CRITICO
+- **Dashboard che non si aggiornava con configurazione parziale** *(issues #1 e #2 — il "non vedo nulla")* — un riferimento non configurato poteva interrompere l'aggiornamento dell'intera interfaccia: card clima "spente" coi puntini anche se configurate, sezioni ferme. Ora i riferimenti non mappati sono innocui e tutto il resto si aggiorna sempre. **Dopo l'update rifate un giro di wizard (7 tap sul titolo) se avevate configurato con versioni precedenti.**
+
+### ✨ Aggiunto
+- **🔋 Popup batterie completo** *(issue #2)* — mostra TUTTE le batterie con la percentuale, le più scariche in cima (🪫 rosso ≤20%).
+- **🚪 Popup aperture completo** *(issue #2)* — tutte le porte/finestre con stato APERTA/Chiusa, le aperte in cima.
+- **🧺 Lavatrici non smart** *(issue #2)* — nuovo campo "Potenza presa lavatrice": collega la presa smart e lo stato (in funzione/spenta) è derivato dai watt (soglia 5W).
+
 ## [0.3.12] — 2026-07-15
 
 ### ✨ Aggiunto
@@ -107,6 +125,24 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.3.13] — 2026-07-15
+
+### ✨ Added
+- **☁️ Multi-device sync** *(issue #1)* — the configuration is now automatically saved to Home Assistant. On a new device just enter the token: the wizard finds the existing configuration and offers to import it — identical dashboard everywhere, no redo. Manual "Save to HA / Load from HA" buttons in Configure Entities → Export.
+
+### 🐛 Fixed
+- **Empty climate/room cards on first load** *(issue #1)* — on slow devices states arrived before the cards were built, leaving them stuck on "OFF/--°" until something changed. States are now applied right after building.
+
+## [0.3.13] — 2026-07-15
+
+### 🐛 Fixed — CRITICAL
+- **Dashboard not updating with partial configuration** *(issues #1 & #2 — the "I see nothing")* — an unconfigured reference could stop the whole UI from updating: climate cards stuck "off" with dashes even when configured. Unmapped references are now harmless and everything else always updates. **After updating, re-run the wizard (7 taps on the title) if you configured with earlier versions.**
+
+### ✨ Added
+- **🔋 Full battery popup** *(issue #2)* — shows ALL batteries with their percentage, lowest first (🪫 red ≤20%).
+- **🚪 Full openings popup** *(issue #2)* — every door/window with OPEN/Closed state, open ones first.
+- **🧺 Non-smart washers** *(issue #2)* — new "Washer plug power" field: connect a smart plug and the running/off state is derived from watts (5W threshold).
 
 ## [0.3.12] — 2026-07-15
 

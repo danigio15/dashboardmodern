@@ -6,6 +6,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.4.2] — 2026-07-15
+
+### ✨ Migliorato
+- **⚡ Form Azioni rapide ripensato** — "💡 Popup luci — scegli TU le luci" è ora la prima scelta e il flusso è guidato: nome → Aggiungi → selezione luci con ricerca. Il campo entità appare solo quando serve (toggle/script/scena) e ha il pulsante 🔍. Un suggerimento sotto il form spiega sempre il passo successivo.
+
 ## [0.4.1] — 2026-07-15
 
 ### ✨ Migliorato
@@ -167,6 +172,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.4.2] — 2026-07-15
+
+### ✨ Improved
+- **⚡ Quick Actions form redesigned** — "💡 Lights popup — YOU pick the lights" is now the first choice with a guided flow: name → Add → searchable light selection. The entity field only appears when needed (toggle/script/scene) and has the 🔍 button. A hint under the form always explains the next step.
 
 ## [0.4.1] — 2026-07-15
 

@@ -5974,7 +5974,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.4.1';
+const DASHBOARD_VERSION = '0.4.2';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -7134,14 +7134,19 @@ function wzRender() {
           <div class="ed-acc-body">
             ${(WIZ.quickActions||[]).map((a, i) => `<div class="ed-row"><div style="font-size:15px;">${a.icon||'⚡'}</div><div class="ed-row-main"><div class="ed-row-new">${a.name||a.builtin||'?'}</div><div class="ed-row-old mono">${a.type === 'luci_group' ? '💡 ' + ((a.lights||[]).length) + ' luci' : a.type}</div></div>${a.type === 'luci_group' ? `<div class="ed-del" style="background:rgba(14,165,233,0.12);" onclick="wzEditLightGroup(${i})">✏️</div>` : ''}<div class="ed-del" onclick="WIZ.quickActions.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
             <div style="display:flex; gap:8px; margin-bottom:8px;">
-              <select id="wz-qa-type" class="wz-input" style="margin-bottom:0; flex:0 0 44%;">
-                <option value="builtin_luci">💡 Popup Luci</option><option value="builtin_clima">❄️ Popup Clima</option>
+              <select id="wz-qa-type" class="wz-input" style="margin-bottom:0; flex:0 0 44%;" onchange="wzQaTypeChanged()">
+                <option value="luci_group">💡 Popup luci — scegli TU le luci</option>
+                <option value="builtin_luci">💡 Popup TUTTE le luci</option><option value="builtin_clima">❄️ Popup Clima</option>
                 <option value="builtin_antifurto">🛡️ Popup Antifurto</option><option value="builtin_lavatrice">🧺 Popup Lavatrice</option>
                 <option value="toggle">🔀 Toggle entità</option><option value="script">📜 Script</option><option value="scene">🎬 Scena</option>
-              <option value="luci_group">💡 Gruppo luci (popup personalizzato)</option></select>
+              </select>
               <input id="wz-qa-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome">
             </div>
-            <input id="wz-qa-ent" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_044 (solo per toggle/script/scena)" style="margin-bottom:8px; font-family:monospace;">
+            <div id="wz-qa-ent-row" style="display:none; gap:6px; margin-bottom:8px;">
+              <input id="wz-qa-ent" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_044 — l'entità da comandare" style="margin-bottom:0; flex:1; font-family:monospace;">
+              <button type="button" onclick="wzPickEntity('__qa__')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button>
+            </div>
+            <div id="wz-qa-hint" style="font-size:11.5px; color:var(--text-dim); margin-bottom:8px; padding:0 2px;">💡 Dai un nome (es. "Piano Terra") e premi Aggiungi: sceglierai le luci da una lista con ricerca.</div>
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddQA()">＋ Aggiungi azione</button>
           </div>
         </details>` : ''}${WIZ.sections['home'] !== false ? `
@@ -7427,6 +7432,19 @@ function wzLoadAllEntities() {
 
 
 
+function wzQaTypeChanged() {
+    const t = document.getElementById('wz-qa-type')?.value || '';
+    const entRow = document.getElementById('wz-qa-ent-row');
+    const hint = document.getElementById('wz-qa-hint');
+    const needsEntity = ['toggle','script','scene'].includes(t);
+    if (entRow) entRow.style.display = needsEntity ? 'flex' : 'none';
+    if (hint) {
+        hint.textContent = t === 'luci_group'
+            ? '💡 Dai un nome (es. "Piano Terra") e premi Aggiungi: sceglierai le luci da una lista con ricerca.'
+            : (needsEntity ? '🔀 Scrivi o scegli con 🔍 l\'entità da comandare.' : '✨ Questo popup è pronto: dai solo un nome (opzionale) e premi Aggiungi.');
+    }
+}
+
 function wzAddQA() {
     const tsel = document.getElementById('wz-qa-type').value;
     const name = (document.getElementById('wz-qa-name').value || '').trim();
@@ -7485,6 +7503,8 @@ function cdEpFilter(q) {
 function cdEpChoose(id) {
     const ref = window._cdEpRef;
     document.getElementById('cd-entpick')?.remove();
+    if (ref === '__qa__') { const qa = document.getElementById('wz-qa-ent'); if (qa) qa.value = id; return; }
+    if (ref === '__ed_qa__') { const qa = document.getElementById('ed-qa-ent'); if (qa) qa.value = id; return; }
     const inp = document.querySelector(`input[data-ref="${ref}"]`);
     if (inp) { inp.value = id; wzSetSlot(inp); if (WIZ.autoDetected) delete WIZ.autoDetected[ref]; }
     wzRender();
@@ -8007,19 +8027,21 @@ function editorRenderSezioni() {
           }).join('')}</div>
           <div class="ed-form">
             <div class="ed-form-row">
-              <select id="ed-qa-type" class="ed-input" style="flex:0 0 40%;">
-                <option value="toggle">🔀 Toggle entità</option>
-                <option value="script">📜 Script</option>
-                <option value="scene">🎬 Scena</option>
-                <option value="builtin_luci">💡 Popup Luci</option>
+              <select id="ed-qa-type" class="ed-input" style="flex:0 0 40%;" onchange="edQaTypeChanged()">
+                <option value="luci_group">💡 Popup luci — scegli TU le luci</option>
+                <option value="builtin_luci">💡 Popup TUTTE le luci</option>
                 <option value="builtin_clima">❄️ Popup Clima</option>
                 <option value="builtin_antifurto">🛡️ Popup Antifurto</option>
                 <option value="builtin_lavatrice">🧺 Popup Lavatrice</option>
-              <option value="luci_group">💡 Gruppo luci (popup personalizzato)</option></select>
+                <option value="toggle">🔀 Toggle entità</option>
+                <option value="script">📜 Script</option>
+                <option value="scene">🎬 Scena</option>
+              </select>
               <input id="ed-qa-icon" class="ed-input ed-icon-input" placeholder="⚡" maxlength="4">
               <input id="ed-qa-name" class="ed-input" placeholder="Nome azione" style="flex:1;">
             </div>
-            <input id="ed-qa-ent" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_044 / dm.core_022 / scene.x (non serve per i popup)">
+            <div id="ed-qa-ent-row" style="display:none; gap:6px;"><input id="ed-qa-ent" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_044 / dm.core_022 / scene.x (non serve per i popup)"><button type="button" onclick="wzPickEntity('__ed_qa__')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
+              <div id="ed-qa-hint" style="font-size:11px; color:var(--text-dim); padding:0 2px;">💡 Dai un nome e premi Aggiungi: sceglierai le luci da una lista con ricerca.</div>
             <input id="ed-qa-confirm" class="ed-input" placeholder="Messaggio di conferma (facoltativo, es. Sei sicuro?)">
             <button class="ed-btn-add" onclick="edAddQA()">＋ Aggiungi azione rapida</button>
           </div>
@@ -8074,6 +8096,17 @@ function editorRenderSezioni() {
 }
 
 
+
+function edQaTypeChanged() {
+    const t = document.getElementById('ed-qa-type')?.value || '';
+    const entRow = document.getElementById('ed-qa-ent-row');
+    const hint = document.getElementById('ed-qa-hint');
+    const needsEntity = ['toggle','script','scene'].includes(t);
+    if (entRow) entRow.style.display = needsEntity ? 'flex' : 'none';
+    if (hint) hint.textContent = t === 'luci_group'
+        ? '💡 Dai un nome e premi Aggiungi: sceglierai le luci da una lista con ricerca.'
+        : (needsEntity ? '🔀 Scrivi o scegli con 🔍 l\'entità da comandare.' : '✨ Popup pronto: nome opzionale e premi Aggiungi.');
+}
 
 function edEditLightGroup(i) {
     const acts = getQuickActions().slice();

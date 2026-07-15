@@ -6214,7 +6214,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.3.10';
+const DASHBOARD_VERSION = '0.3.12';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -7301,6 +7301,7 @@ function wzRender() {
         body = `
         <div class="wz-title">💡 Scegli le tue luci</div>
         <div class="wz-sub">Seleziona le luci da gestire e dai a ognuna un nome nel formato <b>"Stanza - Dettaglio"</b> (attiva il raggruppamento automatico). <b>${sel.length}</b> selezionate.</div>
+        <input class="wz-input" style="margin-bottom:8px;" placeholder="🔍 Cerca luce… (nome o entità)" value="${WIZ.lightsFilter||''}" oninput="WIZ.lightsFilter = this.value.trim().toLowerCase(); wzRenderLights();">
         <div class="wz-lights" id="wz-lights"><div class="wz-loading">Carico le luci dal tuo HA…</div></div>
         <button class="wz-btn" onclick="WIZ.step=5; wzRender();">Avanti →</button>`;
     }
@@ -7311,9 +7312,10 @@ function wzRender() {
         const acc = active.map(([key, sec]) => {
             const rows = sec.slots.map(sl => {
                 const cur = (WIZ.entities && WIZ.entities[sl.ref]) || ENTITY_OVERRIDES[sl.ref] || '';
-                return `<div class="ed-slot"><div class="ed-slot-lbl">${sl.lbl}</div>
-                  <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" list="wz-entity-list"
-                         data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_032" onchange="wzSetSlot(this)"></div>`;
+                const auto = WIZ.autoDetected && WIZ.autoDetected[sl.ref];
+                return `<div class="ed-slot"><div class="ed-slot-lbl">${sl.lbl}${auto ? ' <span style=\"background:#dcfce7; color:#15803d; font-size:9.5px; font-weight:800; padding:1px 7px; border-radius:8px; vertical-align:1px;\">🪄 auto</span>' : ''}</div>
+                  <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px; ${auto ? 'background:#f0fdf4; border-color:#86efac;' : ''}" list="wz-entity-list"
+                         data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_032" onchange="wzSetSlot(this); if(WIZ.autoDetected) delete WIZ.autoDetected[this.dataset.ref];"></div>`;
             }).join('');
             const evImg = key === 'ev' ? `<div class="ed-slot"><div class="ed-slot-lbl">🖼️ URL immagine auto (es. /local/mia_auto.png)</div>
                   <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" value="${WIZ.evImage||''}" placeholder="/local/mia_auto.png" onchange="WIZ.evImage = this.value.trim();"></div>` : '';
@@ -7335,7 +7337,7 @@ function wzRender() {
                 <option value="builtin_luci">💡 Popup Luci</option><option value="builtin_clima">❄️ Popup Clima</option>
                 <option value="builtin_antifurto">🛡️ Popup Antifurto</option><option value="builtin_lavatrice">🧺 Popup Lavatrice</option>
                 <option value="toggle">🔀 Toggle entità</option><option value="script">📜 Script</option><option value="scene">🎬 Scena</option>
-              </select>
+              <option value="luci_group">💡 Gruppo luci (popup personalizzato)</option></select>
               <input id="wz-qa-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome">
             </div>
             <input id="wz-qa-ent" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_039 (solo per toggle/script/scena)" style="margin-bottom:8px; font-family:monospace;">
@@ -7459,7 +7461,7 @@ function wzLoadLights() {
         if (m.type === 'auth_required') tws.send(JSON.stringify({ type: 'auth', access_token: WIZ.token }));
         if (m.type === 'auth_ok') tws.send(JSON.stringify({ id: mid++, type: 'get_states' }));
         if (m.type === 'result' && Array.isArray(m.result)) {
-            WIZ.entities = m.result.filter(s => s.entity_id.startsWith('light.') || s.entity_id.startsWith('switch.'))
+            WIZ.allLights = m.result.filter(s => s.entity_id.startsWith('light.') || s.entity_id.startsWith('switch.'))
                 .map(s => ({ id: s.entity_id, name: (s.attributes && s.attributes.friendly_name) || s.entity_id }));
             tws.close();
             wzRenderLights();
@@ -7470,8 +7472,8 @@ function wzLoadLights() {
 function wzRenderLights() {
     const box = document.getElementById('wz-lights');
     if (!box) return;
-    if (!WIZ.entities.length) { box.innerHTML = '<div class="wz-loading">Carico le luci dal tuo HA…</div>'; return; }
-    box.innerHTML = WIZ.entities.map(e => {
+    if (!WIZ.allLights || !WIZ.allLights.length) { box.innerHTML = '<div class="wz-loading">Carico le luci dal tuo HA…</div>'; return; }
+    box.innerHTML = WIZ.allLights.filter(e => !WIZ.lightsFilter || (e.id + ' ' + (e.name||'')).toLowerCase().includes(WIZ.lightsFilter)).map(e => {
         const checked = e.id in WIZ.luci;
         const nome = WIZ.luci[e.id] || e.name;
         return `<div class="wz-light ${checked ? 'on' : ''}">
@@ -7537,11 +7539,42 @@ function wzAddQA() {
         const a = { type: 'builtin', builtin: tsel.replace('builtin_','') };
         if (name) a.name = name;
         WIZ.quickActions.push(a);
+    } else if (tsel === 'luci_group') {
+        if (!name) { alert('Dai un nome al gruppo (es. Piano Terra)'); return; }
+        cdPickLights(name, (lights) => {
+            WIZ.quickActions.push({ type: 'luci_group', name, icon: '💡', lights });
+            wzRender();
+        });
+        return;
     } else {
         if (!name || !ent.includes('.')) { alert('Inserisci nome ed entità'); return; }
         WIZ.quickActions.push({ type: tsel, name, entity: ent });
     }
     wzRender();
+}
+
+/* ═══ v268: selettore luci per i gruppi (issue #2) — checkbox con ricerca ═══ */
+function cdPickLights(groupName, onDone) {
+    const all = Object.keys(cdCfg('cd_luci') || {}).length ? cdCfg('cd_luci') : (WIZ && WIZ.luci) || {};
+    const ids = Object.keys(all);
+    if (!ids.length) { alert('Prima seleziona le luci nello step Luci (o nel wizard).'); return; }
+    const ov = document.createElement('div');
+    ov.id = 'cd-lightpick';
+    ov.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:99999; display:flex; align-items:center; justify-content:center; padding:18px;';
+    ov.innerHTML = `<div style="background:var(--card-bg,#fff); border-radius:22px; padding:20px; width:min(430px,100%); max-height:80vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="font-weight:900; font-size:15px; margin-bottom:4px; color:var(--text,#0f172a);">💡 Luci del gruppo "${groupName}"</div>
+        <div style="font-size:11.5px; color:var(--text-dim,#64748b); margin-bottom:10px;">Spunta le luci che questo popup deve mostrare.</div>
+        <input id="cd-lp-search" class="wz-input" style="margin-bottom:8px;" placeholder="🔍 Cerca…" oninput="document.querySelectorAll('#cd-lp-list > label').forEach(l => { l.style.display = l.textContent.toLowerCase().includes(this.value.toLowerCase()) ? '' : 'none'; })">
+        <div id="cd-lp-list" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:4px;">
+          ${ids.map(id => `<label style="display:flex; gap:10px; align-items:center; padding:8px 10px; border-radius:12px; background:rgba(148,163,184,0.08); cursor:pointer; font-size:12.5px; color:var(--text,#0f172a);"><input type="checkbox" value="${id}" style="width:17px; height:17px; accent-color:#0ea5e9;"> <span><b>${all[id]}</b><br><span style="font-family:monospace; font-size:10px; color:var(--text-dim,#64748b);">${id}</span></span></label>`).join('')}
+        </div>
+        <div style="display:flex; gap:10px; margin-top:12px;">
+          <button class="wz-btn" style="flex:1; background:#94a3b8;" onclick="document.getElementById('cd-lightpick').remove()">Annulla</button>
+          <button class="wz-btn" style="flex:1;" onclick="const sel=[...document.querySelectorAll('#cd-lp-list input:checked')].map(i=>i.value); if(!sel.length){alert('Seleziona almeno una luce');return;} document.getElementById('cd-lightpick').remove(); window._cdLpDone(sel);">Conferma ✓</button>
+        </div>
+      </div>`;
+    window._cdLpDone = onDone;
+    document.body.appendChild(ov);
 }
 
 
@@ -7635,7 +7668,11 @@ function wzAutoDetect() {
         'istantanea': ['power','instant','istantane'], 'delta': ['delta','diff'], 'sicurezza': ['safety','security'],
         'aspiratore': ['fan','exhaust','aspiratore'], 'canna': ['flue','chimney','canna'],
         'fumaria': ['flue','chimney','fumaria'], 'termocamino': ['fireplace','termocamino','stove'],
-        'boost': ['boost'], 'calore': ['heat','calore'], 'resistenza': ['element','resist'],
+        'boost': ['boost'],
+        'centralina': ['controller','centralina'], 'termico': ['thermal','termico'],
+        'rapido': ['quick','rapid','fast'], 'misto': ['mixed','misto'], 'colorati': ['color'],
+        'avvio': ['start','power'], 'ciclo': ['cycle','wash'], 'presa': ['plug','socket','switch'],
+        'dispositivo': ['device'], 'tempo': ['time','remaining'], 'select': [], 'calore': ['heat','calore'], 'resistenza': ['element','resist'],
         'scariche': ['low','scarich'], 'batterie': ['batter'], 'elettrodomestici': ['appliance','elettrodomestic'],
         'download': ['download'], 'upload': ['upload'], 'ping': ['ping'], 'uptime': ['uptime'],
         'script': ['script'], 'apertura': ['open','apri'], 'stato': [], 'decodificato': ['decoded','stato'],
@@ -7691,10 +7728,12 @@ function wzAutoDetect() {
         if (!scored.length) return;
         scored.sort((a, b) => b.score - a.score || b.idHits - a.idHits || a.len - b.len);
         const best = scored[0];
-        const minScore = Math.max(5, keyLists.length * 2);
+        const minScore = keyLists.length === 1 ? 3 : Math.max(5, keyLists.length * 2);
         if (best.score < minScore) return;
         if (scored.length > 1 && scored[1].score === best.score && scored[1].idHits === best.idHits && Math.abs(scored[1].len - best.len) < 3) return;
         WIZ.entities[sl.ref] = best.e.id;
+        if (!WIZ.autoDetected) WIZ.autoDetected = {};
+        WIZ.autoDetected[sl.ref] = true;
         usedIds.add(best.e.id);
         nSlot++;
     }));
@@ -7702,7 +7741,7 @@ function wzAutoDetect() {
     // — Caldaia (campo dedicato)
     if (!WIZ.entities['switch.caldaia'] && !ENTITY_OVERRIDES['switch.caldaia']) {
         const cands = M.filter(e => e.id.startsWith('switch.') && /caldaia|boiler|heater|heating/i.test(e.id + ' ' + e.name));
-        if (cands.length === 1) { WIZ.entities['switch.caldaia'] = cands[0].id; nSlot++; }
+        if (cands.length === 1) { WIZ.entities['switch.caldaia'] = cands[0].id; if (!WIZ.autoDetected) WIZ.autoDetected = {}; WIZ.autoDetected['switch.caldaia'] = true; nSlot++; }
     }
 
     wzRender();
@@ -8015,7 +8054,7 @@ function editorRenderSezioni() {
                 <option value="builtin_clima">❄️ Popup Clima</option>
                 <option value="builtin_antifurto">🛡️ Popup Antifurto</option>
                 <option value="builtin_lavatrice">🧺 Popup Lavatrice</option>
-              </select>
+              <option value="luci_group">💡 Gruppo luci (popup personalizzato)</option></select>
               <input id="ed-qa-icon" class="ed-input ed-icon-input" placeholder="⚡" maxlength="4">
               <input id="ed-qa-name" class="ed-input" placeholder="Nome azione" style="flex:1;">
             </div>
@@ -8082,6 +8121,19 @@ function edAddQA() {
     const ent = (document.getElementById('ed-qa-ent').value || '').trim();
     const conf = (document.getElementById('ed-qa-confirm').value || '').trim();
     const list = getQuickActions().slice();
+    if (tsel === 'luci_group') {
+        const name = (document.getElementById('ed-qa-name').value || '').trim();
+        if (!name) { alert('Dai un nome al gruppo (es. Piano Terra)'); return; }
+        cdPickLights(name, (lights) => {
+            const acts = getQuickActions().slice();
+            acts.push({ type: 'luci_group', name, icon: '💡', lights });
+            localStorage.setItem('cd_quick_actions', JSON.stringify(acts));
+            buildQuickActions();
+            editorSwitch('sezioni');
+            edToast('Gruppo luci creato');
+        });
+        return;
+    }
     if (tsel.startsWith('builtin_')) {
         const b = tsel.replace('builtin_','');
         const a = { type: 'builtin', builtin: b };
@@ -8399,18 +8451,20 @@ function renderSubLoads(type) {
     document.getElementById('subloads-list').innerHTML = html;
 }
 
-function apriGestioneLuci(isClick = false) {
+function apriGestioneLuci(isClick = false, luciFilter = null, customTitle = null) {
+  window._luciPopupFilter = luciFilter || null;
+  window._luciPopupTitle = customTitle || null;
   if(isClick && navigator.vibrate) navigator.vibrate(10);
   currentPopupType = 'gestione_luci';
   const list = document.getElementById('details-list');
   const scrollTop = list.scrollTop;
-  document.getElementById('details-title').innerHTML = '💡 GESTIONE LUCI';
+  document.getElementById('details-title').innerHTML = window._luciPopupTitle ? ('💡 ' + window._luciPopupTitle.toUpperCase()) : '💡 GESTIONE LUCI';
 
   // v255: raggruppo per stanza usando il pattern "Stanza - Dettaglio"
   let onCount = 0;
   const gruppi = {};   // { 'Salone': [{id, dett, isOn}], ... }
   const ordine = [];   // ordine di prima apparizione
-  GRUPPI_MONITORAGGIO['luci'].forEach(id => {
+  (window._luciPopupFilter || GRUPPI_MONITORAGGIO['luci']).forEach(id => {
     const sObj = STATES[id]; if(!sObj) return;
     let nm = LUCI_NAMES[id] || sObj.attributes?.friendly_name || id;
     let zona = nm, dett = '';
@@ -8463,7 +8517,7 @@ function apriGestioneLuci(isClick = false) {
 // v255: spegni tutte le luci accese in un colpo
 function luciTutteOff() {
   if(navigator.vibrate) navigator.vibrate(15);
-  GRUPPI_MONITORAGGIO['luci'].forEach(id => {
+  (window._luciPopupFilter || GRUPPI_MONITORAGGIO['luci']).forEach(id => {
     const s = STATES[id];
     if (s && s.state === 'on') {
       const eid = resolveEntity(id);
@@ -8803,6 +8857,11 @@ function getQuickActions() {
     return CD_QA_DEFAULT;
 }
 function qaRun(i) {
+    const _a = getQuickActions()[i];
+    if (_a && _a.type === 'luci_group') {
+        apriGestioneLuci(true, _a.lights || [], _a.name || 'Luci');
+        return;
+    }
     const a = getQuickActions()[i];
     if (!a) return;
     if (navigator.vibrate) navigator.vibrate(10);
@@ -9378,6 +9437,10 @@ function render() {
           edUpdateKpiOnly();
       }
       const weatherEnt = STATES['dm.core_040'] || STATES['weather.home'] || STATES['dm.home_meteo'] || null;
+      if (!weatherEnt && typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
+          const ws = document.getElementById('w-state');
+          if (ws && /caricamento|loading/i.test(ws.textContent)) ws.textContent = 'Meteo non configurato';
+      }
       if(weatherEnt) {
         const wLangMap = { 'clear-night': 'Sereno (Notte)', 'cloudy': 'Nuvoloso', 'fog': 'Nebbia', 'hail': 'Grandine', 'lightning': 'Fulmini', 'lightning-rainy': 'Temporale', 'partlycloudy': 'Poco Nuvoloso', 'pouring': 'Acquazzone', 'rainy': 'Pioggia', 'snowy': 'Neve', 'snowy-rainy': 'Nevischio', 'sunny': 'Soleggiato', 'windy': 'Ventoso', 'windy-variant': 'Vento Forte' };
         document.getElementById('w-temp').textContent = (weatherEnt.attributes?.temperature !== undefined ? weatherEnt.attributes.temperature : '--') + '°C';
@@ -10109,6 +10172,12 @@ function renderAllarmeBanner() {
     const textEl = document.getElementById('allarme-banner-text');
     const stato  = STATES['dm.security_centrale_allarme']?.state;
     const triggerOn = STATES['dm.home_interruttore_antifurto']?.state === 'on';
+
+    // v269 (issue #2): antifurto non configurato → il banner viene rimosso dalla Home
+    if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING && stato === undefined && !triggerOn) {
+        banner.remove();
+        return;
+    }
 
     // Reset classi stato
     banner.classList.remove('triggered');

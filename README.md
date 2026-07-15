@@ -5,6 +5,7 @@
 ![HA](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-41BDF5?logo=homeassistant&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Mobile](https://img.shields.io/badge/mobile-first-orange)
+[![Dona](https://img.shields.io/badge/PayPal-Offrimi%20un%20caff%C3%A8%20☕-00457C?logo=paypal&logoColor=white)](https://paypal.me/giovannidaniello15)
 
 Dashboard HTML **standalone** per Home Assistant: un singolo file, nessuna card custom richiesta, design moderno "sculpted", **configurazione 100% da interfaccia** con setup guidato, tema chiaro/scuro/auto e **aggiornamenti automatici**.
 
@@ -155,6 +156,14 @@ La config è salvata per browser. Per condividerla:
 - Mai committare `config.js` / `casa-dashboard-config.js` su repository pubblici
 - Token esposto? Revocalo subito dal profilo HA
 - Il file distribuito non contiene credenziali né dati di alcuna installazione
+
+## ☕ Supporta il progetto
+
+Dashboard Modern è gratuita e open source, sviluppata nel tempo libero. Se ti è utile e vuoi supportare lo sviluppo di nuove funzionalità, puoi offrirmi un caffè:
+
+[![PayPal](https://img.shields.io/badge/Dona%20con-PayPal-00457C?logo=paypal&logoColor=white&style=for-the-badge)](https://paypal.me/giovannidaniello15)
+
+Ogni contributo, anche piccolo, è molto apprezzato! 🙏
 
 ## 📄 Licenza
 

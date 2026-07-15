@@ -6,6 +6,14 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.3.9] — 2026-07-15
+
+### ✨ Migliorato
+- **🪄 Auto-rilevamento v2** — motore molto più intelligente: punteggio di somiglianza con soglia (niente più match rigidi), sinonimi bilingue estesi (60+ termini IT/EN), vincoli sulle unità di misura (kWh per le energie, W per le potenze, % per le cariche, °C, km, bar…), abbinamento automatico umidità→stanza migliorato, rilevamento luci (se saltate nello step 4) e caldaia.
+
+### 🐛 Corretto
+- **Pulsante "Rileva automaticamente"** — nuovo colore verde ad alto contrasto con testo bianco: pienamente leggibile in entrambi i temi.
+
 ## [0.3.8] — 2026-07-15
 
 ### ✨ Aggiunto
@@ -78,6 +86,14 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.3.9] — 2026-07-15
+
+### ✨ Improved
+- **🪄 Auto-detection v2** — much smarter engine: similarity scoring with threshold (no more rigid matches), extended bilingual synonyms (60+ IT/EN terms), unit-of-measure constraints (kWh for energy, W for power, % for charge, °C, km, bar…), improved humidity→room pairing, lights detection (if skipped in step 4) and boiler detection.
+
+### 🐛 Fixed
+- **"Auto-detect" button** — new high-contrast green with white text: fully readable in both themes.
 
 ## [0.3.8] — 2026-07-15
 

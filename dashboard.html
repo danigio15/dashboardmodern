@@ -6214,7 +6214,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.3.8';
+const DASHBOARD_VERSION = '0.3.9';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -7323,7 +7323,7 @@ function wzRender() {
         const dl = '<datalist id="wz-entity-list">' + (WIZ.allEntities||[]).map(e => `<option value="${e}">`).join('') + '</datalist>';
         body = `
         <div class="wz-title">🧩 Collega le tue entità</div>
-        <button id="wz-autodetect" class="wz-btn" style="width:100%; margin-bottom:10px; background:linear-gradient(135deg,#8b5cf6,#6d28d9);" onclick="wzAutoDetect()" ${(WIZ.allMeta && WIZ.allMeta.length) ? '' : 'disabled style="width:100%; margin-bottom:10px; opacity:0.55; background:linear-gradient(135deg,#8b5cf6,#6d28d9);"'}>🪄 Rileva automaticamente le mie entità</button>
+        <button id="wz-autodetect" class="wz-btn" style="width:100%; margin-bottom:10px; background:linear-gradient(135deg,#10b981,#047857); color:#ffffff; font-weight:800; text-shadow:0 1px 2px rgba(0,0,0,0.25); border:none;" onclick="wzAutoDetect()" ${(WIZ.allMeta && WIZ.allMeta.length) ? '' : 'disabled style="width:100%; margin-bottom:10px; background:#94a3b8; color:#ffffff; font-weight:800; border:none;"'}>🪄 Rileva automaticamente le mie entità</button>
         <div class="wz-sub">Per ogni voce scrivi la <b>tua</b> entità HA (autocomplete attivo). Puoi saltare questo passo e completarlo dopo da <b>⚙️ Configurazione → Configura Entità → 📑 Sezioni</b>. Le voci vuote mostreranno "—".</div>
         ${dl}
         <div style="max-height:46vh; overflow-y:auto; margin-bottom:14px;">${acc}${WIZ.sections['home'] !== false ? `
@@ -7546,88 +7546,132 @@ function wzAddQA() {
 
 
 
-/* ═══ v265: AUTO-RILEVAMENTO — propone le entità giuste leggendo l'HA dell'utente.
+/* ═══ v266: AUTO-RILEVAMENTO v2 — scoring intelligente con sinonimi e vincoli di unità.
    Tutto resta modificabile: sono solo proposte pre-compilate. ═══ */
 function wzAutoDetect() {
     if (!WIZ.allMeta || !WIZ.allMeta.length) { alert('Attendi il caricamento delle entità…'); return; }
     const M = WIZ.allMeta;
-    let nClima = 0, nCam = 0, nStanze = 0, nAvvisi = 0, nSlot = 0;
+    let nClima = 0, nCam = 0, nStanze = 0, nAvvisi = 0, nSlot = 0, nLuci = 0;
 
-    // — Unità clima: tutte le climate.* (termosifone se il nome lo suggerisce)
+    // — Luci: se non selezionate nello step precedente, proponi tutte le light.*
+    if (!Object.keys(WIZ.luci || {}).length) {
+        M.filter(e => e.id.startsWith('light.')).slice(0, 40).forEach(e => {
+            if (!WIZ.luci) WIZ.luci = {};
+            WIZ.luci[e.id] = e.name;
+            nLuci++;
+        });
+    }
+
+    // — Unità clima
     if (!(WIZ.climaUnits || []).length) {
         WIZ.climaUnits = M.filter(e => e.id.startsWith('climate.')).map(e => ({
             name: e.name.replace(/termosifone|radiator|thermostat|condizionatore|clima/gi, '').trim() || e.name,
             entity: e.id,
-            type: /termo|radiat|riscald|heat|valve/i.test(e.id + ' ' + e.name) ? 'termo' : 'clima'
+            type: /termo|radiat|riscald|heat|valve|trv/i.test(e.id + ' ' + e.name) ? 'termo' : 'clima'
         }));
         nClima = WIZ.climaUnits.length;
     }
 
-    // — Telecamere: tutte le camera.*
+    // — Telecamere
     if (!(WIZ.cameras || []).length) {
         WIZ.cameras = M.filter(e => e.id.startsWith('camera.')).map(e => ({ name: e.name, entity: e.id }));
         nCam = WIZ.cameras.length;
     }
 
-    // — Stanze: sensori di temperatura (max 12)
+    // — Stanze: temperatura + umidità gemella
     if (!(WIZ.stanze || []).length) {
-        const temps = M.filter(e => e.id.startsWith('sensor.') && (e.dc === 'temperature' || /temperatur/i.test(e.id)) && e.unit.includes('°'));
-        WIZ.stanze = temps.slice(0, 12).map(e => {
+        const temps = M.filter(e => e.id.startsWith('sensor.') && (e.dc === 'temperature' || /temperatur/i.test(e.id)) && (e.unit || '').includes('°'));
+        WIZ.stanze = temps.slice(0, 14).map(e => {
             const r = { name: e.name.replace(/temperatura|temperature|sensore?/gi, '').trim() || e.name, icon: '🌡️', temp: e.id };
-            const hum = M.find(h => h.id === e.id.replace(/temperatur[ae]?/i, 'umidita') || h.id === e.id.replace('_temperature', '_humidity'));
+            const base = e.id.replace(/_?temperatur[ae]?/i, '');
+            const hum = M.find(h => h.id.startsWith('sensor.') && (h.dc === 'humidity' || /umidit|humidity/i.test(h.id)) && h.id.replace(/_?(umidita|humidity)/i, '') === base);
             if (hum) r.hum = hum.id;
             return r;
         });
         nStanze = WIZ.stanze.length;
     }
 
-    // — Quadro avvisi: aperture (door/window/opening) e batterie in % (max 15 per gruppo)
+    // — Quadro avvisi
     const extG = cdCfg('cd_gruppi_extra');
+    let extGChanged = false;
     if (!(GRUPPI_MONITORAGGIO['win'] || []).length) {
-        const wins = M.filter(e => e.id.startsWith('binary_sensor.') && (['door','window','opening','garage_door'].includes(e.dc) || /finestra|porta|window|door|contact/i.test(e.id))).slice(0, 15);
-        if (wins.length) {
-            extG['win'] = wins.map(e => e.id);
-            wins.forEach(e => { GRUPPI_MONITORAGGIO['win'].push(e.id); });
-            nAvvisi += wins.length;
-        }
+        const wins = M.filter(e => e.id.startsWith('binary_sensor.') && (['door','window','opening','garage_door'].includes(e.dc) || /finestra|porta|window|door|contact/i.test(e.id))).slice(0, 20);
+        if (wins.length) { extG['win'] = wins.map(e => e.id); wins.forEach(e => GRUPPI_MONITORAGGIO['win'].push(e.id)); nAvvisi += wins.length; extGChanged = true; }
     }
     if (!(GRUPPI_MONITORAGGIO['batt'] || []).length) {
-        const batts = M.filter(e => e.id.startsWith('sensor.') && e.dc === 'battery' && e.unit === '%').slice(0, 15);
-        if (batts.length) {
-            extG['batt'] = batts.map(e => e.id);
-            batts.forEach(e => { GRUPPI_MONITORAGGIO['batt'].push(e.id); });
-            nAvvisi += batts.length;
-        }
+        const batts = M.filter(e => e.id.startsWith('sensor.') && e.dc === 'battery' && e.unit === '%').slice(0, 20);
+        if (batts.length) { extG['batt'] = batts.map(e => e.id); batts.forEach(e => GRUPPI_MONITORAGGIO['batt'].push(e.id)); nAvvisi += batts.length; extGChanged = true; }
     }
-    if (nAvvisi) localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
+    if (extGChanged) localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
 
-    // — Slot: match per parole chiave (solo campi vuoti, solo match unici)
+    // — SLOT: scoring con sinonimi bilingue e vincoli di unità
     if (!WIZ.entities || Array.isArray(WIZ.entities)) WIZ.entities = {};
-    const STOP = new Set(['oggi','anno','mese','casa','stato','testo','entita','interruttore','sensore','della','delle','dallo','alla']);
+    const STOP = new Set(['oggi','anno','mese','casa','stato','testo','entita','interruttore','sensore','della','delle','dallo','alla','contatore','centrale']);
     const SYN = {
-        'meteo': ['weather'], 'allarme': ['alarm'], 'produzione': ['production','yield','pv'], 'consumo': ['consumption','load','used'],
-        'prelevata': ['bought','import','purchased'], 'immessa': ['sold','export'], 'batteria': ['battery','soc'],
-        'carica': ['charge','soc'], 'potenza': ['power'], 'rete': ['grid'], 'temperatura': ['temperature','temp'],
-        'autonomia': ['range'], 'odometro': ['odometer','mileage'], 'pressione': ['pressure'], 'caldaia': ['boiler','heater'],
-        'lavatrice': ['washing','washer'], 'cancello': ['gate'], 'solare': ['solar','pv'], 'auto': ['car','vehicle','ev'],
+        'meteo': ['weather'], 'allarme': ['alarm','antifurto'], 'antifurto': ['alarm','allarme'],
+        'produzione': ['production','yield','generated','pv','fotovoltaico','solar'],
+        'consumo': ['consumption','load','used','usage'], 'consumi': ['consumption','load'],
+        'prelevata': ['bought','import','imported','purchased','from_grid'], 'immessa': ['sold','export','exported','to_grid','feed'],
+        'batteria': ['battery','batt','soc','accumulo'], 'caricata': ['charge','charged'], 'scaricata': ['discharge','discharged'],
+        'carica': ['charge','soc','charging'], 'potenza': ['power','watt'], 'rete': ['grid','net'],
+        'temperatura': ['temperature','temp'], 'scambio': ['grid','exchange','external','ct'],
+        'autonomia': ['range','autonomy'], 'odometro': ['odometer','mileage','odo','km_totali'],
+        'pressione': ['pressure'], 'caldaia': ['boiler','heater','caldaia'], 'lavatrice': ['washing','washer','washing_machine'],
+        'cancello': ['gate','gate_open'], 'solare': ['solar','pv','sun','fotovoltaico'], 'auto': ['car','vehicle','ev','tesla','leaf'],
+        'wallbox': ['wallbox','charger','evse','charging_station'], 'sessione': ['session','charged_energy'],
+        'inverter': ['inverter'], 'ventola': ['fan'], 'uptime': ['uptime'], 'memoria': ['memory','ram','mem'],
+        'disco': ['disk','storage','ssd','hdd'], 'processore': ['cpu','processor'], 'condizionatori': ['ac','clima','hvac','air'],
+        'termosifoni': ['radiator','heating','trv'], 'aperture': ['window','door','opening'],
+        'luci': ['light','lights'], 'accese': ['on','count'], 'finestre': ['window','opening','aperture'],
+        'internet': ['internet','wan','ping','online','connectivity'], 'pompa': ['pump'], 'ricircolo': ['recirculation','circulation'],
+        'valvola': ['valve'], 'sonda': ['probe','sensor','temperature'], 'boiler': ['boiler','water_heater','heater'],
+        'target': ['target','setpoint','limit'], 'modalita': ['mode'], 'ricarica': ['charge','charging'],
+        'immagine': [], 'percorsi': ['driven','trip','distance'], 'ultima': ['last'],
     };
+    const UNIT_HINTS = [
+        [/kwh|energia|produzione|consumo|prelevata|immessa|caricata|scaricata|sessione/i, ['kWh','Wh','MWh']],
+        [/\bpotenza\b/i, ['W','kW']],
+        [/temperatur|°/i, ['°C','°F']],
+        [/\bcarica\b.*%|soc|\(%\)/i, ['%']],
+        [/pressione/i, ['bar','psi','hPa']],
+        [/autonomia|odometro|km/i, ['km','mi']],
+        [/mbit|speedtest (download|upload)/i, ['Mbit/s','Mbps']],
+        [/ping/i, ['ms']],
+    ];
     Object.values(CD_SLOTS).forEach(sec => sec.slots.forEach(sl => {
         if (WIZ.entities[sl.ref] || ENTITY_OVERRIDES[sl.ref]) return;
-        const dom = sl.ref.startsWith('dm.') ? '' : sl.ref.split('.')[0];
-        const words = sl.lbl.toLowerCase().replace(/\([^)]*\)/g, '').split(/[^a-zà-ù]+/).filter(w => w.length > 3 && !STOP.has(w));
+        const dom = sl.ref.startsWith('dm.') ? (sl.ref.slice(3).split('_')[0] === 'core' ? '' : '') : sl.ref.split('.')[0];
+        const lblLow = sl.lbl.toLowerCase();
+        const words = lblLow.replace(/\([^)]*\)/g, '').split(/[^a-zà-ù]+/).filter(w => w.length > 3 && !STOP.has(w));
         if (!words.length) return;
         const keyLists = words.map(w => [w].concat(SYN[w] || []));
-        const cands = M.filter(e => {
-            if (dom && !e.id.startsWith(dom + '.')) return false;
+        let units = null;
+        for (const [rx, u] of UNIT_HINTS) { if (rx.test(sl.lbl)) { units = u; break; } }
+        let best = null, bestScore = 0, second = 0;
+        M.forEach(e => {
+            if (dom && !e.id.startsWith(dom + '.')) return;
             const hay = (e.id + ' ' + e.name).toLowerCase();
-            return keyLists.every(list => list.some(k => hay.includes(k)));
+            let score = 0;
+            keyLists.forEach(list => { if (list.some(k => hay.includes(k))) score += 2; });
+            if (units) { if (units.includes(e.unit)) score += 3; else if (e.unit) score -= 2; }
+            if (score > bestScore) { second = bestScore; bestScore = score; best = e; }
+            else if (score > second) second = score;
         });
-        if (cands.length === 1) { WIZ.entities[sl.ref] = cands[0].id; nSlot++; }
+        // accetta solo match forti e con distacco netto sul secondo
+        const minScore = Math.max(4, keyLists.length * 2 - 1);
+        if (best && bestScore >= minScore && bestScore > second) { WIZ.entities[sl.ref] = best.id; nSlot++; }
     }));
+
+    // — Caldaia (campo dedicato)
+    if (!WIZ.entities['switch.caldaia'] && !ENTITY_OVERRIDES['switch.caldaia']) {
+        const cands = M.filter(e => e.id.startsWith('switch.') && /caldaia|boiler|heater|heating/i.test(e.id + ' ' + e.name));
+        if (cands.length === 1) { WIZ.entities['switch.caldaia'] = cands[0].id; nSlot++; }
+    }
 
     wzRender();
     alert('🪄 Rilevamento completato!\n\n' +
         (nSlot ? '🧩 ' + nSlot + ' entità collegate\n' : '') +
+        (nLuci ? '💡 ' + nLuci + ' luci\n' : '') +
         (nClima ? '❄️ ' + nClima + ' unità clima\n' : '') +
         (nCam ? '📹 ' + nCam + ' telecamere\n' : '') +
         (nStanze ? '🌡️ ' + nStanze + ' stanze\n' : '') +

@@ -6214,7 +6214,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.3.7';
+const DASHBOARD_VERSION = '0.3.8';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -7317,11 +7317,13 @@ function wzRender() {
             }).join('');
             const evImg = key === 'ev' ? `<div class="ed-slot"><div class="ed-slot-lbl">🖼️ URL immagine auto (es. /local/mia_auto.png)</div>
                   <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" value="${WIZ.evImage||''}" placeholder="/local/mia_auto.png" onchange="WIZ.evImage = this.value.trim();"></div>` : '';
-            return `<details class="ed-acc"><summary class="ed-acc-head">${sec.label} <span class="ed-acc-n">${sec.slots.length}</span></summary><div class="ed-acc-body">${rows}${evImg}</div></details>`;
+            const done = sec.slots.filter(sl => (WIZ.entities && WIZ.entities[sl.ref]) || ENTITY_OVERRIDES[sl.ref]).length;
+            return `<details class="ed-acc"><summary class="ed-acc-head">${sec.label} <span class="ed-acc-n" style="${done ? 'background:#dcfce7; color:#166534;' : ''}">${done}/${sec.slots.length} collegate</span></summary><div class="ed-acc-body">${rows}${evImg}</div></details>`;
         }).join('');
         const dl = '<datalist id="wz-entity-list">' + (WIZ.allEntities||[]).map(e => `<option value="${e}">`).join('') + '</datalist>';
         body = `
         <div class="wz-title">🧩 Collega le tue entità</div>
+        <button id="wz-autodetect" class="wz-btn" style="width:100%; margin-bottom:10px; background:linear-gradient(135deg,#8b5cf6,#6d28d9);" onclick="wzAutoDetect()" ${(WIZ.allMeta && WIZ.allMeta.length) ? '' : 'disabled style="width:100%; margin-bottom:10px; opacity:0.55; background:linear-gradient(135deg,#8b5cf6,#6d28d9);"'}>🪄 Rileva automaticamente le mie entità</button>
         <div class="wz-sub">Per ogni voce scrivi la <b>tua</b> entità HA (autocomplete attivo). Puoi saltare questo passo e completarlo dopo da <b>⚙️ Configurazione → Configura Entità → 📑 Sezioni</b>. Le voci vuote mostreranno "—".</div>
         ${dl}
         <div style="max-height:46vh; overflow-y:auto; margin-bottom:14px;">${acc}${WIZ.sections['home'] !== false ? `
@@ -7402,6 +7404,15 @@ function wzRender() {
 
     if (WIZ.step === 6) body = `
         <div class="wz-title">🎉 Tutto pronto!</div>
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:12px 16px; margin-bottom:12px; font-size:12.5px; color:#166534; line-height:1.7;">
+          📋 <b>Riepilogo:</b>
+          🧩 ${Object.keys(WIZ.entities||{}).length + Object.keys(ENTITY_OVERRIDES||{}).length} entità ·
+          💡 ${Object.keys(WIZ.luci||{}).length} luci ·
+          🌡️ ${(WIZ.stanze||[]).length} stanze ·
+          ❄️ ${(WIZ.climaUnits||[]).length} clima ·
+          📹 ${(WIZ.cameras||[]).length} camere ·
+          ⚡ ${(WIZ.quickActions||[]).length} azioni
+        </div>
         <div class="wz-sub">La configurazione è salvata <b>su questo dispositivo</b> (con HACS sopravvive agli aggiornamenti).<br><br>
         📌 <b>Per tornare in configurazione in qualsiasi momento:</b><br>
         • Pagina <b>⚙️ Config</b> nel menu (visibile agli admin)<br>
@@ -7496,9 +7507,18 @@ function wzLoadAllEntities() {
             if (m.type === 'auth_ok') tws.send(JSON.stringify({ id: mid++, type: 'get_states' }));
             if (m.type === 'result' && Array.isArray(m.result)) {
                 WIZ.allEntities = m.result.map(s => s.entity_id).sort();
+                // v265: metadati per l'auto-rilevamento
+                WIZ.allMeta = m.result.map(s => ({
+                    id: s.entity_id,
+                    name: (s.attributes && s.attributes.friendly_name) || s.entity_id,
+                    dc: (s.attributes && s.attributes.device_class) || '',
+                    unit: (s.attributes && s.attributes.unit_of_measurement) || ''
+                }));
                 tws.close();
                 const dl = document.getElementById('wz-entity-list');
                 if (dl) dl.innerHTML = WIZ.allEntities.map(e => `<option value="${e}">`).join('');
+                const btn = document.getElementById('wz-autodetect');
+                if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
             }
         };
     } catch(e) {}
@@ -7525,6 +7545,95 @@ function wzAddQA() {
 }
 
 
+
+/* ═══ v265: AUTO-RILEVAMENTO — propone le entità giuste leggendo l'HA dell'utente.
+   Tutto resta modificabile: sono solo proposte pre-compilate. ═══ */
+function wzAutoDetect() {
+    if (!WIZ.allMeta || !WIZ.allMeta.length) { alert('Attendi il caricamento delle entità…'); return; }
+    const M = WIZ.allMeta;
+    let nClima = 0, nCam = 0, nStanze = 0, nAvvisi = 0, nSlot = 0;
+
+    // — Unità clima: tutte le climate.* (termosifone se il nome lo suggerisce)
+    if (!(WIZ.climaUnits || []).length) {
+        WIZ.climaUnits = M.filter(e => e.id.startsWith('climate.')).map(e => ({
+            name: e.name.replace(/termosifone|radiator|thermostat|condizionatore|clima/gi, '').trim() || e.name,
+            entity: e.id,
+            type: /termo|radiat|riscald|heat|valve/i.test(e.id + ' ' + e.name) ? 'termo' : 'clima'
+        }));
+        nClima = WIZ.climaUnits.length;
+    }
+
+    // — Telecamere: tutte le camera.*
+    if (!(WIZ.cameras || []).length) {
+        WIZ.cameras = M.filter(e => e.id.startsWith('camera.')).map(e => ({ name: e.name, entity: e.id }));
+        nCam = WIZ.cameras.length;
+    }
+
+    // — Stanze: sensori di temperatura (max 12)
+    if (!(WIZ.stanze || []).length) {
+        const temps = M.filter(e => e.id.startsWith('sensor.') && (e.dc === 'temperature' || /temperatur/i.test(e.id)) && e.unit.includes('°'));
+        WIZ.stanze = temps.slice(0, 12).map(e => {
+            const r = { name: e.name.replace(/temperatura|temperature|sensore?/gi, '').trim() || e.name, icon: '🌡️', temp: e.id };
+            const hum = M.find(h => h.id === e.id.replace(/temperatur[ae]?/i, 'umidita') || h.id === e.id.replace('_temperature', '_humidity'));
+            if (hum) r.hum = hum.id;
+            return r;
+        });
+        nStanze = WIZ.stanze.length;
+    }
+
+    // — Quadro avvisi: aperture (door/window/opening) e batterie in % (max 15 per gruppo)
+    const extG = cdCfg('cd_gruppi_extra');
+    if (!(GRUPPI_MONITORAGGIO['win'] || []).length) {
+        const wins = M.filter(e => e.id.startsWith('binary_sensor.') && (['door','window','opening','garage_door'].includes(e.dc) || /finestra|porta|window|door|contact/i.test(e.id))).slice(0, 15);
+        if (wins.length) {
+            extG['win'] = wins.map(e => e.id);
+            wins.forEach(e => { GRUPPI_MONITORAGGIO['win'].push(e.id); });
+            nAvvisi += wins.length;
+        }
+    }
+    if (!(GRUPPI_MONITORAGGIO['batt'] || []).length) {
+        const batts = M.filter(e => e.id.startsWith('sensor.') && e.dc === 'battery' && e.unit === '%').slice(0, 15);
+        if (batts.length) {
+            extG['batt'] = batts.map(e => e.id);
+            batts.forEach(e => { GRUPPI_MONITORAGGIO['batt'].push(e.id); });
+            nAvvisi += batts.length;
+        }
+    }
+    if (nAvvisi) localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
+
+    // — Slot: match per parole chiave (solo campi vuoti, solo match unici)
+    if (!WIZ.entities || Array.isArray(WIZ.entities)) WIZ.entities = {};
+    const STOP = new Set(['oggi','anno','mese','casa','stato','testo','entita','interruttore','sensore','della','delle','dallo','alla']);
+    const SYN = {
+        'meteo': ['weather'], 'allarme': ['alarm'], 'produzione': ['production','yield','pv'], 'consumo': ['consumption','load','used'],
+        'prelevata': ['bought','import','purchased'], 'immessa': ['sold','export'], 'batteria': ['battery','soc'],
+        'carica': ['charge','soc'], 'potenza': ['power'], 'rete': ['grid'], 'temperatura': ['temperature','temp'],
+        'autonomia': ['range'], 'odometro': ['odometer','mileage'], 'pressione': ['pressure'], 'caldaia': ['boiler','heater'],
+        'lavatrice': ['washing','washer'], 'cancello': ['gate'], 'solare': ['solar','pv'], 'auto': ['car','vehicle','ev'],
+    };
+    Object.values(CD_SLOTS).forEach(sec => sec.slots.forEach(sl => {
+        if (WIZ.entities[sl.ref] || ENTITY_OVERRIDES[sl.ref]) return;
+        const dom = sl.ref.startsWith('dm.') ? '' : sl.ref.split('.')[0];
+        const words = sl.lbl.toLowerCase().replace(/\([^)]*\)/g, '').split(/[^a-zà-ù]+/).filter(w => w.length > 3 && !STOP.has(w));
+        if (!words.length) return;
+        const keyLists = words.map(w => [w].concat(SYN[w] || []));
+        const cands = M.filter(e => {
+            if (dom && !e.id.startsWith(dom + '.')) return false;
+            const hay = (e.id + ' ' + e.name).toLowerCase();
+            return keyLists.every(list => list.some(k => hay.includes(k)));
+        });
+        if (cands.length === 1) { WIZ.entities[sl.ref] = cands[0].id; nSlot++; }
+    }));
+
+    wzRender();
+    alert('🪄 Rilevamento completato!\n\n' +
+        (nSlot ? '🧩 ' + nSlot + ' entità collegate\n' : '') +
+        (nClima ? '❄️ ' + nClima + ' unità clima\n' : '') +
+        (nCam ? '📹 ' + nCam + ' telecamere\n' : '') +
+        (nStanze ? '🌡️ ' + nStanze + ' stanze\n' : '') +
+        (nAvvisi ? '🔔 ' + nAvvisi + ' avvisi\n' : '') +
+        '\nControlla le proposte negli accordion: puoi correggere o rimuovere tutto liberamente.');
+}
 function wzAddAvviso() {
     const grp = document.getElementById('wz-av-grp').value;
     const name = (document.getElementById('wz-av-name').value || '').trim();

@@ -1,83 +1,123 @@
 # Changelog
 
-Tutte le modifiche rilevanti di Dashboard Modern sono documentate in questo file.
-Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il versionamento [SemVer](https://semver.org/lang/it/).
+🇮🇹 Italiano · [🇬🇧 English below](#-english)
+
+Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il versionamento [SemVer](https://semver.org).
 
 ---
+
+## [0.3.6] — 2026-07-15
+
+### ✨ Aggiunto
+- **🌍 Versione inglese** — la release ora include due file: `dashboard.html` (italiano) e `dashboard-en.html` (English). Scegli la lingua con l'URL della plancia; ogni aggiornamento futuro esce automaticamente in entrambe le lingue.
+- **💗 Supporto al progetto** — pulsante Sponsor e link PayPal per le donazioni.
 
 ## [0.3.5] — 2026-07-14
 
 ### ✨ Aggiunto
-- **🔔 Quadro Avvisi nel Setup Wizard** — nuovo accordion nello step "Collega le tue entità": aggiungi sensori di apertura (🚪 porte/finestre) e batterie (🔋) con nome personalizzato ed entità con autocomplete; ogni voce è rimovibile col cestino. Le voci alimentano i contatori della Home e il popup Avvisi.
+- **🔔 Quadro Avvisi nel Setup Wizard** — aggiungi sensori di apertura (🚪) e batterie (🔋) con nome personalizzato ed entità con autocomplete; ogni voce è rimovibile col cestino.
 
 ### 🐛 Corretto
-- **Azioni rapide duplicate nel wizard** — l'accordion delle azioni rapide dell'editor era finito per errore dentro il wizard (che quindi lo mostrava due volte), mentre l'editor ne era rimasto privo. Ora ogni contesto ha il proprio: uno nel wizard, uno in Configura Entità → Sezioni.
-
----
+- **Azioni rapide duplicate nel wizard** — l'accordion dell'editor era finito per errore nel wizard; ora ognuno è al suo posto.
 
 ## [0.3.4] — 2026-07-14
 
 ### ✨ Aggiunto
-- **🔄 Aggiornamenti automatici** — dopo un update HACS la dashboard rileva la nuova versione sul server (controllo all'apertura e ogni 6 ore) e **si ricarica da sola** bypassando la cache. L'URL della plancia non va mai più modificato. Protezione anti-loop inclusa.
+- **🔄 Aggiornamenti automatici** — dopo un update HACS la dashboard rileva la nuova versione e si ricarica da sola bypassando la cache. L'URL della plancia non va mai più modificato.
 
 ### 🔧 Modificato
-- **🖼️ Immagine auto** spostata dentro l'accordion "🚗 Auto elettrica" (wizard ed editor) — niente più accordion separato.
-
----
+- **🖼️ Immagine auto** spostata dentro l'accordion "🚗 Auto elettrica".
 
 ## [0.3.3] — 2026-07-14
 
 ### 🐛 Corretto
-- **Sezioni disattivate visibili su mobile** — la bottom-nav mobile ha regole CSS `!important` che vincevano sul nascondi-tab: ora i tab delle sezioni disattivate vengono **rimossi fisicamente dal DOM** e non possono riapparire su nessun dispositivo.
-- **Accordion Stanze duplicato** nello step Entità del wizard.
-
----
+- **Sezioni disattivate visibili su mobile** — i tab vengono ora rimossi fisicamente dal DOM.
+- **Accordion Stanze duplicato** nel wizard.
 
 ## [0.3.2] — 2026-07-14
 
 ### ✨ Aggiunto
-- **🌡️ Stanze nel wizard** — aggiungi le stanze (icona, nome, sensore temperatura, umidità facoltativa) direttamente dallo step Entità.
-- **🌐 URL remoto nel wizard** — campo facoltativo per Nabu Casa/dominio proprio nello step Connessione.
+- **🌡️ Stanze nel wizard** e **🌐 URL remoto** (Nabu Casa) nello step Connessione.
 
 ### 🔧 Modificato
-- **🔥 Caldaia semplificata** — rimosso il gruppo "Impianto termico"; l'unica entità richiesta (caldaia, facoltativa) ora è un campo dentro l'accordion "Unità clima".
-
----
+- **🔥 Caldaia semplificata**: unico campo facoltativo dentro "Unità clima".
 
 ## [0.3.1] — 2026-07-14
 
 ### ✨ Aggiunto
-- **⚡ Azioni rapide personalizzabili** — crea le tue azioni per la Home: predefinite (Gestione Luci, Clima, Antifurto, Lavatrice) o personalizzate (nome, icona, colore, entità/script da eseguire, conferma opzionale). Se non ne configuri nessuna, il blocco sparisce dalla Home.
-
-### 🔧 Modificato
-- Etichette clima disambiguate tra "Unità clima" e impianto.
-
----
+- **⚡ Azioni rapide personalizzabili** (predefinite o custom con entità/script e conferma); se vuote, il blocco sparisce dalla Home.
 
 ## [0.3.0] — 2026-07-14
 
 ### ✨ Aggiunto
-- **👻 Auto-pulizia** — gli elementi le cui entità non sono state configurate vengono **nascosti** dalla dashboard (niente card vuote con "—").
-- **❄️ Unità clima illimitate** — condizionatori e termosifoni non sono più fissi: aggiungi/rimuovi le tue unità da wizard ed editor; zona Freddo e zona Caldo si popolano di conseguenza.
-
----
+- **👻 Auto-pulizia**: gli elementi senza entità configurate vengono nascosti.
+- **❄️ Unità clima illimitate**: condizionatori e termosifoni aggiungibili/rimovibili da UI.
 
 ## [0.2.x] — 2026-07-14
 
-### ✨ Aggiunto
-- **🧙 Setup Wizard a 6 step** con verifica token live, luci lette da HA, entità con autocomplete, telecamere, immagine auto e rinomina sezioni
-- **📑 Registry entità completo** — oltre 100 punti dati con etichette umane, configurabili per sezione
-- **📹 Telecamere illimitate** (entità + stream go2rtc per il live WebRTC)
-- **🎨 Tema chiaro / scuro / auto** con inseguimento del tema di sistema
-- **⚙️ Pagina Configurazione** riservata agli admin (Wizard, Configura Entità, Tema)
-- **🆘 Accessi di emergenza** — 7 tap sul titolo o `#setup` nell'URL; reset totale della configurazione
-- **🔢 Versione visibile** in console, wizard e pagina Config
-
-### 🔒 Sicurezza
-- **Neutralizzazione completa del file distribuito**: nessuna credenziale, entità, nome o riferimento di alcuna installazione reale; chiavi interne neutre (`dm.*`) che non possono collidere con entità esistenti; gli slot non mappati non leggono alcun dato.
-
----
+- **🧙 Setup Wizard a 6 step**, **📑 registry di 100+ entità** con etichette umane, **📹 telecamere illimitate**, **🎨 tema chiaro/scuro/auto**, **⚙️ pagina Config** per admin, **🆘 accessi di emergenza** (7 tap, `#setup`), **🔒 neutralizzazione completa** del file distribuito.
 
 ## [0.1.1] — 2026-07-14
 
-🎉 **Prima release pubblica** — distribuzione via HACS (repository personalizzato, categoria Dashboard) con `zip_release`.
+🎉 Prima release pubblica via HACS.
+
+---
+
+# 🇬🇧 English
+
+The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.3.6] — 2026-07-15
+
+### ✨ Added
+- **🌍 English version** — the release now ships two files: `dashboard.html` (Italian) and `dashboard-en.html` (English). Pick your language via the panel URL; every future update ships in both languages automatically.
+- **💗 Project support** — Sponsor button and PayPal link for donations.
+
+## [0.3.5] — 2026-07-14
+
+### ✨ Added
+- **🔔 Alerts Panel in the Setup Wizard** — add opening sensors (🚪) and batteries (🔋) with a custom name and entity autocomplete; every item is removable.
+
+### 🐛 Fixed
+- **Duplicated quick actions in the wizard** — the editor accordion had ended up inside the wizard by mistake; each is now in its own place.
+
+## [0.3.4] — 2026-07-14
+
+### ✨ Added
+- **🔄 Automatic updates** — after a HACS update the dashboard detects the new version and reloads itself bypassing the cache. You never need to touch the panel URL again.
+
+### 🔧 Changed
+- **🖼️ Car image** moved inside the "🚗 Electric car" accordion.
+
+## [0.3.3] — 2026-07-14
+
+### 🐛 Fixed
+- **Disabled sections still visible on mobile** — tabs are now physically removed from the DOM.
+- **Duplicated Rooms accordion** in the wizard.
+
+## [0.3.2] — 2026-07-14
+
+### ✨ Added
+- **🌡️ Rooms in the wizard** and **🌐 remote URL** (Nabu Casa) in the Connection step.
+
+### 🔧 Changed
+- **🔥 Simplified boiler**: single optional field inside "Climate units".
+
+## [0.3.1] — 2026-07-14
+
+### ✨ Added
+- **⚡ Customizable quick actions** (built-in or custom with entity/script and confirmation); if none are configured, the block disappears from Home.
+
+## [0.3.0] — 2026-07-14
+
+### ✨ Added
+- **👻 Auto-cleanup**: elements without configured entities are hidden.
+- **❄️ Unlimited climate units**: air conditioners and radiators can be added/removed from the UI.
+
+## [0.2.x] — 2026-07-14
+
+- **🧙 6-step Setup Wizard**, **📑 registry of 100+ entities** with human labels, **📹 unlimited cameras**, **🎨 light/dark/auto theme**, **⚙️ admin Config page**, **🆘 emergency access** (7 taps, `#setup`), **🔒 fully neutralized** distributed file.
+
+## [0.1.1] — 2026-07-14
+
+🎉 First public release via HACS.

@@ -6041,8 +6041,13 @@ let currentHistName = null;
 let hlsInstance = null; 
 let isPseudoFullscreen = false; // Gestione Fullscreen per iOS su flussi MJPEG
 
-Chart.defaults.color = '#5c6c81';
-Chart.defaults.font.family = "'Inter', sans-serif";
+/* v281: la dashboard deve vivere anche se il CDN di Chart.js non è raggiungibile
+   (tablet offline, reti filtrate): senza questa guardia un CDN mancante uccideva
+   l'intera inizializzazione — wizard, tap sul titolo, configurazione. */
+if (typeof Chart !== 'undefined') {
+    Chart.defaults.color = '#5c6c81';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+}
 let storicChartInstance = null;
 
 /* ═══ v256: CONNESSIONE — priorità: wizard UI (localStorage/baked) → config.js → default ═══ */
@@ -8200,7 +8205,7 @@ function applyTheme() {
     const pref = getThemePref();
     let dark = false;
     if (pref === 'dark') dark = true;
-    else if (pref === 'auto') dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    else if (pref === 'auto') dark = window.matchMedia && (window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : { matches: false, addEventListener: function(){} }).matches;
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
     // Aggiorna il selettore se visibile
     document.querySelectorAll('.theme-opt').forEach(b => b.classList.toggle('active', b.dataset.theme === pref));
@@ -8216,7 +8221,7 @@ function setTheme(pref) {
 applyTheme();
 if (window.matchMedia) {
     try {
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        (window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : { matches: false, addEventListener: function(){} }).addEventListener('change', () => {
             if (getThemePref() === 'auto') applyTheme();
         });
     } catch(e) {}
@@ -12103,6 +12108,7 @@ async function edCaricaDettaglio() {
 (function setupBottomNavMobile() {
     // Si attiva su smartphone in portrait (≤768px largo) OPPURE in landscape (altezza ≤500px)
     function isMobileLayout() {
+        if (!window.matchMedia) return window.innerWidth <= 768;
         return window.matchMedia('(max-width: 768px)').matches ||
                (window.matchMedia('(orientation: landscape)').matches &&
                 window.matchMedia('(max-height: 500px)').matches);

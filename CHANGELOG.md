@@ -8,6 +8,9 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ## [0.4.0] — 2026-07-15
 
+### 🛡️ Affidabilità
+- **La dashboard funziona anche se il CDN dei grafici è bloccato** (Pi-hole, AdGuard, reti filtrate, tablet offline): prima un CDN irraggiungibile impediva l'avvio di wizard e configurazione; ora tutto funziona e solo i grafici risultano non disponibili.
+
 ### ✨ Nuova funzionalità — 🔌 Dispositivi personalizzati
 *(proposta da @magli74 nella issue #2)*
 - **Card in Home per qualsiasi elettrodomestico o dispositivo**: lavastoviglie, asciugatrice, stufa a pellet, scaldino, irrigazione a zone… Per ognuno configuri: nome, icona, **switch** (accensione dalla card), **sensore potenza** (stato "In funzione" da soglia 5W — perfetto per prese smart su apparecchi non smart) e **sensore valore** (livello pellet, temperatura…).

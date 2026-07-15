@@ -6,6 +6,24 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.4.0] — 2026-07-15
+
+### ✨ Nuova funzionalità — 🔌 Dispositivi personalizzati
+*(proposta da @magli74 nella issue #2)*
+- **Card in Home per qualsiasi elettrodomestico o dispositivo**: lavastoviglie, asciugatrice, stufa a pellet, scaldino, irrigazione a zone… Per ognuno configuri: nome, icona, **switch** (accensione dalla card), **sensore potenza** (stato "In funzione" da soglia 5W — perfetto per prese smart su apparecchi non smart) e **sensore valore** (livello pellet, temperatura…).
+- Aggiungibili dal wizard (accordion 🔌 Dispositivi) e dall'editor; tap sulla card → grafico storico; il blocco sparisce se non ne configuri.
+- Il cronotermostato si aggiunge come **unità clima** (è un `climate.*`): card completa con temperature e controlli.
+
+## [0.3.15] — 2026-07-15
+
+### 🐛 Corretto
+- **Temperature nelle card clima** *(issue #2)* — l'aggiornamento delle card clima è ora autonomo (proprio ciclo, rete di sicurezza ogni 20s): le temperature compaiono sulle card senza dover aprire il popup.
+- **Allarme in "CARICAMENTO" nella pagina Sicurezza** *(issue #2)* — se la centrale non è configurata, il blocco allarme sparisce e la pagina mostra solo le telecamere.
+- **Popup lavatrice per non smart** *(issue #2)* — programma/centrifuga/temperatura nascosti se non configurati: resta stato (anche da soglia watt) e presa.
+
+### 🗺️ In roadmap
+- **Elettrodomestici personalizzati** (lavastoviglie, asciugatrice, stufa a pellet, scaldino…): card generiche con switch + sensore potenza/livello — grazie a Fabrizio per la proposta!
+
 ## [0.3.14] — 2026-07-15
 
 ### 🐛 Corretto
@@ -140,6 +158,24 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.4.0] — 2026-07-15
+
+### ✨ New feature — 🔌 Custom appliances
+*(proposed by @magli74 in issue #2)*
+- **Home cards for any appliance or device**: dishwasher, dryer, pellet stove, bathroom heater, zone irrigation… For each you configure: name, icon, **switch** (toggle from the card), **power sensor** ("Running" state from a 5W threshold — perfect for smart plugs on non-smart appliances) and **value sensor** (pellet level, temperature…).
+- Add them from the wizard (🔌 Appliances accordion) or the editor; tap the card → history chart; the block disappears if none are configured.
+- A thermostat should be added as a **climate unit** (it is a `climate.*`): full card with temperatures and controls.
+
+## [0.3.15] — 2026-07-15
+
+### 🐛 Fixed
+- **Temperatures on climate cards** *(issue #2)* — climate card updates are now autonomous (own cycle, 20s safety net): temperatures appear on cards without opening the popup.
+- **Alarm stuck on "LOADING" in Security page** *(issue #2)* — if no alarm panel is configured, the alarm block disappears and the page shows cameras only.
+- **Washer popup for non-smart machines** *(issue #2)* — program/spin/temperature hidden when not configured: state (incl. watt threshold) and plug remain.
+
+### 🗺️ Roadmap
+- **Custom appliances** (dishwasher, dryer, pellet stove, bathroom heater…): generic cards with switch + power/level sensor — thanks Fabrizio for the idea!
 
 ## [0.3.14] — 2026-07-15
 

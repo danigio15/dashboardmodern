@@ -4626,6 +4626,86 @@ async function refreshActiveDeviceTelemetry() {
 /* ═══ v256: SETUP WIZARD ═══ */
 #setup-wizard { position: fixed; inset: 0; z-index: 99999; background: rgba(230,235,241,0.92); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); display: flex; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); overflow-y: auto; }
 .wz-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 28px; box-shadow: var(--shadow-sculpted), 0 24px 60px rgba(0,0,0,0.12); max-width: 520px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 30px 28px; position: relative; }
+
+/* ═══ v280: DISPOSITIVI PERSONALIZZATI — lavastoviglie, asciugatrice, stufa a pellet,
+   irrigazione, scaldino… Ogni dispositivo: nome, icona, switch (opzionale),
+   sensore potenza (stato da soglia 5W) e/o sensore valore (livello, temperatura…). ═══ */
+const CD_DEVICES_DEFAULT = [];
+function getDevices() {
+    const w = cdCfg('cd_devices');
+    if (Array.isArray(w) && w.length) return w;
+    const C = (window.DASHBOARD_CONFIG || {});
+    if (Array.isArray(C.devices) && C.devices.length) return C.devices;
+    return CD_DEVICES_DEFAULT;
+}
+function buildDeviceCards() {
+    const grid = document.getElementById('dev-grid');
+    const title = document.getElementById('dev-title');
+    if (!grid) return;
+    const devs = getDevices();
+    if (title) title.style.display = devs.length ? '' : 'none';
+    grid.style.display = devs.length ? '' : 'none';
+    grid.innerHTML = devs.map((d, i) => {
+        const nm = (d.name || '').replace(/'/g, '&#39;');
+        return `<div class="dev-card" id="dev-card-${i}" onclick="devCardTap(${i})">
+            ${d.switch ? `<button class="dev-pwr" onclick="event.stopPropagation(); toggle('${d.switch}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>` : ''}
+            <div class="dev-ico">${d.icon || '🔌'}</div>
+            <div class="dev-nm">${nm}</div>
+            <div class="dev-st" id="dev-st-${i}">—</div>
+            <div class="dev-val" id="dev-val-${i}"></div>
+        </div>`;
+    }).join('');
+    try { if (Object.keys(_RAW_STATES).length) updateDeviceCards(); } catch(e) {}
+}
+function updateDeviceCards() {
+    try {
+        getDevices().forEach((d, i) => {
+            const card = document.getElementById('dev-card-' + i);
+            if (!card) return;
+            const stEl = document.getElementById('dev-st-' + i);
+            const valEl = document.getElementById('dev-val-' + i);
+            const sw = d.switch ? STATES[d.switch] : null;
+            const pw = d.power ? parseFloat(STATES[d.power]?.state) : NaN;
+            const sv = d.sensor ? STATES[d.sensor] : null;
+            // Stato: potenza > 5W → IN FUNZIONE; altrimenti switch on/off
+            let on = false, st = '—';
+            if (!isNaN(pw)) { on = pw > 5; st = on ? 'Running' : (sw ? (sw.state === 'on' ? 'Ready' : 'Off') : 'Off'); }
+            else if (sw) { on = sw.state === 'on'; st = on ? 'On' : 'Off'; }
+            card.classList.toggle('on', on);
+            if (stEl) stEl.textContent = st;
+            let val = '';
+            if (!isNaN(pw) && pw > 5) val = Math.round(pw) + ' W';
+            if (sv && sv.state !== undefined && sv.state !== 'unavailable' && sv.entity_id !== 'dm.unmapped') {
+                const u = sv.attributes?.unit_of_measurement || '';
+                val = (val ? val + ' · ' : '') + sv.state + (u ? ' ' + u : '');
+            }
+            if (valEl) valEl.textContent = val;
+        });
+    } catch (err) { console.error('[dispositivi]', err); }
+}
+function devCardTap(i) {
+    const d = getDevices()[i];
+    if (!d) return;
+    if (d.sensor) { apriStorico(event, d.sensor, d.name); return; }
+    if (d.power) { apriStorico(event, d.power, d.name); return; }
+    if (d.switch) toggle(d.switch);
+}
+document.addEventListener('DOMContentLoaded', buildDeviceCards);
+setInterval(() => { try { if (Object.keys(_RAW_STATES).length) updateDeviceCards(); } catch(e) {} }, 20000);
+/* ═══ v280: DISPOSITIVI PERSONALIZZATI ═══ */
+.dev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 28px; }
+.dev-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 14px 15px; cursor: pointer; box-shadow: var(--shadow-sculpted); transition: transform 0.15s, box-shadow 0.2s; position: relative; overflow: hidden; }
+.dev-card:active { transform: scale(0.97); }
+.dev-card.on { background: linear-gradient(135deg, #e0f2fe, #bae6fd); border-color: #7dd3fc; }
+body.dark-theme .dev-card.on { background: linear-gradient(135deg, #0c4a6e, #075985); border-color: #0ea5e9; }
+.dev-ico { font-size: 26px; margin-bottom: 8px; }
+.dev-nm { font-size: 12.5px; font-weight: 800; color: var(--text); line-height: 1.25; margin-bottom: 3px; }
+.dev-st { font-size: 10.5px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text-dim); }
+.dev-card.on .dev-st { color: #0369a1; }
+body.dark-theme .dev-card.on .dev-st { color: #7dd3fc; }
+.dev-val { font-family: 'Oswald', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); margin-top: 6px; }
+.dev-pwr { position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: 10px; border: none; background: rgba(148,163,184,0.15); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-dim); }
+.dev-card.on .dev-pwr { background: rgba(3,105,161,0.15); color: #0369a1; }
 .wz-ver { position: absolute; top: 14px; right: 18px; font-size: 10px; font-weight: 800; color: var(--text-dim); opacity: 0.6; letter-spacing: 0.5px; }
 .wz-dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 22px; }
 .wz-dot { width: 9px; height: 9px; border-radius: 50%; background: #e2e8f0; transition: 0.3s; }
@@ -4850,6 +4930,9 @@ html[data-theme="dark"] header { background: var(--card-glass); }
 
     <h3 class="section-title">Quick Actions</h3>
     <div class="quick-actions" id="qa-grid"><!-- v261: actions generate da getQuickActions() --></div>
+
+    <h3 class="section-title" id="dev-title" style="display:none;">Appliances</h3>
+    <div class="dev-grid" id="dev-grid"><!-- v280: card dispositivi personalizzati (cd_devices) --></div>
   </section>
 
 <section class="page" id="page-energy">
@@ -5626,7 +5709,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
           </div>
           <span id="txt-chiave" style="display:none">CHIUSA</span>
         </div>
-        <div class="syn-pump" id="syn-p-ricircolo" style="left: 88%; top: 50%;" onclick="toggle('dm.core_037')">
+        <div class="syn-pump" id="syn-p-ricircolo" style="left: 88%; top: 50%;" onclick="toggle('dm.core_040')">
         </div>
       </div>
       
@@ -5647,13 +5730,13 @@ html[data-theme="dark"] header { background: var(--card-glass); }
 
       <div class="b-controls-grid">
         <div class="b-btn" id="b-c-pompasol" onclick="toggle('dm.boiler_pompa_solare')" style="--c-rgb: 234,88,12;"><div class="icon"><span class="spin-active">🔄</span></div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-ricircolo" onclick="toggle('dm.core_037')" style="--c-rgb: 124,58,237;"><div class="icon"><span class="spin-active">🔁</span></div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-ricircolo" onclick="toggle('dm.core_040')" style="--c-rgb: 124,58,237;"><div class="icon"><span class="spin-active">🔁</span></div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-centralina" onclick="toggle('dm.boiler_centralina_solare_termico')" style="--c-rgb: 245,158,11;"><div class="icon">⚙️</div><div class="lbl">Centralina</div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-solare" onclick="toggle('dm.boiler_interruttore_solare_termico')" style="--c-rgb: 245,158,11;"><div class="icon">♨️</div><div class="lbl">Ctrl Solare</div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-valvola" onclick="toggle('valve.chiave_solare_termico')" style="--c-rgb: 6,182,212;"><div class="icon">🎛️</div><div class="lbl">Valvola</div><div class="state">CHIUSA</div></div>
         <div class="b-btn" id="b-c-boiler" onclick="toggle('dm.boiler_interruttore_boiler')" style="--c-rgb: 30,64,175;"><div class="icon">🌊</div><div class="lbl">Boiler</div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-pdc" onclick="toggle('dm.core_036')" style="--c-rgb: 124,58,237;"><div class="icon">🌬️</div><div class="lbl">PdC</div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-boost" onclick="toggle('dm.core_034')" style="--c-rgb: 236,72,153;"><div class="icon">🚀</div><div class="lbl">Boost</div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-pdc" onclick="toggle('dm.core_039')" style="--c-rgb: 124,58,237;"><div class="icon">🌬️</div><div class="lbl">PdC</div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-boost" onclick="toggle('dm.core_037')" style="--c-rgb: 236,72,153;"><div class="icon">🚀</div><div class="lbl">Boost</div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-sicurezza" onclick="toggle('dm.boiler_valvola_di_sicurezza')" style="--c-rgb: 225,29,72;"><div class="icon"><span class="blink-active">🔒</span></div><div class="lbl">V. Sicurezza</div><div class="state">CHIUSA</div></div>
       </div>
     </div>
@@ -6214,7 +6297,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.3.14';
+const DASHBOARD_VERSION = '0.4.0';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6227,6 +6310,7 @@ window.CD_BAKED_CONFIG = {
   cd_stanze: [],
   cd_cameras: [],
   cd_clima_units: [],
+  cd_devices: [],
   cd_quick_actions: null,
   cd_ev_image: "",
   cd_entity_overrides: {},
@@ -6559,7 +6643,7 @@ function renderInverterTemp() {
   const fanStat = document.getElementById('fan-status-txt');
   const fanPow  = document.getElementById('fan-power-val');
   if (fanCard) fanCard.classList.toggle('on', fanS);
-  if (fanStat) fanStat.textContent = fanS ? 'Accesa' : 'Off';
+  if (fanStat) fanStat.textContent = fanS ? 'On' : 'Off';
   if (fanPow)  fanPow.textContent  = fanP.toFixed(1);
 }
 
@@ -6661,7 +6745,7 @@ async function connect() {
             renderQuickClima();
           }
           // Switch termici → re-render pannello stato (visibile solo in modalità caldo)
-          if (eid === 'switch.caldaia' || eid === 'dm.core_038' || eid === 'dm.core_033') {
+          if (eid === 'switch.caldaia' || eid === 'dm.core_043' || eid === 'dm.core_036') {
             if (currentClimaMode === 'caldo') renderThermalPanel();
           }
         }
@@ -7262,7 +7346,9 @@ function apriSetupWizard() {
         cameras: getCameras().slice(),
         climaUnits: getClimaUnits().slice(),
         stanze: getStanze().slice(),
+        devices: getDevices().slice(),
         stanze: getStanze().slice(),
+        devices: getDevices().slice(),
         quickActions: getQuickActions().slice(),
         sectionNames: cdCfg('cd_section_names') || {},
         evImage: (function(){ const v = cdCfg('cd_ev_image'); return (typeof v === 'string' ? v : (v && v.url) || ''); })()
@@ -7345,7 +7431,7 @@ function wzRender() {
                 const auto = WIZ.autoDetected && WIZ.autoDetected[sl.ref];
                 return `<div class="ed-slot"><div class="ed-slot-lbl">${sl.lbl}${auto ? ' <span style=\"background:#dcfce7; color:#15803d; font-size:9.5px; font-weight:800; padding:1px 7px; border-radius:8px; vertical-align:1px;\">🪄 auto</span>' : ''}</div>
                   <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px; ${auto ? 'background:#f0fdf4; border-color:#86efac;' : ''}" list="wz-entity-list"
-                         data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_032" onchange="wzSetSlot(this); if(WIZ.autoDetected) delete WIZ.autoDetected[this.dataset.ref];"></div>`;
+                         data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_033" onchange="wzSetSlot(this); if(WIZ.autoDetected) delete WIZ.autoDetected[this.dataset.ref];"></div>`;
             }).join('');
             const evImg = key === 'ev' ? `<div class="ed-slot"><div class="ed-slot-lbl">🖼️ Car image URL (e.g. /local/my_car.png)</div>
                   <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" value="${WIZ.evImage||''}" placeholder="/local/mia_auto.png" onchange="WIZ.evImage = this.value.trim();"></div>` : '';
@@ -7370,7 +7456,7 @@ function wzRender() {
               <option value="luci_group">💡 Light group (custom popup)</option></select>
               <input id="wz-qa-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome">
             </div>
-            <input id="wz-qa-ent" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_039 (solo per toggle/script/scena)" style="margin-bottom:8px; font-family:monospace;">
+            <input id="wz-qa-ent" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_044 (solo per toggle/script/scena)" style="margin-bottom:8px; font-family:monospace;">
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddQA()">＋ Aggiungi azione</button>
           </div>
         </details>` : ''}${WIZ.sections['home'] !== false ? `
@@ -7387,6 +7473,19 @@ function wzRender() {
             </div>
             <input id="wz-av-ent" class="wz-input mono" list="wz-entity-list" placeholder="binary_sensor.finestra_studio_contact" style="margin-bottom:8px; font-family:monospace;">
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddAvviso()">＋ Add to Alerts Panel</button>
+          </div>
+        </details>` : ''}${WIZ.sections['home'] !== false ? `
+        <details class="ed-acc"><summary class="ed-acc-head">🔌 Appliances (dishwasher, stove…) <span class="ed-acc-n">${(WIZ.devices||[]).length}</span></summary>
+          <div class="ed-acc-body">
+            ${(WIZ.devices||[]).map((d, i) => `<div class="ed-row"><div style="font-size:15px;">${d.icon||'🔌'}</div><div class="ed-row-main"><div class="ed-row-new">${d.name}</div><div class="ed-row-old mono">${[d.switch,d.power,d.sensor].filter(Boolean).join(' · ')}</div></div><div class="ed-del" onclick="WIZ.devices.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+              <input id="wz-dev-icon" class="wz-input" style="margin-bottom:0; flex:0 0 64px; text-align:center;" placeholder="🧺" maxlength="4">
+              <input id="wz-dev-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Name (e.g. Dishwasher)">
+            </div>
+            <input id="wz-dev-sw" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_041 (optional)" style="margin-bottom:8px; font-family:monospace;">
+            <input id="wz-dev-pw" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_034 (optional)" style="margin-bottom:8px; font-family:monospace;">
+            <input id="wz-dev-sv" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_032 (optional)" style="margin-bottom:8px; font-family:monospace;">
+            <button class="ed-btn-add" style="width:100%;" onclick="wzAddDevice()">＋ Add appliance</button>
           </div>
         </details>` : ''}${WIZ.sections['temp'] !== false ? `
         <details class="ed-acc"><summary class="ed-acc-head">🌡️ Rooms (temperatures) <span class="ed-acc-n">${(WIZ.stanze||[]).length}</span></summary>
@@ -7417,11 +7516,35 @@ function wzRender() {
               <div class="ed-slot-lbl">🔥 Boiler entity (switch — optional)</div>
               <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" list="wz-entity-list"
                      data-ref="switch.caldaia" value="${(WIZ.entities && WIZ.entities['switch.caldaia']) || ENTITY_OVERRIDES['switch.caldaia'] || ''}"
-                     placeholder="es. dm.core_035" onchange="wzSetSlot(this)">
+                     placeholder="es. dm.core_038" onchange="wzSetSlot(this)">
             </div>
           </div>
         </details>` : ''}${WIZ.sections['security'] !== false ? `
-        <details class="ed-acc"><summary class="ed-acc-head">📹 Cameras <span class="ed-acc-n">${(WIZ.cameras||[]).length}</span></summary>
+        <details class="ed-acc"><summary class="ed-acc-head">🔌 Appliances (dishwasher, stove…) <span class="ed-acc-n">${getDevices().length}</span></summary>
+        <div class="ed-acc-body">
+          <div class="ed-slot-lbl" style="margin-bottom:6px;">Home cards for any appliance: switch and/or power sensor (state from 5W threshold) and/or value sensor (e.g. pellet level).</div>
+          <div class="ed-list">${getDevices().map((d, i) => `
+            <div class="ed-row">
+              <div style="font-size:16px;">${d.icon || '🔌'}</div>
+              <div class="ed-row-main">
+                <div class="ed-row-new">${d.name}</div>
+                <div class="ed-row-old mono">${[d.switch, d.power, d.sensor].filter(Boolean).join(' · ')}</div>
+              </div>
+              <div class="ed-del" onclick="edDelDevice(${i})">🗑️</div>
+            </div>`).join('')}</div>
+          <div class="ed-form">
+            <div class="ed-form-row">
+              <input id="ed-dev-icon" class="ed-input" style="flex:0 0 64px; text-align:center;" placeholder="🧺" maxlength="4">
+              <input id="ed-dev-name" class="ed-input" style="flex:1;" placeholder="Name (e.g. Dishwasher)">
+            </div>
+            <input id="ed-dev-sw" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_042 (optional)">
+            <input id="ed-dev-pw" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_035 (optional)">
+            <input id="ed-dev-sv" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_032 (optional)">
+            <button class="ed-btn-add" onclick="edAddDevice()">＋ Add appliance</button>
+          </div>
+        </div>
+      </details>
+      <details class="ed-acc"><summary class="ed-acc-head">📹 Cameras <span class="ed-acc-n">${(WIZ.cameras||[]).length}</span></summary>
           <div class="ed-acc-body">
             ${(WIZ.cameras||[]).map((cam, i) => `<div class="ed-row"><div class="ed-row-main"><div class="ed-row-new">${cam.name}</div><div class="ed-row-old mono">${cam.entity}</div></div><div class="ed-del" onclick="WIZ.cameras.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
             <input id="wz-cam-name" class="wz-input" placeholder="Name (e.g. Garden)" style="margin-bottom:8px;">
@@ -7843,6 +7966,22 @@ function wzAutoDetect() {
         (nAvvisi ? '🔔 ' + nAvvisi + ' alerts\n' : '') +
         '\nReview the proposals in the accordions: you can freely edit or remove anything.');
 }
+
+function wzAddDevice() {
+    const icon = (document.getElementById('wz-dev-icon').value || '🔌').trim();
+    const name = (document.getElementById('wz-dev-name').value || '').trim();
+    const sw = (document.getElementById('wz-dev-sw').value || '').trim();
+    const pw = (document.getElementById('wz-dev-pw').value || '').trim();
+    const sv = (document.getElementById('wz-dev-sv').value || '').trim();
+    if (!name || (!sw && !pw && !sv)) { alert('Enter a name and at least one entity'); return; }
+    if (!WIZ.devices) WIZ.devices = [];
+    const d = { name, icon };
+    if (sw.includes('.')) d.switch = sw;
+    if (pw.includes('.')) d.power = pw;
+    if (sv.includes('.')) d.sensor = sv;
+    WIZ.devices.push(d);
+    wzRender();
+}
 function wzAddAvviso() {
     const grp = document.getElementById('wz-av-grp').value;
     const name = (document.getElementById('wz-av-name').value || '').trim();
@@ -7935,7 +8074,9 @@ function wzFinish() {
     if (WIZ.cameras) localStorage.setItem('cd_cameras', JSON.stringify(WIZ.cameras));
     if (WIZ.climaUnits) localStorage.setItem('cd_clima_units', JSON.stringify(WIZ.climaUnits));
     if (WIZ.stanze) localStorage.setItem('cd_stanze', JSON.stringify(WIZ.stanze));
+    if (WIZ.devices) localStorage.setItem('cd_devices', JSON.stringify(WIZ.devices));
     if (WIZ.stanze) localStorage.setItem('cd_stanze', JSON.stringify(WIZ.stanze));
+    if (WIZ.devices) localStorage.setItem('cd_devices', JSON.stringify(WIZ.devices));
     if (WIZ.quickActions) localStorage.setItem('cd_quick_actions', JSON.stringify(WIZ.quickActions));
     if (WIZ.evImage !== undefined) localStorage.setItem('cd_ev_image', JSON.stringify(WIZ.evImage || ''));
     if (WIZ.entities && Object.keys(WIZ.entities).length) {
@@ -8087,7 +8228,7 @@ function editorRenderSezioni() {
             return `<div class="ed-slot">
               <div class="ed-slot-lbl">${sl.lbl}</div>
               <input class="ed-input mono ed-slot-in" list="ed-entity-list" 
-                     data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_032"
+                     data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_033"
                      onchange="edSetSlot(this)">
             </div>`;
         }).join('');
@@ -8143,7 +8284,7 @@ function editorRenderSezioni() {
               <input id="ed-qa-icon" class="ed-input ed-icon-input" placeholder="⚡" maxlength="4">
               <input id="ed-qa-name" class="ed-input" placeholder="Nome azione" style="flex:1;">
             </div>
-            <input id="ed-qa-ent" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_039 / dm.core_022 / scene.x (non serve per i popup)">
+            <input id="ed-qa-ent" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_044 / dm.core_022 / scene.x (non serve per i popup)">
             <input id="ed-qa-confirm" class="ed-input" placeholder="Messaggio di conferma (facoltativo, es. Sei sicuro?)">
             <button class="ed-btn-add" onclick="edAddQA()">＋ Add quick action</button>
           </div>
@@ -8172,7 +8313,7 @@ function editorRenderSezioni() {
             <div class="ed-slot" style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--card-border);">
               <div class="ed-slot-lbl">🔥 Boiler entity (switch — optional)</div>
               <input class="ed-input mono ed-slot-in" list="ed-entity-list" data-ref="switch.caldaia"
-                     value="${ENTITY_OVERRIDES['switch.caldaia'] || ''}" placeholder="es. dm.core_035" onchange="edSetSlot(this)">
+                     value="${ENTITY_OVERRIDES['switch.caldaia'] || ''}" placeholder="es. dm.core_038" onchange="edSetSlot(this)">
             </div>
           </div>
         </div>
@@ -8242,6 +8383,32 @@ function edDelQA(i) {
     list.splice(i, 1);
     localStorage.setItem('cd_quick_actions', JSON.stringify(list));   // [] = nessuna azione, blocco nascosto
     buildQuickActions();
+    editorSwitch('sezioni');
+}
+
+function edAddDevice() {
+    const icon = (document.getElementById('ed-dev-icon').value || '🔌').trim();
+    const name = (document.getElementById('ed-dev-name').value || '').trim();
+    const sw = (document.getElementById('ed-dev-sw').value || '').trim();
+    const pw = (document.getElementById('ed-dev-pw').value || '').trim();
+    const sv = (document.getElementById('ed-dev-sv').value || '').trim();
+    if (!name || (!sw && !pw && !sv)) { alert('Enter a name and at least one entity'); return; }
+    const devs = getDevices().slice();
+    const d = { name, icon };
+    if (sw.includes('.')) d.switch = sw;
+    if (pw.includes('.')) d.power = pw;
+    if (sv.includes('.')) d.sensor = sv;
+    devs.push(d);
+    localStorage.setItem('cd_devices', JSON.stringify(devs));
+    buildDeviceCards();
+    editorSwitch('sezioni');
+    edToast('Appliance added');
+}
+function edDelDevice(i) {
+    const devs = getDevices().slice();
+    devs.splice(i, 1);
+    localStorage.setItem('cd_devices', JSON.stringify(devs));
+    buildDeviceCards();
     editorSwitch('sezioni');
 }
 function edAddClima() {
@@ -8992,6 +9159,59 @@ function getClimaUnits() {
     if (Array.isArray(C.clima_units) && C.clima_units.length) return C.clima_units;
     return CD_CLIMA_DEFAULT;
 }
+
+/* ═══ v274: aggiornamento card clima AUTONOMO — proprio try/catch, chiamato dal render,
+   dopo ogni rigenerazione delle card e periodicamente come rete di sicurezza. ═══ */
+function updateClimaCards() {
+    try {
+        const climas = getClimaUnits().map(u => u.entity);
+        
+        climas.forEach(id => {
+            const s = STATES[id];
+            if(!s) return;
+            
+            const htmlId = id.replace('.', '-'); 
+            const card = document.getElementById('card-' + htmlId);
+            if(!card) return; 
+            
+            const badge = card.querySelector('.cp-badge');
+            const cur = card.querySelector('.cp-temp-current');
+            const tgt = card.querySelector('.cp-temp-target .val');
+            const icon = card.querySelector('.cp-icon');
+            
+            const isOn = s.state !== 'off' && s.state !== 'unavailable';
+            
+            card.classList.remove('active');
+            card.style.setProperty('--cp-rgb', '148, 163, 184'); 
+            
+            if(isOn) {
+                card.classList.add('active');
+                
+                if(s.state === 'cool') {
+                    card.style.setProperty('--cp-rgb', '14, 165, 233'); // Azzurro Condizionatori
+                    if(icon) icon.textContent = '❄️';
+                } else if(s.state === 'heat' || s.state === 'heating') {
+                    card.style.setProperty('--cp-rgb', '234, 88, 12'); // Arancione Termosifoni
+                    if(icon) icon.textContent = '🔥';
+                } else {
+                    card.style.setProperty('--cp-rgb', '16, 185, 129'); // Verde
+                    if(icon) icon.textContent = '🌬️';
+                }
+                
+                badge.textContent = s.state.toUpperCase();
+                
+            } else {
+                badge.textContent = 'OFF';
+                if(icon) icon.textContent = id.includes('termosifone') ? '🔥' : '❄️';
+            }
+            
+            cur.textContent = (s.attributes.current_temperature || '--') + '°';
+            tgt.textContent = (s.attributes.temperature || '--') + '°';
+        });
+    } catch (err) { console.error('[clima]', err); }
+}
+setInterval(() => { try { if (Object.keys(_RAW_STATES).length) updateClimaCards(); } catch(e) {} }, 20000);
+
 function buildClimaCards() {
     const gF = document.getElementById('clima-grid-freddo');
     const gC = document.getElementById('clima-grid-caldo');
@@ -9019,6 +9239,7 @@ function buildClimaCards() {
     const units = getClimaUnits();
     if (gF) gF.innerHTML = units.filter(u => u.type !== 'termo').map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1;">No air conditioner configured</div>';
     if (gC) gC.innerHTML = units.filter(u => u.type === 'termo').map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1;">No radiator configured</div>';
+    try { if (Object.keys(_RAW_STATES).length) updateClimaCards(); } catch(e) {}
 }
 document.addEventListener('DOMContentLoaded', () => {
     buildClimaCards();
@@ -9271,7 +9492,7 @@ async function apriMeteo() {
   document.getElementById('weather-modal').classList.add('show');
   const list = document.getElementById('weather-forecast-list');
   list.innerHTML = '<div style="text-align:center; padding: 30px; font-weight:800; color:var(--text-dim);">Caricamento Previsioni...</div>';
-  const entityId = 'dm.core_040'; currentWeatherEntity = entityId;
+  const entityId = 'dm.core_045'; currentWeatherEntity = entityId;
 
   if (ws && ws.readyState === WebSocket.OPEN) {
       const reqId = msgId++;
@@ -9541,7 +9762,7 @@ function render() {
       if (panoramicaView && panoramicaView.classList.contains('active')) {
           edUpdateKpiOnly();
       }
-      const weatherEnt = STATES['dm.core_040'] || STATES['weather.home'] || STATES['dm.home_meteo'] || null;
+      const weatherEnt = STATES['dm.core_045'] || STATES['weather.home'] || STATES['dm.home_meteo'] || null;
       /* v273: meteo non configurato → widget nascosto del tutto (nessun return: siamo dentro render) */
       let wUnmapped = false;
       if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
@@ -9899,6 +10120,16 @@ function render() {
               lavFase = lavPw > 5 ? '🌀 Running (' + Math.round(lavPw) + ' W)' : 'Off';
           }
           document.getElementById('v-lav-fase').textContent = lavFase; document.getElementById('v-lav-tempo').textContent = getDisplay('dm.lavatrice_tempo_rimanente');
+          /* v274 (issue #2): lavatrici non smart — nascondi i controlli programma/centrifuga/temperatura
+             se le relative select non sono configurate; il popup resta con stato + presa */
+          if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
+              [['dm.lavatrice_programma','lav-row-programma'],['dm.lavatrice_centrifuga','lav-row-centrifuga'],['dm.lavatrice_temperatura','lav-row-temperatura'],['dm.lavatrice_tempo_rimanente','v-lav-tempo']].forEach(([ent, elId]) => {
+                  const s = STATES[ent];
+                  const ghost = !s || s.entity_id === 'dm.unmapped';
+                  const el = document.getElementById(elId);
+                  if (el) { const row = el.closest('.lav-ctrl-row, .lav-row, .d-row') || el; row.style.display = ghost ? 'none' : ''; }
+              });
+          }
           const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('dm.core_031');
           const mainPwrSwitch = STATES['dm.lavatrice_presa_avvio_lavatrice']; const btnMainPwr = document.getElementById('lav-btn-power'); const txtMainPwr = document.getElementById('lav-txt-power');
           if (btnMainPwr && mainPwrSwitch) { const isOn = mainPwrSwitch.state === 'on'; btnMainPwr.classList.toggle('active', isOn); txtMainPwr.textContent = isOn ? 'ON' : 'OFF'; btnMainPwr.querySelector('.icon').textContent = isOn ? '⚡' : '🔌'; if(isOn) { btnMainPwr.style.setProperty('--btn-col', '#0ea5e9'); btnMainPwr.style.setProperty('--btn-bg', '#e0f2fe'); } else { btnMainPwr.style.setProperty('--btn-col', '#64748b'); btnMainPwr.style.setProperty('--btn-bg', '#fff'); } }
@@ -9912,11 +10143,11 @@ function render() {
       const updateBoilerBtn = (id, isActive, tOn='ON', tOff='OFF') => { const el = document.getElementById(id); if(el) { el.classList.toggle('active', isActive); const st = el.querySelector('.state'); if(st) st.textContent = isActive ? tOn : tOff; } };
       const isPompaSolActive = getRawState('dm.boiler_stato_pompa_solare') === 'on'; setActiveState('syn-p-solare', isPompaSolActive); updateBoilerBtn('b-c-pompasol', isPompaSolActive); const sun = document.getElementById('syn-sun'); if(sun) sun.classList.toggle('active', isPompaSolActive); setLine('flow-sol-hot', isPompaSolActive); setLine('flow-sol-cold', isPompaSolActive);
       const isPannelloSolActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; const sPanel = document.querySelector('.syn-solar-panel'); if(sPanel) sPanel.classList.toggle('active', isPannelloSolActive);
-      const isRicircoloActive = getRawState('dm.core_037') === 'on'; setActiveState('syn-p-ricircolo', isRicircoloActive); updateBoilerBtn('b-c-ricircolo', isRicircoloActive); setLine('flow-ricircolo', isRicircoloActive); 
+      const isRicircoloActive = getRawState('dm.core_040') === 'on'; setActiveState('syn-p-ricircolo', isRicircoloActive); updateBoilerBtn('b-c-ricircolo', isRicircoloActive); setLine('flow-ricircolo', isRicircoloActive); 
       const chiaveState = getRawState('valve.chiave_solare_termico'); const isChiaveOpen = chiaveState === 'open'; setActiveState('syn-v-chiave', isChiaveOpen); updateBoilerBtn('b-c-valvola', isChiaveOpen, 'OPEN', 'CHIUSA'); document.getElementById('txt-chiave').textContent = isChiaveOpen ? 'OPEN' : 'CHIUSA';
       const isCtrlSolareActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; updateBoilerBtn('b-c-solare', isCtrlSolareActive); 
       let isCoverOpen = false; let coverPos = 0; const coverObj = STATES['dm.boiler_valvola_di_sicurezza']; if(coverObj && coverObj.attributes) { coverPos = coverObj.attributes.current_position; if(coverPos !== undefined && coverPos > 0) isCoverOpen = true; } const synSafety = document.getElementById('syn-safety-icon'); if(synSafety) synSafety.classList.toggle('active', isCoverOpen); const synFaucet = document.getElementById('syn-faucet-wrap'); if(synFaucet) synFaucet.classList.toggle('open', isCoverOpen); const sBtn = document.getElementById('b-c-sicurezza'); if(sBtn) { sBtn.classList.toggle('active', isCoverOpen); const stNode = sBtn.querySelector('.state'); if(stNode) stNode.textContent = isCoverOpen ? `${coverPos}%` : 'CHIUSA'; }
-      updateBoilerBtn('b-c-centralina', getRawState('dm.boiler_centralina_solare_termico') === 'on'); updateBoilerBtn('b-c-boiler', getRawState('dm.boiler_interruttore_boiler') === 'on'); updateBoilerBtn('b-c-pdc', getRawState('dm.core_036') === 'on'); updateBoilerBtn('b-c-boost', getRawState('dm.core_034') === 'on');
+      updateBoilerBtn('b-c-centralina', getRawState('dm.boiler_centralina_solare_termico') === 'on'); updateBoilerBtn('b-c-boiler', getRawState('dm.boiler_interruttore_boiler') === 'on'); updateBoilerBtn('b-c-pdc', getRawState('dm.core_039') === 'on'); updateBoilerBtn('b-c-boost', getRawState('dm.core_037') === 'on');
 
       // ═══════ AGGIORNAMENTO PANNELLO ANTIFURTO PREMIUM ═══════
       (function() {
@@ -9929,6 +10160,15 @@ function render() {
         const alIconEl = document.getElementById('alarm-icon-new');
         const alTimer  = document.getElementById('alarm-state-timer');
         if (!alStage || !alTextEl) return;
+
+        // v274 (issue #2): allarme non configurato → l'intero blocco sparisce dalla pagina Sicurezza
+        if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
+            const alGhost = (!alarmStateObj || alarmStateObj.entity_id === 'dm.unmapped') && (!triggerObj || triggerObj.entity_id === 'dm.unmapped');
+            alStage.style.display = alGhost ? 'none' : '';
+            const alWrap = document.querySelector('.alarm-modes, #alarm-modes, .alarm-mode-row');
+            if (alWrap) alWrap.style.display = alGhost ? 'none' : '';
+            if (alGhost) return;
+        }
         
         // Reset stati card e bottoni
         alStage.classList.remove('armed','triggered');
@@ -10098,50 +10338,8 @@ function render() {
       
       if(currentPopupType && document.getElementById('details-modal').classList.contains('show') && !currentPopupType.startsWith('subloads_') && currentPopupType !== 'gestione_luci' && currentPopupType !== 'camera_view') { apriDettagli(null, currentPopupType); }
 
-      const climas = getClimaUnits().map(u => u.entity);
-      
-      climas.forEach(id => {
-          const s = STATES[id];
-          if(!s) return;
-          
-          const htmlId = id.replace('.', '-'); 
-          const card = document.getElementById('card-' + htmlId);
-          if(!card) return; 
-          
-          const badge = card.querySelector('.cp-badge');
-          const cur = card.querySelector('.cp-temp-current');
-          const tgt = card.querySelector('.cp-temp-target .val');
-          const icon = card.querySelector('.cp-icon');
-          
-          const isOn = s.state !== 'off' && s.state !== 'unavailable';
-          
-          card.classList.remove('active');
-          card.style.setProperty('--cp-rgb', '148, 163, 184'); 
-          
-          if(isOn) {
-              card.classList.add('active');
-              
-              if(s.state === 'cool') {
-                  card.style.setProperty('--cp-rgb', '14, 165, 233'); // Azzurro Condizionatori
-                  if(icon) icon.textContent = '❄️';
-              } else if(s.state === 'heat' || s.state === 'heating') {
-                  card.style.setProperty('--cp-rgb', '234, 88, 12'); // Arancione Termosifoni
-                  if(icon) icon.textContent = '🔥';
-              } else {
-                  card.style.setProperty('--cp-rgb', '16, 185, 129'); // Verde
-                  if(icon) icon.textContent = '🌬️';
-              }
-              
-              badge.textContent = s.state.toUpperCase();
-              
-          } else {
-              badge.textContent = 'OFF';
-              if(icon) icon.textContent = id.includes('termosifone') ? '🔥' : '❄️';
-          }
-          
-          cur.textContent = (s.attributes.current_temperature || '--') + '°';
-          tgt.textContent = (s.attributes.temperature || '--') + '°';
-      });
+      updateClimaCards(); // v274: autonomo — si aggiorna anche se altre sezioni falliscono
+      updateDeviceCards(); // v280: dispositivi personalizzati
   } catch (err) { console.error("Errore UI:", err); }
 }
 
@@ -10234,7 +10432,7 @@ function apriQuickClimaCaldo() {
 function renderThermalPanel() {
     const map = [
       { entityId: 'switch.caldaia',                   rowEl: 'ns-thermal-row-caldaia',     stateEl: 'ns-thermal-caldaia',     textEl: 'ns-thermal-caldaia-text' },
-      { entityId: 'dm.core_038',               rowEl: 'ns-thermal-row-termocamino', stateEl: 'ns-thermal-termocamino', textEl: 'ns-thermal-termocamino-text' }
+      { entityId: 'dm.core_043',               rowEl: 'ns-thermal-row-termocamino', stateEl: 'ns-thermal-termocamino', textEl: 'ns-thermal-termocamino-text' }
     ];
     map.forEach(m => {
       const s = STATES[m.entityId];
@@ -10250,7 +10448,7 @@ function renderThermalPanel() {
       else                        { el.classList.add('unavail'); txt.textContent = 'N/D';   if (row) row.classList.add('is-unavail'); }
     });
     // Aspiratore (riga cliccabile)
-    const aspiratore = STATES['dm.core_033'];
+    const aspiratore = STATES['dm.core_036'];
     const aspRow = document.getElementById('ns-thermal-row-aspiratore');
     const aspBtn = document.getElementById('ns-thermal-aspiratore-btn');
     const aspText = document.getElementById('ns-thermal-aspiratore-text');
@@ -10276,11 +10474,11 @@ function renderThermalPanel() {
 function toggleAspiratoreCF() {
     if (!ws) return;
     if (navigator.vibrate) navigator.vibrate(15);
-    const cur = STATES['dm.core_033']?.state;
+    const cur = STATES['dm.core_036']?.state;
     const service = (cur === 'on') ? 'turn_off' : 'turn_on';
     ws.send(JSON.stringify({
       id: msgId++, type: 'call_service', domain: 'switch', service: service,
-      service_data: { entity_id: 'dm.core_033' }
+      service_data: { entity_id: 'dm.core_036' }
     }));
     setTimeout(renderThermalPanel, 300);
 }

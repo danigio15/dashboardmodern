@@ -26,6 +26,7 @@ Dashboard HTML **standalone** per Home Assistant: un singolo file, nessuna card 
 | 🔄 **Aggiornamenti automatici** | Dopo un update HACS la dashboard rileva la nuova versione e **si ricarica da sola** — l'URL della plancia non cambia mai |
 | ⚡ **Tempo reale** | WebSocket nativo Home Assistant, grafici storici a popup per ogni sensore |
 | 📱 **Mobile-first** | Bottom-nav, safe-area iOS, vibrazione tattile, layout responsive |
+| 🌍 **Italiano + English** | Due build incluse: scegli la lingua con l'URL della plancia |
 | 👤 **Multi-utente** | La pagina di configurazione è visibile solo agli amministratori che scegli |
 
 ---
@@ -41,8 +42,14 @@ Dashboard HTML **standalone** per Home Assistant: un singolo file, nessuna card 
 2. Cerca **"Dashboard Modern"** → **Scarica**
 
 3. **Crea la plancia**: *Impostazioni → Dashboard → Aggiungi dashboard* → vista di tipo **Pannello** → aggiungi una card **Iframe** (Pagina web) con URL:
+
+   🇮🇹 **Italiano:**
    ```
    /hacsfiles/dashboardmodern/dashboard.html
+   ```
+   🇬🇧 **English:**
+   ```
+   /hacsfiles/dashboardmodern/dashboard-en.html
    ```
 
 4. **Aprila**: parte automaticamente il Setup Wizard 👇

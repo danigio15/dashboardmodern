@@ -2784,264 +2784,6 @@ nav.tabs.bottom-nav-bar .tab.active .text {
     .dr-left { width: 45%; }
     .dr-bar-wrap { display: none; } /* Nasconde le barre su mobile per non sovrapporre il testo */
 }
-// ================= TITANICO MOTORE DI CALCOLO E HISTORICAL DRILL-DOWN =================
-const RECAP_DEVICES = {
-    'wallbox':      { name: 'Wallbox EV',    sensor: 'dm.ev_energia_wallbox_mese',         icon: '🚗', color: '#06b6d4' },
-    'asciugatrice': { name: 'Asciugatrice',  sensor: 'dm.core_023',    icon: '💨', color: '#f59e0b' },
-    'frigo':        { name: 'Frigorifero',   sensor: 'dm.core_026',           icon: '🧊', color: '#1e40af' },
-    'lavastoviglie':{ name: 'Lavastoviglie', sensor: 'dm.core_028',   icon: '🍽️', color: '#10b981' },
-    'lavatrice':    { name: 'Lavatrice',     sensor: 'dm.core_029',       icon: '🧺', color: '#7c3aed' },
-    'forno':        { name: 'Forno',         sensor: 'dm.core_024',           icon: '♨️', color: '#e11d48' },
-    'friggitrice':  { name: 'Friggitrice',   sensor: 'dm.core_025',     icon: '🍟', color: '#ea580c' },
-    'caffe':         { name: 'Macchina Caffè',          sensor: 'dm.core_027',            icon: '☕', color: '#a16207' },
-    'microonde':    { name: 'Microonde',     sensor: 'dm.core_030',       icon: '📡', color: '#8b5cf6' },
-    'boiler':       { name: 'Boiler',        sensor: 'dm.energy_boiler_mese', icon: '🔥', color: '#f97316' },
-};
-
-let recapChartInstance = null;
-let activeRecapDeviceKey = null;
-
-function renderRecapView() {
-    if (Object.keys(STATES).length === 0) return;
-
-    const prodMese = parseFloat(getRawState('dm.energy_produzione_solare_mese')) || 0;
-    const consMese = parseFloat(getRawState('dm.energy_consumo_casa_mese')) || 0;
-    const immessoMese = parseFloat(getRawState('dm.energy_rete_venduta_mese')) || 0;
-    const prelevatoMese = parseFloat(getRawState('dm.energy_rete_acquistata_mese')) || 0;
-
-    document.getElementById('rec-global-prod').innerHTML = `${prodMese.toFixed(1)} <small>kWh</small>`;
-    document.getElementById('rec-global-cons').innerHTML = `${consMese.toFixed(1)} <small>kWh</small>`;
-    
-    const autosufficienza = consMese > 0 ? (((consMese - prelevatoMese) / consMese) * 100) : 0;
-    document.getElementById('rec-global-auto').innerHTML = `${Math.min(Math.max(Math.round(autosufficienza), 0), 100)} <small>%</small>`;
-
-    const COSTO_ENERGIA = 0.25; 
-    const VALORE_CO2_KWH = 0.4;  
-
-    const autoconsumoKwh = Math.max(0, prodMese - immessoMese);
-    const risparmioEffettivo = autoconsumoKwh * COSTO_ENERGIA;
-    const spesaTeoricaSenzaFv = consMese * COSTO_ENERGIA;
-    const co2Evitata = prodMese * VALORE_CO2_KWH;
-
-    document.getElementById('rec-eco-risp').textContent = `${risparmioEffettivo.toFixed(2)} €`;
-    document.getElementById('rec-eco-co2').textContent = `${co2Evitata.toFixed(1)} kg`;
-    document.getElementById('rec-eco-pagato').textContent = `${spesaTeoricaSenzaFv.toFixed(2)} €`;
-    document.getElementById('rec-eco-immesso').textContent = `${immessoMese.toFixed(1)} kWh`;
-
-    updateYoyBadge('dm.energy_produzione_solare_anno', 'badge-yoy-prod', 'Produzione');
-    updateYoyBadge('dm.energy_consumo_casa_anno', 'badge-yoy-cons', 'Consumo');
-
-    const container = document.getElementById('recap-device-list');
-    if (!container) return;
-
-    let maxVal = 0;
-    let devicesData = [];
-    
-    Object.keys(RECAP_DEVICES).forEach(key => {
-        const d = RECAP_DEVICES[key];
-        const rawVal = parseFloat(getRawState(d.sensor)) || 0;
-        if (rawVal > maxVal) maxVal = rawVal;
-        devicesData.push({ key, ...d, val: rawVal });
-    });
-
-    devicesData.sort((a, b) => b.val - a.val);
-
-    let html = '';
-    devicesData.forEach(d => {
-        const pct = maxVal > 0 ? (d.val / maxVal) * 100 : 0;
-        const cost = (d.val * COSTO_ENERGIA).toFixed(2);
-        const isActiveRow = d.key === activeRecapDeviceKey ? 'active' : '';
-        
-        html += `
-        <div class="device-row ${isActiveRow}" id="row-${d.key}" onclick="showDeviceDetail('${d.key}')">
-            <div class="dr-left">
-                <div class="dr-icon">${d.icon}</div>
-                <div class="dr-name">${d.name}</div>
-            </div>
-            <div class="dr-bar-wrap">
-                <div class="dr-bar" style="width: ${pct}%; background: ${d.color};"></div>
-            </div>
-            <div class="dr-stats">
-                <div class="dr-val">${d.val.toFixed(1)} <small style="font-size:10px;">kWh</small></div>
-                <div class="dr-cost">€ ${cost}</div>
-            </div>
-        </div>`;
-    });
-    
-    container.innerHTML = html;
-
-    if (!activeRecapDeviceKey && devicesData.length > 0) {
-        showDeviceDetail(devicesData[0].key);
-    } else if (activeRecapDeviceKey) {
-        refreshActiveDeviceTelemetry();
-    }
-}
-
-function updateYoyBadge(sensorId, badgeId, label) {
-    const badge = document.getElementById(badgeId);
-    if(!badge) return;
-    const stateObj = STATES[sensorId];
-    
-    if(stateObj && stateObj.attributes && stateObj.attributes.last_period) {
-        const current = parseFloat(stateObj.state) || 0;
-        const last = parseFloat(stateObj.attributes.last_period) || 0;
-        
-        if(last > 0) {
-            const pct = ((current - last) / last * 100).toFixed(1);
-            const isPos = pct > 0;
-            
-            let trendClass = 'positive';
-            if (label.includes('Consumo') && isPos) trendClass = 'negative'; 
-            if (label.includes('Consumo') && !isPos) trendClass = 'positive';
-            if (label.includes('Produzione') && isPos) trendClass = 'positive'; 
-            if (label.includes('Produzione') && !isPos) trendClass = 'negative';
-
-            badge.style.display = 'inline-flex';
-            badge.className = 'kpi-badge ' + trendClass;
-            badge.innerHTML = `<span style="font-size:16px;">${isPos ? '📈' : '📉'}</span> ${isPos ? '+' : ''}${pct}% vs 2025 (${label})`;
-            return;
-        }
-    }
-}
-
-async function showDeviceDetail(key) {
-    activeRecapDeviceKey = key;
-    document.querySelectorAll('.device-row').forEach(r => r.classList.remove('active'));
-    const clickedRow = document.getElementById('row-' + key);
-    if (clickedRow) clickedRow.classList.add('active');
-    await refreshActiveDeviceTelemetry();
-}
-
-async function refreshActiveDeviceTelemetry() {
-    if (!activeRecapDeviceKey) return;
-    const device = RECAP_DEVICES[activeRecapDeviceKey];
-    const detailPanel = document.getElementById('recap-device-detail');
-    if (!detailPanel) return;
-
-    const currentVal = parseFloat(getRawState(device.sensor)) || 0;
-    const stateObj = STATES[device.sensor];
-    const lastPeriod = (stateObj && stateObj.attributes && stateObj.attributes.last_period) ? parseFloat(stateObj.attributes.last_period) : 0;
-    
-    let diffHtml = '';
-    if (lastPeriod > 0) {
-        const diffPct = ((currentVal - lastPeriod) / lastPeriod * 100).toFixed(1);
-        const isPos = parseFloat(diffPct) > 0;
-        const col = isPos ? '#dc2626' : '#059669';
-        diffHtml = `<div style="font-size:12px; font-weight:800; color:${col}; background:${col}12; padding:6px 14px; border-radius:12px; display:inline-flex; align-items:center; gap:6px; border: 1px solid ${col}30;">${isPos ? '🔺' : '🔽'} ${isPos ? '+' : ''}${diffPct}% vs Mese Scorso</div>`;
-    }
-
-    const existingCanvas = document.getElementById('recap-detail-canvas');
-    if (existingCanvas && existingCanvas.dataset.device === activeRecapDeviceKey) {
-        const textContainer = document.getElementById('recap-telemetry-text-block');
-        if (textContainer) {
-            textContainer.innerHTML = `
-                <h2 style="font-family:'Oswald', sans-serif; font-size:28px; color:var(--text); text-transform:uppercase;">${device.icon} ${device.name}</h2>
-                <div style="font-size: 44px; font-weight:700; font-family:'Oswald', sans-serif; color:${device.color}; line-height:1; margin: 10px 0;">
-                    ${currentVal.toFixed(1)} <span style="font-size:16px; color:var(--text-dim); font-family:'Inter', sans-serif; font-weight:800;">kWh (Mese)</span>
-                </div>
-                ${diffHtml}
-            `;
-        }
-        return;
-    }
-
-    detailPanel.innerHTML = `
-        <div id="recap-telemetry-text-block">
-            <h2 style="font-family:'Oswald', sans-serif; font-size:28px; color:var(--text); text-transform:uppercase;">${device.icon} ${device.name}</h2>
-            <div style="font-size: 44px; font-weight:700; font-family:'Oswald', sans-serif; color:${device.color}; line-height:1; margin: 10px 0;">
-                ${currentVal.toFixed(1)} <span style="font-size:16px; color:var(--text-dim); font-family:'Inter', sans-serif; font-weight:800;">kWh (Mese)</span>
-            </div>
-            ${diffHtml}
-        </div>
-        <div style="margin-top: 30px; height: 340px; position:relative; background: var(--surface-2); border-radius: 24px; padding: 20px; border: 1px solid var(--card-border);">
-            <div id="recap-chart-loading" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:800; color:var(--text-dim); gap: 10px; font-size:13px; text-transform:uppercase;">
-                <span style="font-size: 32px; animation: spinAnim 1s linear infinite; display:inline-block;">⏳</span>
-                Generazione Storico...
-            </div>
-            <canvas id="recap-detail-canvas" data-device="${activeRecapDeviceKey}" style="display:none;"></canvas>
-        </div>
-    `;
-
-    if (recapChartInstance) { recapChartInstance.destroy(); }
-    
-    try {
-        const oreStorico = 24 * 7; 
-        const startTime = new Date(Date.now() - oreStorico * 60 * 60 * 1000).toISOString();
-        
-        const res = await fetch(`${HA_HTTP_URL}/api/history/period/${startTime}?filter_entity_id=${device.sensor}&minimal_response`, { 
-            headers: { "Authorization": `Bearer ${LONG_LIVED_TOKEN}`, "Content-Type": "application/json" } 
-        });
-        
-        if (!res.ok) throw new Error("History API"); 
-        const json = await res.json(); 
-        const data = json[0] || [];
-
-        const canvas = document.getElementById('recap-detail-canvas');
-        const loading = document.getElementById('recap-chart-loading');
-        
-        if (data.length === 0) {
-            loading.innerHTML = '⚠️ Nessun dato negli ultimi 7 giorni.';
-            return;
-        }
-
-        let labels = []; let values = [];
-        const step = Math.max(1, Math.floor(data.length / 50)); 
-        
-        for (let i = 0; i < data.length; i += step) {
-            const d = data[i];
-            if (d.state !== 'unknown' && d.state !== 'unavailable') {
-                const date = new Date(d.last_changed);
-                labels.push(date.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', hour: '2-digit' }));
-                values.push(parseFloat(d.state));
-            }
-        }
-
-        if (loading) loading.style.display = 'none';
-        if (canvas) canvas.style.display = 'block';
-        
-        const ctx = canvas.getContext('2d');
-        let gradient = ctx.createLinearGradient(0, 0, 0, 300); 
-        gradient.addColorStop(0, device.color + '70'); 
-        gradient.addColorStop(1, device.color + '00');
-        
-        recapChartInstance = new Chart(ctx, {
-            type: 'line', 
-            data: { 
-                labels: labels, 
-                datasets: [{ 
-                    label: 'Consumo (kWh)', 
-                    data: values, 
-                    borderColor: device.color, 
-                    backgroundColor: gradient, 
-                    borderWidth: 4, 
-                    fill: true, 
-                    pointRadius: 0, 
-                    pointHoverRadius: 7, 
-                    tension: 0.45 
-                }] 
-            },
-            options: { 
-                responsive: true, maintainAspectRatio: false, 
-                interaction: { mode: 'index', intersect: false }, 
-                scales: { 
-                    x: { ticks: { maxTicksLimit: 6, font: { weight: 'bold', size: 10 } }, grid: { display: false } }, 
-                    y: { grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: false } 
-                }, 
-                plugins: { 
-                    legend: { display: false }, 
-                    tooltip: { backgroundColor: '#fff', titleColor: '#0f172a', bodyColor: device.color, borderColor: '#e2e8f0', borderWidth: 1, cornerRadius: 14, padding: 12, titleFont: { size: 12, weight: 'bold' }, bodyFont: { size: 15, weight: 'bold' } } 
-                } 
-            }
-        });
-
-    } catch (e) {
-        console.error(e);
-        const loading = document.getElementById('recap-chart-loading');
-        if (loading) loading.innerHTML = '❌ Connessione History Database persa.';
-    }
-}
-
-/* ── POPUP CONTROLLO CLIMA ── */
 .clima-popup-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.45); backdrop-filter:blur(8px); z-index:9000; display:flex; align-items:center; justify-content:center; padding:16px; opacity:0; visibility:hidden; transition:0.3s; }
 .clima-popup-overlay.show { opacity:1; visibility:visible; }
 .clima-popup { background: var(--card-bg); border-radius:32px; padding:32px; width:100%; max-width:420px; box-shadow:0 30px 80px rgba(0,0,0,0.18); border:1px solid var(--card-border); transform:scale(0.92) translateY(20px); transition:0.35s cubic-bezier(0.165,0.84,0.44,1); position:relative; }
@@ -4627,71 +4369,6 @@ async function refreshActiveDeviceTelemetry() {
 #setup-wizard { position: fixed; inset: 0; z-index: 99999; background: rgba(230,235,241,0.92); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); display: flex; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); overflow-y: auto; }
 .wz-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 28px; box-shadow: var(--shadow-sculpted), 0 24px 60px rgba(0,0,0,0.12); max-width: 520px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 30px 28px; position: relative; }
 
-/* ═══ v280: DISPOSITIVI PERSONALIZZATI — lavastoviglie, asciugatrice, stufa a pellet,
-   irrigazione, scaldino… Ogni dispositivo: nome, icona, switch (opzionale),
-   sensore potenza (stato da soglia 5W) e/o sensore valore (livello, temperatura…). ═══ */
-const CD_DEVICES_DEFAULT = [];
-function getDevices() {
-    const w = cdCfg('cd_devices');
-    if (Array.isArray(w) && w.length) return w;
-    const C = (window.DASHBOARD_CONFIG || {});
-    if (Array.isArray(C.devices) && C.devices.length) return C.devices;
-    return CD_DEVICES_DEFAULT;
-}
-function buildDeviceCards() {
-    const grid = document.getElementById('dev-grid');
-    const title = document.getElementById('dev-title');
-    if (!grid) return;
-    const devs = getDevices();
-    if (title) title.style.display = devs.length ? '' : 'none';
-    grid.style.display = devs.length ? '' : 'none';
-    grid.innerHTML = devs.map((d, i) => {
-        const nm = (d.name || '').replace(/'/g, '&#39;');
-        return `<div class="dev-card" id="dev-card-${i}" onclick="devCardTap(${i})">
-            ${d.switch ? `<button class="dev-pwr" onclick="event.stopPropagation(); toggle('${d.switch}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>` : ''}
-            <div class="dev-ico">${d.icon || '🔌'}</div>
-            <div class="dev-nm">${nm}</div>
-            <div class="dev-st" id="dev-st-${i}">—</div>
-            <div class="dev-val" id="dev-val-${i}"></div>
-        </div>`;
-    }).join('');
-    try { if (Object.keys(_RAW_STATES).length) updateDeviceCards(); } catch(e) {}
-}
-function updateDeviceCards() {
-    try {
-        getDevices().forEach((d, i) => {
-            const card = document.getElementById('dev-card-' + i);
-            if (!card) return;
-            const stEl = document.getElementById('dev-st-' + i);
-            const valEl = document.getElementById('dev-val-' + i);
-            const sw = d.switch ? STATES[d.switch] : null;
-            const pw = d.power ? parseFloat(STATES[d.power]?.state) : NaN;
-            const sv = d.sensor ? STATES[d.sensor] : null;
-            // Stato: potenza > 5W → IN FUNZIONE; altrimenti switch on/off
-            let on = false, st = '—';
-            if (!isNaN(pw)) { on = pw > 5; st = on ? 'In funzione' : (sw ? (sw.state === 'on' ? 'Pronta' : 'Spenta') : 'Spenta'); }
-            else if (sw) { on = sw.state === 'on'; st = on ? 'Accesa' : 'Spenta'; }
-            card.classList.toggle('on', on);
-            if (stEl) stEl.textContent = st;
-            let val = '';
-            if (!isNaN(pw) && pw > 5) val = Math.round(pw) + ' W';
-            if (sv && sv.state !== undefined && sv.state !== 'unavailable' && sv.entity_id !== 'dm.unmapped') {
-                const u = sv.attributes?.unit_of_measurement || '';
-                val = (val ? val + ' · ' : '') + sv.state + (u ? ' ' + u : '');
-            }
-            if (valEl) valEl.textContent = val;
-        });
-    } catch (err) { console.error('[dispositivi]', err); }
-}
-function devCardTap(i) {
-    const d = getDevices()[i];
-    if (!d) return;
-    if (d.sensor) { apriStorico(event, d.sensor, d.name); return; }
-    if (d.power) { apriStorico(event, d.power, d.name); return; }
-    if (d.switch) toggle(d.switch);
-}
-document.addEventListener('DOMContentLoaded', buildDeviceCards);
-setInterval(() => { try { if (Object.keys(_RAW_STATES).length) updateDeviceCards(); } catch(e) {} }, 20000);
 /* ═══ v280: DISPOSITIVI PERSONALIZZATI ═══ */
 .dev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 28px; }
 .dev-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 14px 15px; cursor: pointer; box-shadow: var(--shadow-sculpted); transition: transform 0.15s, box-shadow 0.2s; position: relative; overflow: hidden; }
@@ -7226,7 +6903,7 @@ async function edDownloadHTML() {
     }
 
     // Costruisci il nuovo blocco baked dai localStorage attuali (le personalizzazioni di questo dispositivo)
-    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
+    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
     const merged = {};
     keys.forEach(k => { merged[k] = cdCfg(k); });  // cdCfg = localStorage o baked precedente
     const bakedBlock = '/* CD_BAKED_START */\n'
@@ -7299,7 +6976,7 @@ function edImport() {
 }
 function edResetAll() {
     if (!confirm('Rimuovere TUTTE le personalizzazioni di questo dispositivo?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
     location.reload();
 }
 
@@ -7586,7 +7263,7 @@ function wzRender() {
 /* ═══ v270: SINCRONIZZAZIONE MULTI-DISPOSITIVO ═══
    La configurazione viene salvata anche nell'archivio utente di Home Assistant
    (frontend user_data): configuri una volta, la ritrovi su ogni dispositivo. */
-const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'];
+const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'];
 
 function cdSyncCollect() {
     const out = { _savedAt: Date.now() };
@@ -8061,7 +7738,7 @@ function wzAddCamera() {
 }
 function wzResetAll() {
     if (!confirm('Cancellare TUTTA la configurazione salvata su questo dispositivo (token, sezioni, luci, entità, stanze, camere, tema)?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
     location.reload();
 }
 function wzFinish() {
@@ -8420,6 +8097,7 @@ function edAddClima() {
     units.push({ name, entity: ent, type });
     localStorage.setItem('cd_clima_units', JSON.stringify(units));
     buildClimaCards();
+    buildDeviceCards();
     editorSwitch('sezioni');
     edToast('Unità clima aggiunta');
 }
@@ -9211,6 +8889,72 @@ function updateClimaCards() {
     } catch (err) { console.error('[clima]', err); }
 }
 setInterval(() => { try { if (Object.keys(_RAW_STATES).length) updateClimaCards(); } catch(e) {} }, 20000);
+
+/* ═══ v280: DISPOSITIVI PERSONALIZZATI — lavastoviglie, asciugatrice, stufa a pellet,
+   irrigazione, scaldino… Ogni dispositivo: nome, icona, switch (opzionale),
+   sensore potenza (stato da soglia 5W) e/o sensore valore (livello, temperatura…). ═══ */
+const CD_DEVICES_DEFAULT = [];
+function getDevices() {
+    const w = cdCfg('cd_devices');
+    if (Array.isArray(w) && w.length) return w;
+    const C = (window.DASHBOARD_CONFIG || {});
+    if (Array.isArray(C.devices) && C.devices.length) return C.devices;
+    return CD_DEVICES_DEFAULT;
+}
+function buildDeviceCards() {
+    const grid = document.getElementById('dev-grid');
+    const title = document.getElementById('dev-title');
+    if (!grid) return;
+    const devs = getDevices();
+    if (title) title.style.display = devs.length ? '' : 'none';
+    grid.style.display = devs.length ? '' : 'none';
+    grid.innerHTML = devs.map((d, i) => {
+        const nm = (d.name || '').replace(/'/g, '&#39;');
+        return `<div class="dev-card" id="dev-card-${i}" onclick="devCardTap(${i})">
+            ${d.switch ? `<button class="dev-pwr" onclick="event.stopPropagation(); toggle('${d.switch}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>` : ''}
+            <div class="dev-ico">${d.icon || '🔌'}</div>
+            <div class="dev-nm">${nm}</div>
+            <div class="dev-st" id="dev-st-${i}">—</div>
+            <div class="dev-val" id="dev-val-${i}"></div>
+        </div>`;
+    }).join('');
+    try { if (Object.keys(_RAW_STATES).length) updateDeviceCards(); } catch(e) {}
+}
+function updateDeviceCards() {
+    try {
+        getDevices().forEach((d, i) => {
+            const card = document.getElementById('dev-card-' + i);
+            if (!card) return;
+            const stEl = document.getElementById('dev-st-' + i);
+            const valEl = document.getElementById('dev-val-' + i);
+            const sw = d.switch ? STATES[d.switch] : null;
+            const pw = d.power ? parseFloat(STATES[d.power]?.state) : NaN;
+            const sv = d.sensor ? STATES[d.sensor] : null;
+            // Stato: potenza > 5W → IN FUNZIONE; altrimenti switch on/off
+            let on = false, st = '—';
+            if (!isNaN(pw)) { on = pw > 5; st = on ? 'In funzione' : (sw ? (sw.state === 'on' ? 'Pronta' : 'Spenta') : 'Spenta'); }
+            else if (sw) { on = sw.state === 'on'; st = on ? 'Accesa' : 'Spenta'; }
+            card.classList.toggle('on', on);
+            if (stEl) stEl.textContent = st;
+            let val = '';
+            if (!isNaN(pw) && pw > 5) val = Math.round(pw) + ' W';
+            if (sv && sv.state !== undefined && sv.state !== 'unavailable' && sv.entity_id !== 'dm.unmapped') {
+                const u = sv.attributes?.unit_of_measurement || '';
+                val = (val ? val + ' · ' : '') + sv.state + (u ? ' ' + u : '');
+            }
+            if (valEl) valEl.textContent = val;
+        });
+    } catch (err) { console.error('[dispositivi]', err); }
+}
+function devCardTap(i) {
+    const d = getDevices()[i];
+    if (!d) return;
+    if (d.sensor) { apriStorico(event, d.sensor, d.name); return; }
+    if (d.power) { apriStorico(event, d.power, d.name); return; }
+    if (d.switch) toggle(d.switch);
+}
+document.addEventListener('DOMContentLoaded', buildDeviceCards);
+setInterval(() => { try { if (Object.keys(_RAW_STATES).length) updateDeviceCards(); } catch(e) {} }, 20000);
 
 function buildClimaCards() {
     const gF = document.getElementById('clima-grid-freddo');

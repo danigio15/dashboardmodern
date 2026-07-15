@@ -6,6 +6,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.3.14] — 2026-07-15
+
+### 🐛 Corretto
+- **Contatori del Quadro Avvisi incoerenti coi popup** — i contatori (luci accese, clima attivi, aperture, batterie scariche) ora sono **calcolati dalla dashboard sugli stessi elementi che vedi nei popup**: il numero sulla card e la lista combaciano sempre, su qualsiasi installazione. I vecchi campi "Contatore…" non servono più e sono stati rimossi.
+- **Contatore "Clima attivi"** ora conta le TUE unità clima configurate (condizionatori → Clima, termosifoni → Riscaldamento).
+- **Rilevamento aperture** — esclusi i sensori "bypass" dei termosifoni (rumore).
+
 ## [0.3.13] — 2026-07-15
 
 ### ✨ Aggiunto
@@ -13,6 +20,14 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ### 🐛 Corretto
 - **Card clima/stanze vuote al primo caricamento** *(issue #1)* — su dispositivi lenti gli stati arrivavano prima della costruzione delle card, che restavano su "SPENTO/--°" finché qualcosa non cambiava. Ora gli stati vengono applicati subito dopo la costruzione.
+
+## [0.3.14] — 2026-07-15
+
+### 🐛 Corretto — coerenza contatori/popup
+- **Contatori del Quadro Avvisi e popup ora combaciano SEMPRE** — contatori e liste sono calcolati dalla stessa fonte (le entità configurate nella dashboard), non più da sensori esterni. Fine dei "CLIMA 4" con popup vuoto.
+- **Popup aperture/batterie a due sezioni** — prima "⚠️ APERTE/SCARICHE (N)" (esattamente ciò che conta il numero), poi "✓ TUTTO OK".
+- **Clima attivi** contati dalle unità clima configurate (condizionatori → Clima, termosifoni → Riscaldamento).
+- **Meteo non configurato** — il widget viene nascosto del tutto (niente più "UNAVAILABLE --°").
 
 ## [0.3.13] — 2026-07-15
 
@@ -126,6 +141,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
 
+## [0.3.14] — 2026-07-15
+
+### 🐛 Fixed
+- **Alerts Panel counters inconsistent with popups** — the counters (lights on, active climate, openings, low batteries) are now **computed by the dashboard on the same items you see in the popups**: the card number and the list always match, on any installation. The old "Counter…" fields are no longer needed and were removed.
+- **"Active climate" counter** now counts YOUR configured climate units (ACs → Climate, radiators → Heating).
+- **Openings detection** — radiator "bypass" sensors excluded (noise).
+
 ## [0.3.13] — 2026-07-15
 
 ### ✨ Added
@@ -133,6 +155,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](h
 
 ### 🐛 Fixed
 - **Empty climate/room cards on first load** *(issue #1)* — on slow devices states arrived before the cards were built, leaving them stuck on "OFF/--°" until something changed. States are now applied right after building.
+
+## [0.3.14] — 2026-07-15
+
+### 🐛 Fixed — counter/popup consistency
+- **Alerts Panel counters and popups now ALWAYS match** — both are computed from the same source (the entities configured in the dashboard), no longer from external sensors. No more "CLIMATE 4" with an empty popup.
+- **Openings/batteries popup in two sections** — first "⚠️ OPEN/LOW (N)" (exactly what the counter counts), then "✓ ALL OK".
+- **Active climate** counted from configured climate units (AC → Climate, radiators → Heating).
+- **Unconfigured weather** — the widget is hidden entirely (no more "UNAVAILABLE --°").
 
 ## [0.3.13] — 2026-07-15
 

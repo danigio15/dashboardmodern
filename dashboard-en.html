@@ -6214,7 +6214,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.3.13';
+const DASHBOARD_VERSION = '0.3.14';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6398,6 +6398,26 @@ try {
     Object.entries(C.entities).forEach(([o, n]) => { if (!(o in ENTITY_OVERRIDES)) ENTITY_OVERRIDES[o] = n; });
   }
 } catch(e) { console.warn('[Config] merge avvisi/entities fallito:', e); }
+
+/* v272: i gruppi clima/riscaldamento del Quadro Avvisi derivano dalle unità clima
+   configurate (se i gruppi sono vuoti) — il contatore "Clima attivi" conta le TUE unità. */
+try {
+    if (!(GRUPPI_MONITORAGGIO['clima'] || []).length && !(GRUPPI_MONITORAGGIO['risc'] || []).length) {
+        const units = (typeof getClimaUnits === 'function') ? getClimaUnits() : [];
+        GRUPPI_MONITORAGGIO['clima'] = units.filter(u => u.type !== 'termo').map(u => u.entity);
+        GRUPPI_MONITORAGGIO['risc']  = units.filter(u => u.type === 'termo').map(u => u.entity);
+    }
+} catch(e) {}
+
+/* v273: le unità clima configurate alimentano i gruppi clima/risc — contatori,
+   popup e card usano la STESSA fonte. */
+try {
+    const _units = getClimaUnits();
+    if (_units.length) {
+        GRUPPI_MONITORAGGIO['clima'] = _units.filter(u => u.type !== 'termo').map(u => u.entity);
+        GRUPPI_MONITORAGGIO['risc']  = _units.filter(u => u.type === 'termo').map(u => u.entity);
+    }
+} catch(e) {}
 
 /* v258: rimozioni utente dal Quadro Avvisi (vale anche per le voci di default) */
 try {
@@ -7697,7 +7717,7 @@ function wzAutoDetect() {
     const extG = cdCfg('cd_gruppi_extra');
     let extGChanged = false;
     if (!(GRUPPI_MONITORAGGIO['win'] || []).length) {
-        const wins = M.filter(e => e.id.startsWith('binary_sensor.') && (['door','window','opening','garage_door'].includes(e.dc) || /finestra|porta|window|door|contact/i.test(e.id))).slice(0, 20);
+        const wins = M.filter(e => e.id.startsWith('binary_sensor.') && !/bypass/i.test(e.id + ' ' + e.name) && (['door','window','opening','garage_door'].includes(e.dc) || /finestra|porta|window|door|contact/i.test(e.id))).slice(0, 20);
         if (wins.length) { extG['win'] = wins.map(e => e.id); wins.forEach(e => GRUPPI_MONITORAGGIO['win'].push(e.id)); nAvvisi += wins.length; extGChanged = true; }
     }
     if (!(GRUPPI_MONITORAGGIO['batt'] || []).length) {
@@ -7935,11 +7955,6 @@ const CD_SLOTS = {
         { ref: 'dm.security_centrale_allarme', lbl: 'Allarme (alarm_control_panel)' },
         { ref: 'dm.home_interruttore_antifurto',     lbl: 'Interruttore antifurto (switch)' },
         { ref: 'dm.home_script_apertura_cancello',         lbl: 'Script apertura cancello' },
-        { ref: 'dm.home_contatore_luci_accese',           lbl: 'Contatore luci accese' },
-        { ref: 'dm.home_contatore_aperture',       lbl: 'Contatore aperture' },
-        { ref: 'dm.home_contatore_batterie_scariche',     lbl: 'Contatore batterie scariche' },
-        { ref: 'dm.home_contatore_condizionatori_accesi', lbl: 'Contatore condizionatori accesi' },
-        { ref: 'dm.home_contatore_termosifoni_accesi',    lbl: 'Contatore termosifoni accesi' },
     ]},
     energy: { label: '⚡ Energia', slots: [
         { ref: 'dm.energy_produzione_solare_oggi',        lbl: 'Produzione solare oggi (kWh)' },
@@ -9413,10 +9428,19 @@ function apriDettagli(e, tipo) {
       if(!isNaN(v)) items.push({ id, nm, st: v + '%', icon: v <= 20 ? '🪫' : '🔋', canOff: false, ok: v > 20, ord: v });
     }
   });
-  if (tipo === 'win' || tipo === 'batt') items.sort((a, b) => (a.ord ?? 0) - (b.ord ?? 0));
+  if (tipo === 'win' || tipo === 'batt') {
+      items.sort((a, b) => (a.ord ?? 0) - (b.ord ?? 0));
+      // v273: due sezioni — prima i problemi (= ciò che conta il Quadro Avvisi), poi il resto
+      const alert_ = items.filter(i => i.ok === false);
+      const okList = items.filter(i => i.ok !== false);
+      items = [];
+      if (alert_.length) items.push({ hdr: (tipo === 'win' ? '⚠️ OPEN (' : '🪫 LOW (') + alert_.length + ')' }, ...alert_);
+      if (okList.length) items.push({ hdr: '✓ ALL OK (' + okList.length + ')' }, ...okList);
+  }
 
   if(items.length === 0) { html = '<div style="text-align:center; padding: 30px; color:var(--text-dim); font-weight:800; text-transform:uppercase; letter-spacing:1px; font-size:13px;">Nessun elemento attivo.</div>'; } 
   else { items.forEach(it => {
+    if (it.hdr) { html += `<div style="font-size:11px; font-weight:900; letter-spacing:1.2px; color:var(--text-dim); padding:12px 4px 6px; text-transform:uppercase;">${it.hdr}</div>`; return; }
     const isClima = (tipo === 'clima' || tipo === 'risc');
     let btnHtml = '';
     if (isClima) {
@@ -9518,11 +9542,14 @@ function render() {
           edUpdateKpiOnly();
       }
       const weatherEnt = STATES['dm.core_040'] || STATES['weather.home'] || STATES['dm.home_meteo'] || null;
-      if (!weatherEnt && typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
-          const ws = document.getElementById('w-state');
-          if (ws && /caricamento|loading/i.test(ws.textContent)) ws.textContent = 'Weather not configured';
+      /* v273: meteo non configurato → widget nascosto del tutto (nessun return: siamo dentro render) */
+      let wUnmapped = false;
+      if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
+          wUnmapped = !weatherEnt || weatherEnt.entity_id === 'dm.unmapped';
+          const wWidget = document.querySelector('.weather-widget');
+          if (wWidget) wWidget.style.display = wUnmapped ? 'none' : '';
       }
-      if(weatherEnt) {
+      if(weatherEnt && !wUnmapped) {
         const wLangMap = { 'clear-night': 'Sereno (Notte)', 'cloudy': 'Nuvoloso', 'fog': 'Nebbia', 'hail': 'Grandine', 'lightning': 'Fulmini', 'lightning-rainy': 'Temporale', 'partlycloudy': 'Poco Nuvoloso', 'pouring': 'Acquazzone', 'rainy': 'Pioggia', 'snowy': 'Neve', 'snowy-rainy': 'Nevischio', 'sunny': 'Soleggiato', 'windy': 'Ventoso', 'windy-variant': 'Vento Forte' };
         document.getElementById('w-temp').textContent = (weatherEnt.attributes?.temperature !== undefined ? weatherEnt.attributes.temperature : '--') + '°C';
         document.getElementById('w-hum').textContent = (weatherEnt.attributes?.humidity !== undefined ? weatherEnt.attributes.humidity : '--') + '%';
@@ -9533,7 +9560,22 @@ function render() {
       }
 
       const updateGlance = (id, sensor) => { let val = parseInt(getRawState(sensor)) || 0; let el = document.getElementById(id); if(el) { el.style.display = val > 0 ? 'flex' : 'none'; const valEl = document.getElementById(id.replace('glance-', 'g-val-')); if(valEl) valEl.textContent = val; } };
-      updateGlance('glance-luci', 'dm.home_contatore_luci_accese'); updateGlance('glance-clima', 'dm.home_contatore_condizionatori_accesi'); updateGlance('glance-risc', 'dm.home_contatore_termosifoni_accesi'); updateGlance('glance-win', 'dm.home_contatore_aperture'); updateGlance('glance-batt', 'dm.home_contatore_batterie_scariche');
+      /* v273 (coerenza definitiva): i contatori del Quadro Avvisi sono calcolati dagli
+         STESSI gruppi che alimentano i popup — numero e lista combaciano sempre. */
+      const cdCount = (grp, pred) => (GRUPPI_MONITORAGGIO[grp] || []).reduce((n, id) => {
+          const s = STATES[id]; return n + (s && pred(s) ? 1 : 0);
+      }, 0);
+      const setGlance = (key, v) => {
+          const card = document.getElementById('glance-' + key);
+          const val = document.getElementById('g-val-' + key);
+          if (val) val.textContent = v;
+          if (card) card.style.display = v > 0 ? 'flex' : 'none';
+      };
+      setGlance('luci',  cdCount('luci',  s => s.state === 'on'));
+      setGlance('clima', cdCount('clima', s => !['off','unavailable','unknown'].includes(s.state)));
+      setGlance('risc',  cdCount('risc',  s => ['heat','heating','on'].includes(s.state)));
+      setGlance('win',   cdCount('win',   s => s.state === 'on'));
+      setGlance('batt',  cdCount('batt',  s => { const v = parseFloat(s.state); return !isNaN(v) && v <= 20; }));
       
       // ── Card Antifurto: stile coerente con altre card Quadro Avvisi ──
       // Logica: dm.home_interruttore_antifurto = ON → priorità ALLARME SCATTATO (rosso, urgente)

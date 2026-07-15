@@ -5974,7 +5974,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.4.0';
+const DASHBOARD_VERSION = '0.4.1';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -7112,8 +7112,11 @@ function wzRender() {
                 const cur = (WIZ.entities && WIZ.entities[sl.ref]) || ENTITY_OVERRIDES[sl.ref] || '';
                 const auto = WIZ.autoDetected && WIZ.autoDetected[sl.ref];
                 return `<div class="ed-slot"><div class="ed-slot-lbl">${sl.lbl}${auto ? ' <span style=\"background:#dcfce7; color:#15803d; font-size:9.5px; font-weight:800; padding:1px 7px; border-radius:8px; vertical-align:1px;\">🪄 auto</span>' : ''}</div>
-                  <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px; ${auto ? 'background:#f0fdf4; border-color:#86efac;' : ''}" list="wz-entity-list"
-                         data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_033" onchange="wzSetSlot(this); if(WIZ.autoDetected) delete WIZ.autoDetected[this.dataset.ref];"></div>`;
+                  <div style="display:flex; gap:6px; align-items:center;">
+                    <input class="wz-input mono" style="margin-bottom:0; flex:1; font-family:monospace; font-size:11.5px; ${auto ? 'background:#f0fdf4; border-color:#86efac;' : ''}" list="wz-entity-list"
+                           data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_033" onchange="wzSetSlot(this); if(WIZ.autoDetected) delete WIZ.autoDetected[this.dataset.ref];">
+                    <button type="button" onclick="wzPickEntity('${sl.ref}')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button>
+                  </div></div>`;
             }).join('');
             const evImg = key === 'ev' ? `<div class="ed-slot"><div class="ed-slot-lbl">🖼️ Car image URL (e.g. /local/my_car.png)</div>
                   <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" value="${WIZ.evImage||''}" placeholder="/local/mia_auto.png" onchange="WIZ.evImage = this.value.trim();"></div>` : '';
@@ -7129,7 +7132,7 @@ function wzRender() {
         <div style="max-height:46vh; overflow-y:auto; margin-bottom:14px;">${acc}${WIZ.sections['home'] !== false ? `
         <details class="ed-acc"><summary class="ed-acc-head">⚡ Quick actions <span class="ed-acc-n">${(WIZ.quickActions||[]).length}</span></summary>
           <div class="ed-acc-body">
-            ${(WIZ.quickActions||[]).map((a, i) => `<div class="ed-row"><div style="font-size:15px;">${a.icon||'⚡'}</div><div class="ed-row-main"><div class="ed-row-new">${a.name||a.builtin||'?'}</div><div class="ed-row-old mono">${a.type}</div></div><div class="ed-del" onclick="WIZ.quickActions.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
+            ${(WIZ.quickActions||[]).map((a, i) => `<div class="ed-row"><div style="font-size:15px;">${a.icon||'⚡'}</div><div class="ed-row-main"><div class="ed-row-new">${a.name||a.builtin||'?'}</div><div class="ed-row-old mono">${a.type === 'luci_group' ? '💡 ' + ((a.lights||[]).length) + ' lights' : a.type}</div></div>${a.type === 'luci_group' ? `<div class="ed-del" style="background:rgba(14,165,233,0.12);" onclick="wzEditLightGroup(${i})">✏️</div>` : ''}<div class="ed-del" onclick="WIZ.quickActions.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
             <div style="display:flex; gap:8px; margin-bottom:8px;">
               <select id="wz-qa-type" class="wz-input" style="margin-bottom:0; flex:0 0 44%;">
                 <option value="builtin_luci">💡 Popup Luci</option><option value="builtin_clima">❄️ Popup Clima</option>
@@ -7447,8 +7450,57 @@ function wzAddQA() {
     wzRender();
 }
 
+/* ═══ v282: PICKER ENTITÀ — lista completa di HA con ricerca, selezione a tap.
+   Alternativa mobile-friendly all'autocomplete per lo step "Collega le tue entità". ═══ */
+function wzPickEntity(ref) {
+    const M = (WIZ.allMeta && WIZ.allMeta.length) ? WIZ.allMeta : (WIZ.allEntities || []).map(id => ({ id, name: id }));
+    if (!M.length) { alert('Wait for entities to load…'); return; }
+    const ov = document.createElement('div');
+    ov.id = 'cd-entpick';
+    ov.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:100000; display:flex; align-items:center; justify-content:center; padding:16px;';
+    ov.innerHTML = `<div style="background:var(--card-bg,#fff); border-radius:22px; padding:18px; width:min(460px,100%); max-height:82vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+        <div style="font-weight:900; font-size:14.5px; margin-bottom:8px; color:var(--text,#0f172a);">🧩 Pick the entity</div>
+        <input id="cd-ep-search" class="wz-input" style="margin-bottom:8px;" placeholder="🔍 Search… (name or entity)" autofocus
+               oninput="cdEpFilter(this.value)">
+        <div id="cd-ep-list" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:4px;"></div>
+        <button class="wz-btn" style="margin-top:10px; background:#94a3b8;" onclick="document.getElementById('cd-entpick').remove()">Cancel</button>
+      </div>`;
+    document.body.appendChild(ov);
+    window._cdEpAll = M;
+    window._cdEpRef = ref;
+    cdEpFilter('');
+    setTimeout(() => document.getElementById('cd-ep-search')?.focus(), 60);
+}
+function cdEpFilter(q) {
+    q = (q || '').trim().toLowerCase();
+    const list = document.getElementById('cd-ep-list');
+    if (!list) return;
+    const M = window._cdEpAll || [];
+    const rows = (q ? M.filter(e => (e.id + ' ' + e.name).toLowerCase().includes(q)) : M).slice(0, 200);
+    list.innerHTML = rows.map(e => `
+      <div onclick="cdEpChoose('${e.id}')" style="padding:9px 12px; border-radius:12px; background:rgba(148,163,184,0.08); cursor:pointer; font-size:12.5px; color:var(--text,#0f172a);">
+        <b>${e.name}</b><br><span style="font-family:monospace; font-size:10px; color:var(--text-dim,#64748b);">${e.id}</span>
+      </div>`).join('') || '<div style="text-align:center; padding:20px; color:var(--text-dim); font-weight:700;">No results</div>';
+}
+function cdEpChoose(id) {
+    const ref = window._cdEpRef;
+    document.getElementById('cd-entpick')?.remove();
+    const inp = document.querySelector(`input[data-ref="${ref}"]`);
+    if (inp) { inp.value = id; wzSetSlot(inp); if (WIZ.autoDetected) delete WIZ.autoDetected[ref]; }
+    wzRender();
+}
+
 /* ═══ v268: selettore luci per i gruppi (issue #2) — checkbox con ricerca ═══ */
-function cdPickLights(groupName, onDone) {
+function wzEditLightGroup(i) {
+    const a = (WIZ.quickActions || [])[i];
+    if (!a || a.type !== 'luci_group') return;
+    cdPickLights(a.name || 'Gruppo', (lights) => {
+        a.lights = lights;
+        wzRender();
+    }, a.lights || []);
+}
+
+function cdPickLights(groupName, onDone, preselected) {
     const all = Object.keys(cdCfg('cd_luci') || {}).length ? cdCfg('cd_luci') : (WIZ && WIZ.luci) || {};
     const ids = Object.keys(all);
     if (!ids.length) { alert('First select your lights in the Lights step (or wizard).'); return; }
@@ -7460,7 +7512,7 @@ function cdPickLights(groupName, onDone) {
         <div style="font-size:11.5px; color:var(--text-dim,#64748b); margin-bottom:10px;">Tick the lights this popup should show.</div>
         <input id="cd-lp-search" class="wz-input" style="margin-bottom:8px;" placeholder="🔍 Search…" oninput="document.querySelectorAll('#cd-lp-list > label').forEach(l => { l.style.display = l.textContent.toLowerCase().includes(this.value.toLowerCase()) ? '' : 'none'; })">
         <div id="cd-lp-list" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:4px;">
-          ${ids.map(id => `<label style="display:flex; gap:10px; align-items:center; padding:8px 10px; border-radius:12px; background:rgba(148,163,184,0.08); cursor:pointer; font-size:12.5px; color:var(--text,#0f172a);"><input type="checkbox" value="${id}" style="width:17px; height:17px; accent-color:#0ea5e9;"> <span><b>${all[id]}</b><br><span style="font-family:monospace; font-size:10px; color:var(--text-dim,#64748b);">${id}</span></span></label>`).join('')}
+          ${ids.map(id => `<label style="display:flex; gap:10px; align-items:center; padding:8px 10px; border-radius:12px; background:rgba(148,163,184,0.08); cursor:pointer; font-size:12.5px; color:var(--text,#0f172a);"><input type="checkbox" value="${id}" ${(preselected||[]).includes(id) ? 'checked' : ''} style="width:17px; height:17px; accent-color:#0ea5e9;"> <span><b>${all[id]}</b><br><span style="font-family:monospace; font-size:10px; color:var(--text-dim,#64748b);">${id}</span></span></label>`).join('')}
         </div>
         <div style="display:flex; gap:10px; margin-top:12px;">
           <button class="wz-btn" style="flex:1; background:#94a3b8;" onclick="document.getElementById('cd-lightpick').remove()">Cancel</button>
@@ -7947,8 +7999,9 @@ function editorRenderSezioni() {
               <div style="font-size:16px; flex-shrink:0;">${a.icon || (b && b.icon) || '⚡'}</div>
               <div class="ed-row-main">
                 <div class="ed-row-new">${a.name || (b && b.name) || '?'}</div>
-                <div class="ed-row-old mono">${a.type === 'builtin' ? 'popup nativo: ' + a.builtin : a.type + ' · ' + (a.entity||'')}</div>
+                <div class="ed-row-old mono">${a.type === 'builtin' ? 'popup nativo: ' + a.builtin : (a.type === 'luci_group' ? '💡 gruppo · ' + ((a.lights||[]).length) + ' lights' : a.type + ' · ' + (a.entity||''))}</div>
               </div>
+              ${a.type === 'luci_group' ? `<div class="ed-del" style="background:rgba(14,165,233,0.12);" onclick="edEditLightGroup(${i})">✏️</div>` : ''}
               <div class="ed-del" onclick="edDelQA(${i})">🗑️</div>
             </div>`;
           }).join('')}</div>
@@ -8021,6 +8074,19 @@ function editorRenderSezioni() {
 }
 
 
+
+function edEditLightGroup(i) {
+    const acts = getQuickActions().slice();
+    const a = acts[i];
+    if (!a || a.type !== 'luci_group') return;
+    cdPickLights(a.name || 'Gruppo', (lights) => {
+        a.lights = lights;
+        localStorage.setItem('cd_quick_actions', JSON.stringify(acts));
+        buildQuickActions();
+        editorSwitch('sezioni');
+        edToast('Light group updated');
+    }, a.lights || []);
+}
 
 function edAddQA() {
     const tsel = document.getElementById('ed-qa-type').value;

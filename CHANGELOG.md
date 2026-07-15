@@ -6,6 +6,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.4.1] — 2026-07-15
+
+### ✨ Migliorato
+- **🔍 Selettore entità con ricerca** — accanto a ogni campo dello step "Collega le tue entità" c'è ora un pulsante 🔍 che apre l'elenco completo delle entità del tuo HA con ricerca live: tocca per scegliere, niente più digitazione a mano su mobile.
+- **✏️ Modifica dei gruppi luci** — le azioni rapide "Gruppo luci" ora si modificano: matita accanto al gruppo (nel wizard e nell'editor) per aggiungere o togliere luci, con le attuali già spuntate.
+
 ## [0.4.0] — 2026-07-15
 
 ### 🛡️ Affidabilità
@@ -161,6 +167,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.4.1] — 2026-07-15
+
+### ✨ Improved
+- **🔍 Entity picker with search** — every field in the "Link your entities" step now has a 🔍 button opening the full list of your HA entities with live search: tap to pick, no more manual typing on mobile.
+- **✏️ Edit light groups** — "Light group" quick actions are now editable: pencil next to the group (wizard and editor) to add or remove lights, current ones pre-ticked.
 
 ## [0.4.0] — 2026-07-15
 

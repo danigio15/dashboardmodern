@@ -6214,7 +6214,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.3.9';
+const DASHBOARD_VERSION = '0.3.10';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -7546,7 +7546,7 @@ function wzAddQA() {
 
 
 
-/* ═══ v266: AUTO-RILEVAMENTO v2 — scoring intelligente con sinonimi e vincoli di unità.
+/* ═══ v267: AUTO-RILEVAMENTO v3 — scoring intelligente con sinonimi e vincoli di unità.
    Tutto resta modificabile: sono solo proposte pre-compilate. ═══ */
 function wzAutoDetect() {
     if (!WIZ.allMeta || !WIZ.allMeta.length) { alert('Attendi il caricamento delle entità…'); return; }
@@ -7604,62 +7604,99 @@ function wzAutoDetect() {
     }
     if (extGChanged) localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
 
-    // — SLOT: scoring con sinonimi bilingue e vincoli di unità
+    // — SLOT: scoring v3 — parole temporali distintive, peso maggiore ai match nell'ID, tie-break intelligente
     if (!WIZ.entities || Array.isArray(WIZ.entities)) WIZ.entities = {};
-    const STOP = new Set(['oggi','anno','mese','casa','stato','testo','entita','interruttore','sensore','della','delle','dallo','alla','contatore','centrale']);
+    const STOP = new Set(['casa','stato','testo','entita','interruttore','sensore','della','delle','dallo','dalla','dall','alla','sull','contatore','centrale','tutte','solo','con','per','del','dei','nel','una','the','and','for','di','al']);
     const SYN = {
+        'oggi': ['daily','today','giornalier'], 'mese': ['month','mensile'], 'anno': ['year','annual','annuale'],
         'meteo': ['weather'], 'allarme': ['alarm','antifurto'], 'antifurto': ['alarm','allarme'],
-        'produzione': ['production','yield','generated','pv','fotovoltaico','solar'],
+        'produzione': ['production','yield','generated','generation','fotovoltaico'],
         'consumo': ['consumption','load','used','usage'], 'consumi': ['consumption','load'],
-        'prelevata': ['bought','import','imported','purchased','from_grid'], 'immessa': ['sold','export','exported','to_grid','feed'],
-        'batteria': ['battery','batt','soc','accumulo'], 'caricata': ['charge','charged'], 'scaricata': ['discharge','discharged'],
-        'carica': ['charge','soc','charging'], 'potenza': ['power','watt'], 'rete': ['grid','net'],
-        'temperatura': ['temperature','temp'], 'scambio': ['grid','exchange','external','ct'],
-        'autonomia': ['range','autonomy'], 'odometro': ['odometer','mileage','odo','km_totali'],
-        'pressione': ['pressure'], 'caldaia': ['boiler','heater','caldaia'], 'lavatrice': ['washing','washer','washing_machine'],
-        'cancello': ['gate','gate_open'], 'solare': ['solar','pv','sun','fotovoltaico'], 'auto': ['car','vehicle','ev','tesla','leaf'],
-        'wallbox': ['wallbox','charger','evse','charging_station'], 'sessione': ['session','charged_energy'],
-        'inverter': ['inverter'], 'ventola': ['fan'], 'uptime': ['uptime'], 'memoria': ['memory','ram','mem'],
-        'disco': ['disk','storage','ssd','hdd'], 'processore': ['cpu','processor'], 'condizionatori': ['ac','clima','hvac','air'],
-        'termosifoni': ['radiator','heating','trv'], 'aperture': ['window','door','opening'],
-        'luci': ['light','lights'], 'accese': ['on','count'], 'finestre': ['window','opening','aperture'],
-        'internet': ['internet','wan','ping','online','connectivity'], 'pompa': ['pump'], 'ricircolo': ['recirculation','circulation'],
-        'valvola': ['valve'], 'sonda': ['probe','sensor','temperature'], 'boiler': ['boiler','water_heater','heater'],
-        'target': ['target','setpoint','limit'], 'modalita': ['mode'], 'ricarica': ['charge','charging'],
-        'immagine': [], 'percorsi': ['driven','trip','distance'], 'ultima': ['last'],
+        'prelevata': ['bought','import','purchased','from_grid'], 'immessa': ['sold','export','to_grid','feed'],
+        'batteria': ['battery','batt','soc','accumulo'], 'caricata': ['charge'], 'scaricata': ['discharge'],
+        'usata': ['discharge','used'], 'carica': ['charge','soc','charging'], 'potenza': ['power'],
+        'rete': ['grid'], 'acquistata': ['bought','import','purchased'], 'venduta': ['sold','export'],
+        'temperatura': ['temperature','temp'], 'scambio': ['grid','exchange','external'],
+        'autonomia': ['range','autonomy'], 'odometro': ['odometer','mileage'], 'limite': ['limit','target'],
+        'pressione': ['pressure'], 'caldaia': ['boiler','heater'], 'lavatrice': ['washing','washer'],
+        'cancello': ['gate'], 'solare': ['solar','pv','fotovoltaico'], 'fotovoltaico': ['pv','solar','photovoltaic'],
+        'auto': ['car','vehicle'], 'wallbox': ['wallbox','charger','evse'],
+        'sessione': ['session','charged'], 'percentuale': ['percentage','percent'],
+        'inverter': ['inverter'], 'ventola': ['fan'], 'memoria': ['memory','ram','mem'],
+        'disco': ['disk','storage'], 'processore': ['cpu'], 'condizionatori': ['clima','hvac','condizionator'],
+        'termosifoni': ['radiator','heating','termosifon'], 'aperture': ['window','door','opening','finestre','aperte'],
+        'luci': ['light','luci'], 'accese': ['accese','count'], 'accesi': ['accesi','count'], 'finestre': ['window','opening','aperte','finestre'],
+        'internet': ['internet','wan','ping','online','connectivity'], 'pompa': ['pump','pompa'],
+        'ricircolo': ['recirculation','circulation','ricircolo'], 'valvola': ['valve','valvola'],
+        'sonda': ['probe','sonoff','ds18b20'], 'boiler': ['boiler','water_heater'],
+        'target': ['target','setpoint'], 'modalita': ['mode'], 'ricarica': ['charge','charging','ricarica'],
+        'prelievo': ['consumption','energy','prelievo','totale'], 'tensione': ['voltage','tensione'],
+        'somma': ['sum','total','somma'], 'cucina': ['kitchen','cucin'], 'lavanderia': ['laundry','lavanderia'],
+        'istantanea': ['power','instant','istantane'], 'delta': ['delta','diff'], 'sicurezza': ['safety','security'],
+        'aspiratore': ['fan','exhaust','aspiratore'], 'canna': ['flue','chimney','canna'],
+        'fumaria': ['flue','chimney','fumaria'], 'termocamino': ['fireplace','termocamino','stove'],
+        'boost': ['boost'], 'calore': ['heat','calore'], 'resistenza': ['element','resist'],
+        'scariche': ['low','scarich'], 'batterie': ['batter'], 'elettrodomestici': ['appliance','elettrodomestic'],
+        'download': ['download'], 'upload': ['upload'], 'ping': ['ping'], 'uptime': ['uptime'],
+        'script': ['script'], 'apertura': ['open','apri'], 'stato': [], 'decodificato': ['decoded','stato'],
+        'fase': ['phase','fase','cycle'], 'corrente': ['current'], 'rimanente': ['remaining','left'],
+        'programma': ['program','course'], 'centrifuga': ['spin','centrifuga'],
     };
     const UNIT_HINTS = [
-        [/kwh|energia|produzione|consumo|prelevata|immessa|caricata|scaricata|sessione/i, ['kWh','Wh','MWh']],
-        [/\bpotenza\b/i, ['W','kW']],
-        [/temperatur|°/i, ['°C','°F']],
-        [/\bcarica\b.*%|soc|\(%\)/i, ['%']],
+        [/kwh|energia|produzione|consumo|prelevata|immessa|acquistata|venduta|caricata|scaricata|usata|sessione|somma.*(oggi|mese)/i, ['kWh','Wh','MWh']],
+        [/potenza|istantanea/i, ['W','kW']],
+        [/temperatur/i, ['°C','°F']],
+        [/soc|\(%\)|percentuale/i, ['%']],
         [/pressione/i, ['bar','psi','hPa']],
         [/autonomia|odometro|km/i, ['km','mi']],
-        [/mbit|speedtest (download|upload)/i, ['Mbit/s','Mbps']],
-        [/ping/i, ['ms']],
+        [/download|upload/i, ['Mbit/s','Mbps']],
+        [/\bping\b/i, ['ms']],
     ];
+    const PERIODS = { d: ['daily','today','oggi','giornalier'], m: ['month','mensile','mese'], y: ['year','annual','anno','annuale'] };
+    function periodOf(str) {
+        for (const [p, kws] of Object.entries(PERIODS)) { if (kws.some(k => str.includes(k))) return p; }
+        return null;
+    }
+    const usedIds = new Set(Object.values(WIZ.entities).concat(Object.values(ENTITY_OVERRIDES || {})));
     Object.values(CD_SLOTS).forEach(sec => sec.slots.forEach(sl => {
         if (WIZ.entities[sl.ref] || ENTITY_OVERRIDES[sl.ref]) return;
-        const dom = sl.ref.startsWith('dm.') ? (sl.ref.slice(3).split('_')[0] === 'core' ? '' : '') : sl.ref.split('.')[0];
+        const dom = sl.ref.startsWith('dm.') ? '' : sl.ref.split('.')[0];
         const lblLow = sl.lbl.toLowerCase();
-        const words = lblLow.replace(/\([^)]*\)/g, '').split(/[^a-zà-ù]+/).filter(w => w.length > 3 && !STOP.has(w));
+        const words = lblLow.replace(/\([^)]*\)/g, '').split(/[^a-zà-ù]+/).filter(w => w.length >= 3 && !STOP.has(w));
         if (!words.length) return;
         const keyLists = words.map(w => [w].concat(SYN[w] || []));
+        const lblPeriod = periodOf(lblLow);
         let units = null;
         for (const [rx, u] of UNIT_HINTS) { if (rx.test(sl.lbl)) { units = u; break; } }
-        let best = null, bestScore = 0, second = 0;
+        const scored = [];
         M.forEach(e => {
             if (dom && !e.id.startsWith(dom + '.')) return;
-            const hay = (e.id + ' ' + e.name).toLowerCase();
-            let score = 0;
-            keyLists.forEach(list => { if (list.some(k => hay.includes(k))) score += 2; });
+            if (usedIds.has(e.id)) return;
+            const idLow = e.id.toLowerCase(), nameLow = e.name.toLowerCase();
+            // Conflitto di periodo: "oggi" non può matchare un sensore "mensile" e viceversa
+            const entPeriod = periodOf(idLow + ' ' + nameLow);
+            if (lblPeriod && entPeriod && lblPeriod !== entPeriod) return;
+            // Match per TOKEN: parola intera, o prefisso per chiavi >= 4 caratteri
+            const idTok = idLow.split(/[^a-z0-9]+/), nameTok = nameLow.split(/[^a-z0-9]+/);
+            const tokMatch = (toks, k) => toks.some(t => t === k || (k.length >= 4 && t.startsWith(k)));
+            let score = 0, idHits = 0, listsMatched = 0;
+            keyLists.forEach(list => {
+                if (list.some(k => tokMatch(idTok, k))) { score += 3; idHits++; listsMatched++; }
+                else if (list.some(k => tokMatch(nameTok, k))) { score += 2; listsMatched++; }
+            });
+            if (listsMatched < Math.max(1, Math.ceil(keyLists.length * 0.6))) return;
             if (units) { if (units.includes(e.unit)) score += 3; else if (e.unit) score -= 2; }
-            if (score > bestScore) { second = bestScore; bestScore = score; best = e; }
-            else if (score > second) second = score;
+            if (score > 0) scored.push({ e, score, idHits, len: e.id.length });
         });
-        // accetta solo match forti e con distacco netto sul secondo
-        const minScore = Math.max(4, keyLists.length * 2 - 1);
-        if (best && bestScore >= minScore && bestScore > second) { WIZ.entities[sl.ref] = best.id; nSlot++; }
+        if (!scored.length) return;
+        scored.sort((a, b) => b.score - a.score || b.idHits - a.idHits || a.len - b.len);
+        const best = scored[0];
+        const minScore = Math.max(5, keyLists.length * 2);
+        if (best.score < minScore) return;
+        if (scored.length > 1 && scored[1].score === best.score && scored[1].idHits === best.idHits && Math.abs(scored[1].len - best.len) < 3) return;
+        WIZ.entities[sl.ref] = best.e.id;
+        usedIds.add(best.e.id);
+        nSlot++;
     }));
 
     // — Caldaia (campo dedicato)

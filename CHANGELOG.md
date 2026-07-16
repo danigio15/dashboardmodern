@@ -6,6 +6,18 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.6.4] — 2026-07-16
+
+### ✨ Aggiunto
+- **✏️ Modifica senza cancellare** — le stanze si modificano con la matita (form precompilato, 💾 Salva) e si **riordinano** con le frecce ▲▼. *(grazie Francesco!)*
+- **☁️ Import automatico della configurazione** — su un nuovo dispositivo la config salvata su HA viene applicata da sola, senza domande.
+
+### 🐛 Corretto
+- **Barra di navigazione "Fissa" ora funziona davvero** — la logica valeva solo su mobile: ora la scelta si applica anche su PC/tablet (e la scelta attiva è evidenziata).
+- **Tema che non rispondeva** — la card della barra aveva rotto la struttura della pagina Config: riparata.
+- **Avvisi persi al refresh** *(issue #5, definitivo)* — le modifiche non ancora sincronizzate sono ora protette e vengono inviate subito.
+- **Confronto settimanale a zero** *(issue #6)* — ora usa le entità configurate dall'utente (produzione o consumo giornaliero) invece di un sensore fisso; se non configurate mostra "—".
+
 ## [0.6.2] — 2026-07-16
 
 ### ✨ Migliorato
@@ -228,6 +240,18 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.6.4] — 2026-07-16
+
+### ✨ Added
+- **✏️ Edit without deleting** — rooms can be edited via pencil (pre-filled form, 💾 Save) and **reordered** with ▲▼ arrows. *(thanks Francesco!)*
+- **☁️ Automatic config import** — on a new device the config saved on HA is applied silently, no prompts.
+
+### 🐛 Fixed
+- **"Fixed" navigation bar now really works** — the logic was mobile-only: the choice now applies on PC/tablet too (active choice highlighted).
+- **Unresponsive theme** — the nav card had broken the Config page structure: repaired.
+- **Alerts lost on refresh** *(issue #5, final)* — unsynced local changes are now protected and pushed immediately.
+- **Weekly comparison at zero** *(issue #6)* — now uses the user's configured entities (daily production or consumption) instead of a fixed sensor; shows "—" if unconfigured.
 
 ## [0.6.2] — 2026-07-16
 

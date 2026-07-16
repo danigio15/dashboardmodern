@@ -1913,6 +1913,16 @@ nav.tabs.bottom-nav-bar .tab.active .text {
     }
     nav.tabs.bottom-nav-bar::-webkit-scrollbar { display: none !important; }
 
+/* v298: modalità BARRA FISSA — vale su desktop e mobile, vince su hover/swipe */
+body.cd-nav-fixed nav.tabs.bottom-nav-bar {
+    bottom: 18px !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translateX(-50%) scale(1) !important;
+}
+body.cd-nav-fixed .bottom-nav-handle { display: none !important; }
+body.cd-nav-fixed { padding-bottom: 96px !important; }
+
     nav.tabs.bottom-nav-bar .tab {
         flex: 0 0 auto !important;
         min-width: 58px !important;
@@ -5613,17 +5623,17 @@ html[data-theme="dark"] header { background: var(--card-glass); }
             <button class="theme-opt" data-theme="auto" onclick="setTheme('auto')"><span class="theme-opt-ico">📱</span><span>Auto</span></button>
           </div>
         </div>
+      </div>
       <div class="cfg-card cfg-card-theme">
         <div class="cfg-card-ico" style="--cc-rgb: 14,165,233;">📌</div>
         <div class="cfg-card-txt">
           <div class="cfg-card-nm">Barra di navigazione</div>
           <div class="cfg-card-ds">Always visible or auto-hide, on this device</div>
           <div class="theme-seg">
-            <button class="theme-opt" onclick="wzSetNavMode('auto'); setTimeout(() => location.reload(), 150);"><span class="theme-opt-ico">👆</span> Auto-hide</button>
-            <button class="theme-opt" onclick="wzSetNavMode('fixed'); setTimeout(() => location.reload(), 150);"><span class="theme-opt-ico">📌</span> Fixed</button>
+            <button class="theme-opt" id="nav-opt-auto" onclick="wzSetNavMode('auto'); setTimeout(() => location.reload(), 150);"><span class="theme-opt-ico">👆</span> Auto-hide</button>
+            <button class="theme-opt" id="nav-opt-fixed" onclick="wzSetNavMode('fixed'); setTimeout(() => location.reload(), 150);"><span class="theme-opt-ico">📌</span> Fixed</button>
           </div>
         </div>
-      </div>
       </div>
     </div>
   </section>
@@ -5996,7 +6006,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.6.2';
+const DASHBOARD_VERSION = '0.6.4';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6442,6 +6452,7 @@ async function connect() {
       try {
         const v = m.result && m.result.value;
         const localTs = parseInt(localStorage.getItem('cd_sync_ts') || '0');
+        if (localStorage.getItem('cd_sync_dirty')) { try { cdSyncPush(); } catch(e){} return; } // v299: prima invio le mie
         if (v && v.__ts && v.__ts > localTs && !sessionStorage.getItem('cd_sync_reloading')) {
           const n = cdSyncApply(v);
           localStorage.setItem('cd_sync_ts', String(v.__ts));
@@ -6872,7 +6883,7 @@ function edAddAvviso() {
     localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
     // v292 (issue #3): valido subito anche nel runtime — niente reload per vederlo
     if (GRUPPI_MONITORAGGIO[grp] && !GRUPPI_MONITORAGGIO[grp].includes(ent)) GRUPPI_MONITORAGGIO[grp].push(ent);
-    try { cdMarkDirty(); } catch(e){}
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
     if (name) { const extN = edGetExtra('cd_avvisi_names_extra'); extN[ent] = name; localStorage.setItem('cd_avvisi_names_extra', JSON.stringify(extN)); }
     editorSwitch('avvisi');
     edToast('Avviso aggiunto');
@@ -7322,14 +7333,14 @@ function wzRender() {
         </details>` : ''}${WIZ.sections['temp'] !== false ? `
         <details class="ed-acc"><summary class="ed-acc-head">🌡️ Rooms (temperatures) <span class="ed-acc-n">${(WIZ.stanze||[]).length}</span></summary>
           <div class="ed-acc-body">
-            ${(WIZ.stanze||[]).map((r, i) => `<div class="ed-row"><div style="font-size:15px;">${r.icon||'🏠'}</div><div class="ed-row-main"><div class="ed-row-new">${r.name}</div><div class="ed-row-old mono">${r.temp}</div></div><div class="ed-del" onclick="WIZ.stanze.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
+            ${(WIZ.stanze||[]).map((r, i) => `<div class="ed-row"><div style="display:flex; flex-direction:column; gap:2px;"><div class="ed-del" style="width:24px; height:20px; font-size:10px; ${i===0?'opacity:0.25; pointer-events:none;':''}" onclick="wzMoveStanza(${i},-1)">▲</div><div class="ed-del" style="width:24px; height:20px; font-size:10px; ${i===WIZ.stanze.length-1?'opacity:0.25; pointer-events:none;':''}" onclick="wzMoveStanza(${i},1)">▼</div></div><div style="font-size:15px;">${r.icon||'🏠'}</div><div class="ed-row-main"><div class="ed-row-new">${r.name}</div><div class="ed-row-old mono">${r.temp}</div></div><div class="ed-del" style="background:rgba(14,165,233,0.12);" onclick="wzEditStanza(${i})">✏️</div><div class="ed-del" onclick="WIZ.stanze.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
             <div style="display:flex; gap:8px; margin-bottom:8px;">
               <input id="wz-st-icon" class="wz-input" style="margin-bottom:0; flex:0 0 64px; text-align:center;" placeholder="🛋️" maxlength="4">
               <input id="wz-st-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Room name (es. Salone)">
             </div>
             <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-st-temp" class="wz-input mono" autocomplete="off" placeholder="sensor.temperatura_salone (temperatura)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-st-temp')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
             <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-st-hum" class="wz-input mono" autocomplete="off" placeholder="sensor.umidita_salone (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-st-hum')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
-            <button class="ed-btn-add" style="width:100%;" onclick="wzAddStanza()">＋ Add room</button>
+            <button class="ed-btn-add" style="width:100%;" onclick="wzAddStanza()" id="wz-st-add-btn">＋ Add room</button>
           </div>
         </details>` : ''}${WIZ.sections['clima'] !== false ? `
         <details class="ed-acc"><summary class="ed-acc-head">❄️ Climate units <span class="ed-acc-n">${(WIZ.climaUnits||[]).length}</span></summary>
@@ -7412,6 +7423,7 @@ function cdSyncApply(data) {
    all'avvio non può sovrascrivere modifiche fatte un attimo prima del reload. */
 function cdMarkDirty() {
     localStorage.setItem('cd_sync_ts', String(Date.now()));
+    localStorage.setItem('cd_sync_dirty', '1'); // v299: modifiche locali non ancora inviate
 }
 
 function cdSyncPush(silent = true) {
@@ -7420,6 +7432,7 @@ function cdSyncPush(silent = true) {
         const payload = cdSyncCollect();
         payload.__ts = Date.now();
         localStorage.setItem('cd_sync_ts', String(payload.__ts));
+        localStorage.removeItem('cd_sync_dirty'); // inviate: non più dirty
         ws.send(JSON.stringify({ id: msgId++, type: 'frontend/set_user_data', key: 'dashboard_modern_config', value: payload }));
         if (!silent && typeof edToast === 'function') edToast('☁️ Configuration saved to Home Assistant');
         console.log('[Sync] configurazione inviata a HA');
@@ -7460,7 +7473,7 @@ function wzTestToken() {
                 cdSyncPull(tk, (data) => {
                     if (data && data.cd_sections) {
                         const when = data._savedAt ? new Date(data._savedAt).toLocaleString() : '';
-                        if (confirm('📦 Found a configuration saved on Home Assistant' + (when ? ' (' + when + ')' : '') + '.\n\nImport it on this device?\nYou skip the whole setup: the dashboard will match your other devices.')) {
+                        { // v298: import automatico, niente conferme
                             const n = cdSyncApply(data);
                             try { const conn = JSON.parse(localStorage.getItem('cd_connection') || '{}'); conn.token = tk; localStorage.setItem('cd_connection', JSON.stringify(conn)); } catch(e) { localStorage.setItem('cd_connection', JSON.stringify({ token: tk })); }
                             alert('✅ Imported ' + n + ' settings. The dashboard will reload.');
@@ -7915,6 +7928,28 @@ function wzAddDevice() {
     WIZ.devices.push(d);
     wzRender();
 }
+/* v299 (richiesta community): riordino e modifica delle stanze senza cancellare */
+function wzMoveStanza(i, dir) {
+    const a = WIZ.stanze;
+    const j = i + dir;
+    if (!a || j < 0 || j >= a.length) return;
+    [a[i], a[j]] = [a[j], a[i]];
+    wzRender();
+}
+
+function wzEditStanza(i) {
+    const s = (WIZ.stanze || [])[i];
+    if (!s) return;
+    document.getElementById('wz-st-name').value = s.name || '';
+    document.getElementById('wz-st-icon').value = s.icon || '';
+    document.getElementById('wz-st-temp').value = s.temp || '';
+    document.getElementById('wz-st-hum').value = s.hum || '';
+    WIZ._editStanza = i;
+    const btn = document.getElementById('wz-st-add-btn');
+    if (btn) btn.textContent = '💾 Save changes';
+    document.getElementById('wz-st-name')?.focus();
+}
+
 function wzAddReportDevice() {
     const name = (document.getElementById('wz-rep-name').value || '').trim();
     const icon = (document.getElementById('wz-rep-icon').value || '⚡').trim();
@@ -7960,6 +7995,19 @@ function wzDelAvviso(grp, id) {
     wzRender();
 }
 function wzAddStanza() {
+    if (typeof WIZ._editStanza === 'number') {
+        const s = WIZ.stanze[WIZ._editStanza];
+        if (s) {
+            s.name = (document.getElementById('wz-st-name').value || s.name).trim();
+            s.icon = (document.getElementById('wz-st-icon').value || s.icon).trim();
+            s.temp = (document.getElementById('wz-st-temp').value || s.temp).trim();
+            const h = (document.getElementById('wz-st-hum').value || '').trim();
+            if (h) s.hum = h; else delete s.hum;
+        }
+        delete WIZ._editStanza;
+        wzRender();
+        return;
+    }
     const icon = (document.getElementById('wz-st-icon').value || '🏠').trim();
     const name = (document.getElementById('wz-st-name').value || '').trim();
     const temp = (document.getElementById('wz-st-temp').value || '').trim();
@@ -8009,9 +8057,17 @@ function wzResetAll() {
     ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
     location.reload();
 }
+/* v298: applica la modalità barra fissa a livello CSS — funziona ovunque */
+function cdApplyNavFixedBody() {
+    const fixed = localStorage.getItem('cd_navbar_mode') === 'fixed';
+    document.body.classList.toggle('cd-nav-fixed', fixed);
+}
+document.addEventListener('DOMContentLoaded', cdApplyNavFixedBody);
+
 function wzSetNavMode(mode) {
     localStorage.setItem('cd_navbar_mode', mode);
     try { cdMarkDirty(); } catch(e){}
+    cdApplyNavFixedBody();
     if (window.cdApplyNavMode) window.cdApplyNavMode();
     // v297: wzRender solo se il wizard è aperto (dalla Config il wizard non c'è)
     if (document.getElementById('wz-overlay')) { try { wzRender(); } catch(e){} }
@@ -11130,7 +11186,16 @@ async function edCalcolaSettimanale(selMonth, selYear, isCurrentMonth) {
     const refLunPre = new Date(refLun); refLunPre.setDate(refLun.getDate() - 7);
     const refDomPre = new Date(refLun); refDomPre.setDate(refLun.getDate() - 1); refDomPre.setHours(23,59,59,0);
 
-    const sensor = 'dm.energy_produzione_solare_oggi';
+    /* v299 (issue #6): il sensore passa dalle sostituzioni dell'utente; se la produzione
+       non è configurata si usa il consumo giornaliero; se nulla è configurato → "—". */
+    const _cands = ['dm.energy_produzione_solare_oggi', 'dm.energy_consumo_casa_oggi'];
+    let sensor = null;
+    for (const _r of _cands) {
+        const _m = (typeof ENTITY_OVERRIDES !== 'undefined' && ENTITY_OVERRIDES[_r]) || null;
+        if (_m) { sensor = _m; break; }
+        if (!(typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING)) { sensor = _r; break; }
+    }
+    if (!sensor) { edSetText('ed-w-prev-val', '—'); edSetText('ed-w-curr-val', '—'); return; }
 
     // Somma kWh di un periodo da History
     const sumPeriod = async (start, end) => {
@@ -12533,6 +12598,10 @@ async function edCaricaDettaglio() {
         else { nav.classList.remove('visible'); document.body.classList.remove('nav-visible'); }
     };
     if (cdNavFixed()) setTimeout(() => window.cdApplyNavMode(), 300);
+    setTimeout(() => {
+        const cur = cdNavFixed() ? 'nav-opt-fixed' : 'nav-opt-auto';
+        document.getElementById(cur)?.classList.add('active');
+    }, 400);
 
     function showNav() {
         nav.classList.add('visible');

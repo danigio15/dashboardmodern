@@ -203,6 +203,10 @@ Se ti è utile e vuoi supportare lo sviluppo di nuove funzionalità:
 Ogni contributo, anche piccolo, è molto apprezzato! 🙏
 E se ti piace, lascia una ⭐ al repo — aiuta il progetto a crescere!
 
+https://github.com/user-attachments/assets/52371288-9070-4111-81ba-69f13ce1dd3f
+
+
+
 </div>
 
 ---
@@ -210,7 +214,7 @@ E se ti piace, lascia una ⭐ al repo — aiuta il progetto a crescere!
 <div align="center">
 <sub>
 
-[MIT License](LICENSE) · Sviluppata da **Giovanni D'Aniello** con l'aiuto di Claude (Anthropic) · Grafici [Chart.js](https://www.chartjs.org)
+[MIT License](LICENSE) · Sviluppata da **Giovanni d'Aniello** con l'aiuto di Claude (Anthropic) · Grafici [Chart.js](https://www.chartjs.org)
 
 🐛 Problemi o idee? [Apri una issue](../../issues) · 📋 [Changelog completo](CHANGELOG.md)
 

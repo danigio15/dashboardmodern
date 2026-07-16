@@ -6,6 +6,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.5.2] — 2026-07-16
+
+### 🐛 Corretto *(issue #3 — grazie per le segnalazioni!)*
+- **Avvisi aggiunti che sparivano** — le unità clima sovrascrivevano il gruppo avvisi Clima/Riscaldamento cancellando le aggiunte manuali; ora le vostre voci vengono sempre rispettate.
+- **Avvisi nell'editor senza reload** — le entità aggiunte al Quadro Avvisi ora compaiono e contano subito, senza ricaricare.
+- **Meteo che spariva dopo pochi secondi** — un riferimento interno non configurato bloccava il fallback verso il meteo configurato dall'utente: ora il widget resta visibile.
+
 ## [0.5.1] — 2026-07-16
 
 ### 🐛 Corretto
@@ -189,6 +196,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.5.2] — 2026-07-16
+
+### 🐛 Fixed *(issue #3 — thanks for the reports!)*
+- **Added alerts disappearing** — climate units were overwriting the Climate/Heating alert group, wiping manual additions; your entries are now always preserved.
+- **Editor alerts without reload** — entities added to the Alerts Panel now appear and count immediately, no reload needed.
+- **Weather vanishing after a few seconds** — an unconfigured internal reference blocked the fallback to the user-configured weather: the widget now stays visible.
 
 ## [0.5.1] — 2026-07-16
 

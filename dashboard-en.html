@@ -5974,7 +5974,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.5.1';
+const DASHBOARD_VERSION = '0.5.2';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6175,15 +6175,6 @@ try {
     }
 } catch(e) {}
 
-/* v273: le unità clima configurate alimentano i gruppi clima/risc — contatori,
-   popup e card usano la STESSA fonte. */
-try {
-    const _units = getClimaUnits();
-    if (_units.length) {
-        GRUPPI_MONITORAGGIO['clima'] = _units.filter(u => u.type !== 'termo').map(u => u.entity);
-        GRUPPI_MONITORAGGIO['risc']  = _units.filter(u => u.type === 'termo').map(u => u.entity);
-    }
-} catch(e) {}
 
 /* v258: rimozioni utente dal Quadro Avvisi (vale anche per le voci di default) */
 try {
@@ -6771,9 +6762,11 @@ function edAddAvviso() {
     if (!extG[grp]) extG[grp] = [];
     if (!extG[grp].includes(ent)) extG[grp].push(ent);
     localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
+    // v292 (issue #3): valido subito anche nel runtime — niente reload per vederlo
+    if (GRUPPI_MONITORAGGIO[grp] && !GRUPPI_MONITORAGGIO[grp].includes(ent)) GRUPPI_MONITORAGGIO[grp].push(ent);
     if (name) { const extN = edGetExtra('cd_avvisi_names_extra'); extN[ent] = name; localStorage.setItem('cd_avvisi_names_extra', JSON.stringify(extN)); }
     editorSwitch('avvisi');
-    edToast('Avviso aggiunto — ricarica per vederlo');
+    edToast('Avviso aggiunto');
 }
 function edDelAvviso(grp, id) {
     // Rimuovi dalle aggiunte utente se presente
@@ -6782,6 +6775,7 @@ function edDelAvviso(grp, id) {
         extG[grp] = extG[grp].filter(x => x !== id);
         if (!extG[grp].length) delete extG[grp];
         localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
+        if (GRUPPI_MONITORAGGIO[grp]) GRUPPI_MONITORAGGIO[grp] = GRUPPI_MONITORAGGIO[grp].filter(x => x !== id);
     } else {
         // È una voce di default: segna come rimossa
         const rem = edGetExtra('cd_gruppi_removed');
@@ -7820,6 +7814,7 @@ function wzDelAvviso(grp, id) {
         extG[grp] = extG[grp].filter(x => x !== id);
         if (!extG[grp].length) delete extG[grp];
         localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
+        if (GRUPPI_MONITORAGGIO[grp]) GRUPPI_MONITORAGGIO[grp] = GRUPPI_MONITORAGGIO[grp].filter(x => x !== id);
     } else {
         const rem = cdCfg('cd_gruppi_removed');
         if (!rem[grp]) rem[grp] = [];
@@ -9028,6 +9023,16 @@ function cdEnergyNodeState(nodeId, lineId, ref) {
     } catch(e) {}
 }
 
+/* v292: primo stato REALMENTE mappato di una lista di riferimenti — i "ghost"
+   (ref non configurati) non devono cortocircuitare i fallback. */
+function cdFirstMapped() {
+    for (let i = 0; i < arguments.length; i++) {
+        const s = STATES[arguments[i]];
+        if (s && s.entity_id !== 'dm.unmapped') return s;
+    }
+    return null;
+}
+
 function updateClimaCards() {
     try {
         const climas = getClimaUnits().map(u => u.entity);
@@ -9694,7 +9699,7 @@ function render() {
       if (panoramicaView && panoramicaView.classList.contains('active')) {
           edUpdateKpiOnly();
       }
-      const weatherEnt = STATES['dm.core_045'] || STATES['weather.home'] || STATES['dm.home_meteo'] || null;
+      const weatherEnt = cdFirstMapped('dm.core_045', 'weather.home', 'dm.home_meteo');
       /* v273: meteo non configurato → widget nascosto del tutto (nessun return: siamo dentro render) */
       let wUnmapped = false;
       if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {

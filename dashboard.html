@@ -6006,7 +6006,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.6.5';
+const DASHBOARD_VERSION = '0.6.6';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6735,7 +6735,8 @@ function editorRenderLoad() {
     if (!rows) rows = '<div class="ed-empty">Nessun carico aggiunto</div>';
     const customGroups = (cdCfgList('cd_subload_groups')).map((g, i) => `<div class="ed-row"><div style="font-size:15px;">${g.icon||'🔌'}</div><div class="ed-row-main"><div class="ed-row-new">${g.name}</div><div class="ed-row-old mono">gruppo personalizzato</div></div><div class="ed-del" onclick="edDelLoadGroup(${i})">🗑️</div></div>`).join('');
     const fn = cdCfg('cd_flow_nodes') || {};
-    const grpOpts = (sel) => Object.entries(SUBLOADS_CONFIG).filter(([k]) => !k.endsWith('_day')).map(([k, g]) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${g.icon} ${g.title.replace(' Istantaneo','')}</option>`).join('');
+    /* v301: prima opzione = nessun popup (il nodo apre lo storico del suo sensore) */
+    const grpOpts = (sel) => '<option value=""' + (sel === '' || sel === undefined ? ' selected' : '') + '>📈 Nessun popup — apre lo storico</option>' + Object.entries(SUBLOADS_CONFIG).filter(([k]) => !k.endsWith('_day')).map(([k, g]) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${g.icon} ${g.title.replace(' Istantaneo','')}</option>`).join('');
     const nodeForm = (key, defName) => `
           <div style="background:rgba(148,163,184,0.07); border-radius:12px; padding:10px; margin-bottom:8px;">
             <div style="font-weight:800; font-size:12px; margin-bottom:6px;">Nodo "${(fn[key] && fn[key].name) || defName}" nella mappa flussi</div>
@@ -6770,7 +6771,20 @@ function editorRenderLoad() {
         </div>
         <input id="ed-load-pwr" list="ed-entity-list" class="ed-input mono" placeholder="sensor.tostapane_power">
         <button class="ed-btn-add" onclick="edAddLoad()">＋ Aggiungi carico</button>
-      </div>`;
+      </div>
+      <div class="ed-sec-title" style="margin-top:16px;">📊 Report Analisi — voci</div>
+      <div class="ed-intro">I dispositivi del Report mensile (Energia → Analisi): nome, icona ed entità kWh-mese liberi.</div>
+      <div class="ed-list">${cdCfgList('cd_report_devices').map((d, i2) => `<div class="ed-row"><div style="font-size:15px;">${d.icon||'⚡'}</div><div class="ed-row-main"><div class="ed-row-new">${d.name}</div><div class="ed-row-old mono">${d.entity}</div></div><div class="ed-del" onclick="edDelReportDevice(${i2})">🗑️</div></div>`).join('') || '<div class="ed-empty">Nessuna voce — aggiungile qui sotto</div>'}</div>
+      <div style="display:flex; gap:8px; margin-bottom:8px;">
+        <input id="ed-rep-icon" class="ed-input" style="flex:0 0 60px;" placeholder="⚡" maxlength="4">
+        <input id="ed-rep-name" class="ed-input" style="flex:1;" placeholder="Nome (es. Piscina)">
+      </div>
+      <div style="display:flex; gap:6px; margin-bottom:8px;">
+        <input id="ed-rep-ent" class="ed-input mono" autocomplete="off" placeholder="dm.core_023" style="flex:1; font-family:monospace;">
+        <button type="button" onclick="wzPickEntity('#ed-rep-ent')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button>
+      </div>
+      <button class="ed-btn-add" style="width:100%;" onclick="edAddReportDevice()">＋ Aggiungi voce Report</button>
+`;
 }
 function edAddLoad() {
     const grp = document.getElementById('ed-load-grp').value;
@@ -6785,6 +6799,30 @@ function edAddLoad() {
     editorSwitch('load');
     edToast('Carico aggiunto — ricarica per vederlo');
 }
+function edAddReportDevice() {
+    const name = (document.getElementById('ed-rep-name').value || '').trim();
+    const icon = (document.getElementById('ed-rep-icon').value || '⚡').trim();
+    const ent = (document.getElementById('ed-rep-ent').value || '').trim();
+    if (!name || !ent.includes('.')) { alert('Inserisci nome ed entità'); return; }
+    const devs = cdCfgList('cd_report_devices');
+    devs.push({ name, icon, entity: ent });
+    localStorage.setItem('cd_report_devices', JSON.stringify(devs));
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    buildReportSelect();
+    editorSwitch('carichi');
+    edToast('Voce Report aggiunta');
+}
+
+function edDelReportDevice(i) {
+    const devs = cdCfgList('cd_report_devices');
+    devs.splice(i, 1);
+    localStorage.setItem('cd_report_devices', JSON.stringify(devs));
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    buildReportSelect();
+    editorSwitch('carichi');
+    edToast('Voce Report rimossa');
+}
+
 function edSaveFlowNodes() {
     const fn = {};
     ['lav','cuc','boiler','wb','clima'].forEach(k => {
@@ -7405,7 +7443,8 @@ function wzRender() {
 /* ═══ v270: SINCRONIZZAZIONE MULTI-DISPOSITIVO ═══
    La configurazione viene salvata anche nell'archivio utente di Home Assistant
    (frontend user_data): configuri una volta, la ritrovi su ogni dispositivo. */
-const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'];
+/* v301: cd_theme e cd_navbar_mode NON sono sincronizzati — sono preferenze del singolo dispositivo */
+const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
 
 function cdSyncCollect() {
     const out = { _savedAt: Date.now() };
@@ -7471,9 +7510,12 @@ function wzTestToken() {
             if (m.type === 'auth_ok') { done = true; WIZ.token = tk; res.innerHTML = '<div class="wz-ok">✅ Connesso a Home Assistant!</div>'; tws.close();
                 // v270: config trovata su HA (da un altro dispositivo)? Proponi l'importazione
                 cdSyncPull(tk, (data) => {
-                    if (data && data.cd_sections) {
-                        const when = data._savedAt ? new Date(data._savedAt).toLocaleString() : '';
-                        { // v298: import automatico, niente conferme
+                    // v301: l'import automatico avviene SOLO se questo dispositivo è vergine.
+                    // Prima scattava a OGNI apertura del wizard: import + reload = wizard inutilizzabile
+                    // e preferenze locali (tema, barra) sovrascritte in continuazione.
+                    const _hasLocalCfg = !!(localStorage.getItem('cd_entity_overrides') || localStorage.getItem('cd_luci') || localStorage.getItem('cd_sections'));
+                    if (data && data.cd_sections && !_hasLocalCfg) {
+                        {
                             const n = cdSyncApply(data);
                             try { const conn = JSON.parse(localStorage.getItem('cd_connection') || '{}'); conn.token = tk; localStorage.setItem('cd_connection', JSON.stringify(conn)); } catch(e) { localStorage.setItem('cd_connection', JSON.stringify({ token: tk })); }
                             alert('✅ Importate ' + n + ' impostazioni. La dashboard si ricarica.');
@@ -9233,7 +9275,8 @@ function cdApplyFlowNode(nodeId, conf, defGroup, defIcon, defName) {
         const ico = node.querySelector('.node-icon');
         if (lbl && lbl.textContent !== name) lbl.textContent = name;
         if (ico && ico.textContent !== icon) ico.textContent = icon;
-        node.setAttribute('onclick', "apriSubLoads('" + group + "')");
+        if (group) node.setAttribute('onclick', "apriSubLoads('" + group + "')");
+        else if (conf && conf.pwr) node.setAttribute('onclick', "apriStorico(event, '" + conf.pwr + "', '" + name.replace(/'/g,'') + "')");
     } catch(e) {}
 }
 

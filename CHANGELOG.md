@@ -8,7 +8,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ## [0.6.5] — 2026-07-16
 
+### 🐛 Corretto (importante)
+- **Wizard bloccato dal messaggio "Importate N impostazioni"** — la sincronizzazione importava la configurazione a OGNI apertura del wizard, ricaricando la pagina in loop: ora l'import automatico avviene solo su un dispositivo nuovo (senza configurazione locale).
+- **Tema e Barra di navigazione che "non funzionavano"** — le scelte venivano sovrascritte dall'import: ora tema e barra sono preferenze del singolo dispositivo, mai sincronizzate.
+
 ### ✨ Aggiunto
+- **📊 Voci del Report anche nell'editor** — ⚙️ → Configura Entità → Carichi: aggiungi/rimuovi le voci del Report senza passare dal wizard.
+- **📈 Nodi mappa senza popup** — nel menu di ogni nodo la prima opzione è "Nessun popup — apre lo storico" del sensore scelto.
 - **🗺️ TUTTI i nodi sotto la casa personalizzabili** — anche Boiler, Wallbox e Clima si rinominano (nome, icona, sensore, gruppo) da ⚙️ → Carichi → Nodi della mappa, come Lavanderia e Cucina.
 
 ### 🐛 Corretto
@@ -253,7 +259,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](h
 
 ## [0.6.5] — 2026-07-16
 
+### 🐛 Fixed (important)
+- **Wizard locked by the "Imported N settings" message** — sync imported the configuration at EVERY wizard opening, reloading in a loop: automatic import now happens only on a fresh device (no local configuration).
+- **Theme and Navigation bar "not working"** — choices were being overwritten by the import: theme and bar are now per-device preferences, never synced.
+
 ### ✨ Added
+- **📊 Report entries in the editor too** — ⚙️ → Configure Entities → Loads: add/remove Report entries without the wizard.
+- **📈 Map nodes without popup** — each node's menu now starts with "No popup — opens history" of the chosen sensor.
 - **🗺️ ALL nodes under the house are customizable** — Boiler, Wallbox and Climate can be renamed too (name, icon, sensor, group) via ⚙️ → Loads → Map nodes, like Laundry and Kitchen.
 
 ### 🐛 Fixed

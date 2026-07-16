@@ -4979,6 +4979,9 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         <div class="node n-load hist-clickable" id="n-clima" style="left:50%; top:83%; --n-color:#0ea5e9; --n-rgb: 14,165,233;" onclick="apriStorico(event, 'dm.energy_potenza_condizionatori', 'Potenza Clima')"><div class="node-label">Clima</div><div class="node-icon">❄️</div><span id="v-clima-p">—</span></div>
         <div class="node n-load hist-clickable" id="n-lav" style="left:67%; top:83%; --n-color:#7c3aed; --n-rgb: 124,58,237;" onclick="apriSubLoads('lavanderia')"><div class="node-label">Lavanderia</div><div class="node-icon">🧺</div><span id="v-lav-p">—</span></div>
         <div class="node n-load hist-clickable" id="n-cuc" style="left:84%; top:83%; --n-color:#e11d48; --n-rgb: 225,29,72;" onclick="apriSubLoads('cucina')"><div class="node-label">Cucina</div><div class="node-icon">🍳</div><span id="v-cuc-p">—</span></div>
+      </div><!-- v293: chiuso qui per ospitare la griglia -->
+      <div class="dev-grid" id="custom-loads-grid" style="display:none; margin-top:14px;"><!-- gruppi carico personalizzati --></div>
+      <div style="display:none;"><!-- v293: assorbe la vecchia chiusura -->
       </div>
     </div>
 
@@ -5974,7 +5977,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.5.2';
+const DASHBOARD_VERSION = '0.6.0';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6535,7 +6538,7 @@ function mostraModalEditPlancia() {
     const old = document.getElementById('edit-plancia-modal');
     if (old) old.remove();
     
-    // Crea modal
+    // Create modal
     const modal = document.createElement('div');
     modal.id = 'edit-plancia-modal';
     modal.className = 'modal-wrapper show';
@@ -6680,18 +6683,22 @@ function editorRenderLoad() {
         });
     });
     if (!rows) rows = '<div class="ed-empty">Nessun carico aggiunto</div>';
+    const customGroups = (cdCfg('cd_subload_groups') || []).map((g, i) => `<div class="ed-row"><div style="font-size:15px;">${g.icon||'🔌'}</div><div class="ed-row-main"><div class="ed-row-new">${g.name}</div><div class="ed-row-old mono">custom group</div></div><div class="ed-del" onclick="edDelLoadGroup(${i})">🗑️</div></div>`).join('');
     return `
-      <div class="ed-intro">Aggiungi dispositivi ai popup Cucina/Lavanderia. Lo stato acceso/spento si deduce dalla potenza (>5W) se non specifichi un binary_sensor.</div>
+          <div class="ed-sec-title">➕ New load group</div>
+          <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <input id="ed-lg-icon" class="ed-input" style="flex:0 0 64px;" placeholder="🔌" maxlength="4">
+            <input id="ed-lg-name" class="ed-input" style="flex:1;" placeholder="Group name (e.g. Garage, Ground Floor…)">
+            <button class="ed-btn" onclick="edAddLoadGroup()">Create</button>
+          </div>
+          ${customGroups}
+          <div style="height:10px;"></div>`+`
+      <div class="ed-intro">Createte your own load groups (Garage, Ground Floor…) and add devices to the popups. Lo stato acceso/spento si deduce dalla potenza (>5W) se non specifichi un binary_sensor.</div>
       <div class="ed-list">${rows}</div>
       <div class="ed-form">
-        <select id="ed-load-grp" class="ed-input">
-          <option value="cucina">Cucina — Istantaneo</option>
-          <option value="cucina_day">Cucina — Giornaliero</option>
-          <option value="cucina_month">Cucina — Mensile</option>
-          <option value="lavanderia">Lavanderia — Istantaneo</option>
-          <option value="lavanderia_day">Lavanderia — Giornaliero</option>
-          <option value="lavanderia_month">Lavanderia — Mensile</option>
-        </select>
+        <select id="ed-load-grp" class="ed-input" style="flex:0 0 38%;">
+                ${Object.entries(SUBLOADS_CONFIG).filter(([k]) => !k.endsWith('_day')).map(([k, g]) => `<option value="${k}">${g.icon} ${g.title.replace(' Istantaneo','')}</option>`).join('')}
+              </select>
         <div class="ed-form-row">
           <input id="ed-load-name" class="ed-input" placeholder="Nome (es. Tostapane)" style="flex:1;">
           <input id="ed-load-icon" class="ed-input ed-icon-input" placeholder="🍞" maxlength="4">
@@ -6713,6 +6720,39 @@ function edAddLoad() {
     editorSwitch('load');
     edToast('Carico aggiunto — ricarica per vederlo');
 }
+function edAddLoadGroup() {
+    const name = (document.getElementById('ed-lg-name').value || '').trim();
+    const icon = (document.getElementById('ed-lg-icon').value || '🔌').trim();
+    if (!name) { alert('Name the group'); return; }
+    const groups = cdCfg('cd_subload_groups') || [];
+    const id = 'cl_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    if (groups.some(g => g.id === id) || SUBLOADS_CONFIG[id]) { alert('A group with this name already exists'); return; }
+    groups.push({ id, name, icon });
+    localStorage.setItem('cd_subload_groups', JSON.stringify(groups));
+    SUBLOADS_CONFIG[id] = { title: name, icon, items: [], custom: true };
+    try { cdMarkDirty(); } catch(e){}
+    buildCustomLoadCards();
+    editorSwitch('carichi');
+    edToast('Group created — now add loads below');
+}
+
+function edDelLoadGroup(i) {
+    const groups = cdCfg('cd_subload_groups') || [];
+    const g = groups[i];
+    if (!g) return;
+    if (!confirm('Delete group "' + g.name + '" and its loads?')) return;
+    groups.splice(i, 1);
+    localStorage.setItem('cd_subload_groups', JSON.stringify(groups));
+    const ext = edGetExtra('cd_subloads_extra');
+    delete ext[g.id];
+    localStorage.setItem('cd_subloads_extra', JSON.stringify(ext));
+    delete SUBLOADS_CONFIG[g.id];
+    try { cdMarkDirty(); } catch(e){}
+    buildCustomLoadCards();
+    editorSwitch('carichi');
+    edToast('Group deleted');
+}
+
 function edDelLoad(grp, i) {
     const ext = edGetExtra('cd_subloads_extra');
     if (ext[grp]) { ext[grp].splice(i,1); localStorage.setItem('cd_subloads_extra', JSON.stringify(ext)); }
@@ -6764,6 +6804,7 @@ function edAddAvviso() {
     localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
     // v292 (issue #3): valido subito anche nel runtime — niente reload per vederlo
     if (GRUPPI_MONITORAGGIO[grp] && !GRUPPI_MONITORAGGIO[grp].includes(ent)) GRUPPI_MONITORAGGIO[grp].push(ent);
+    try { cdMarkDirty(); } catch(e){}
     if (name) { const extN = edGetExtra('cd_avvisi_names_extra'); extN[ent] = name; localStorage.setItem('cd_avvisi_names_extra', JSON.stringify(extN)); }
     editorSwitch('avvisi');
     edToast('Avviso aggiunto');
@@ -6917,7 +6958,7 @@ async function edDownloadHTML() {
     }
 
     // Costruisci il nuovo blocco baked dai localStorage attuali (le personalizzazioni di questo dispositivo)
-    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
+    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
     const merged = {};
     keys.forEach(k => { merged[k] = cdCfg(k); });  // cdCfg = localStorage o baked precedente
     const bakedBlock = '/* CD_BAKED_START */\n'
@@ -6980,7 +7021,7 @@ function edImport() {
     let cfg;
     try { cfg = JSON.parse(raw); } catch(e) { alert('JSON non valido: ' + e.message); return; }
     const map = {
-        entity_overrides:'cd_entity_overrides', subloads_extra:'cd_subloads_extra',
+        entity_overrides:'cd_entity_overrides', subloads_extra:'cd_subloads_extra', subload_groups:'cd_subload_groups',
         gruppi_extra:'cd_gruppi_extra', avvisi_names_extra:'cd_avvisi_names_extra',
         text_overrides:'cd_text_overrides', hidden_elements:'cd_hidden_elements'
     };
@@ -6990,7 +7031,7 @@ function edImport() {
 }
 function edResetAll() {
     if (!confirm('Rimuovere TUTTE le personalizzazioni di questo dispositivo?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
     location.reload();
 }
 
@@ -6999,6 +7040,7 @@ let _cdSyncT = null;
 function edToast(msg) {
     // v270: ogni modifica dall'editor viene sincronizzata su HA (debounce 2s)
     clearTimeout(_cdSyncT);
+    try { cdMarkDirty(); } catch(e){}
     _cdSyncT = setTimeout(() => { try { cdSyncPush(); } catch(e){} }, 2000);
     let t = document.getElementById('ed-toast');
     if (!t) { t = document.createElement('div'); t.id = 'ed-toast'; document.body.appendChild(t); }
@@ -7063,7 +7105,7 @@ function wzRender() {
         <div class="wz-sub">You need a <b>long-lived access token</b>:<br>
         1. Open HA → click your <b>user profile</b> (bottom left)<br>
         2. <b>Security</b> tab → at the bottom <b>"Long-lived access tokens"</b><br>
-        3. <b>Create token</b>, name it (e.g. "Dashboard") and paste it here:</div>
+        3. <b>Createte token</b>, name it (e.g. "Dashboard") and paste it here:</div>
         <textarea id="wz-token" class="wz-input" rows="4" placeholder="Paste your token here (starts with eyJ...)">${WIZ.token}</textarea>
         <input id="wz-remote" class="wz-input mono" style="font-family:monospace; font-size:12px;" placeholder="Optional remote URL (e.g. https://xxxx.ui.nabu.casa)" value="${WIZ.remoteUrl||''}">
         <input id="wz-remote" class="wz-input" value="${WIZ.remoteUrl||''}" placeholder="URL remoto (opzionale, es. https://xxxx.ui.nabu.casa)" onchange="WIZ.remoteUrl=this.value.trim().replace(/\/$/,'');">
@@ -7285,7 +7327,7 @@ function wzRender() {
 /* ═══ v270: SINCRONIZZAZIONE MULTI-DISPOSITIVO ═══
    La configurazione viene salvata anche nell'archivio utente di Home Assistant
    (frontend user_data): configuri una volta, la ritrovi su ogni dispositivo. */
-const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'];
+const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'];
 
 function cdSyncCollect() {
     const out = { _savedAt: Date.now() };
@@ -7299,6 +7341,12 @@ function cdSyncApply(data) {
     return n;
 }
 /* Push sul WS principale (dashboard già connessa) */
+/* v293 (issue #5): ogni modifica locale marca SUBITO il timestamp — così il pull
+   all'avvio non può sovrascrivere modifiche fatte un attimo prima del reload. */
+function cdMarkDirty() {
+    localStorage.setItem('cd_sync_ts', String(Date.now()));
+}
+
 function cdSyncPush(silent = true) {
     try {
         if (!ws || ws.readyState !== 1) return;
@@ -7482,7 +7530,7 @@ function wzAddQA() {
         if (name) a.name = name;
         WIZ.quickActions.push(a);
     } else if (tsel === 'luci_group') {
-        if (!name) { alert('Name the group (e.g. Ground Floor)'); return; }
+        if (!name) { alert('Name the group (es. Piano Terra)'); return; }
         cdPickLights(name, (lights) => {
             WIZ.quickActions.push({ type: 'luci_group', name, icon: '💡', lights });
             wzRender();
@@ -7800,6 +7848,7 @@ function wzAddAvviso() {
     if (!extG[grp]) extG[grp] = [];
     if (!extG[grp].includes(ent)) extG[grp].push(ent);
     localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
+    try { cdMarkDirty(); } catch(e){}
     if (name) {
         const extN = cdCfg('cd_avvisi_names_extra');
         extN[ent] = name;
@@ -7871,7 +7920,7 @@ function wzAddCamera() {
 }
 function wzResetAll() {
     if (!confirm('Delete ALL configuration saved on this device (token, sections, lights, entities, rooms, cameras, theme)?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
     location.reload();
 }
 function wzFinish() {
@@ -7895,7 +7944,7 @@ function wzFinish() {
         localStorage.setItem('cd_entity_overrides', JSON.stringify(cur));
     }
     // v290: la config del wizard viene salvata su HA prima del reload (sync multi-dispositivo)
-    try { cdSyncPush(); } catch(e) {}
+    try { cdMarkDirty(); cdSyncPush(); } catch(e) {}
     setTimeout(() => location.reload(), 600);
 }
 
@@ -7996,6 +8045,16 @@ const CD_SLOTS = {
         { ref: 'dm.lavatrice_script_programma_30',           lbl: 'Script programma 30\'' },
         { ref: 'dm.lavatrice_script_programma_59',           lbl: 'Script programma 59\'' },
         { ref: 'dm.lavatrice_script_programma_misto_colorati', lbl: 'Script programma misto/colorati' },
+    ]},
+    'report': { label: '📊 Analysis Report (monthly energy per device)', slots: [
+        { ref: 'dm.ev_energia_wallbox_mese',       lbl: 'Monthly energy Wallbox (kWh)' },
+        { ref: 'dm.core_026',         lbl: 'Monthly energy Fridge (kWh)' },
+        { ref: 'dm.core_028', lbl: 'Monthly energy Dishwasher (kWh)' },
+        { ref: 'dm.core_025',   lbl: 'Monthly energy Air fryer (kWh)' },
+        { ref: 'dm.core_027',          lbl: 'Monthly energy Coffee machine (kWh)' },
+        { ref: 'dm.core_023',  lbl: 'Monthly energy Dryer (kWh)' },
+        { ref: 'dm.core_029',     lbl: 'Monthly energy Washer (kWh)' },
+        { ref: 'dm.core_024',         lbl: 'Monthly energy Oven (kWh)' },
     ]},
     server: { label: '🖥️ MiniPC', slots: [
         { ref: 'dm.server_cpu',    lbl: 'CPU (%)' },
@@ -8188,7 +8247,7 @@ function edAddQA() {
     const list = getQuickActions().slice();
     if (tsel === 'luci_group') {
         const name = (document.getElementById('ed-qa-name').value || '').trim();
-        if (!name) { alert('Name the group (e.g. Ground Floor)'); return; }
+        if (!name) { alert('Name the group (es. Piano Terra)'); return; }
         cdPickLights(name, (lights) => {
             const acts = getQuickActions().slice();
             acts.push({ type: 'luci_group', name, icon: '💡', lights });
@@ -9811,6 +9870,19 @@ function render() {
       cdEnergyNodeState('n-clima', 'line-home-clima', 'dm.energy_potenza_condizionatori');
       cdEnergyNodeState('n-lav', 'line-home-lav', 'dm.energy_somma_lavanderia_istantanea');
       cdEnergyNodeState('n-cuc', 'line-home-cuc', 'dm.energy_somma_cucina_istantanea');
+      /* v293: contatore attivi sulle card dei gruppi carico personalizzati */
+      (cdCfg('cd_subload_groups') || []).forEach(g => {
+          const el = document.getElementById('cl-count-' + g.id);
+          if (!el) return;
+          const items = (SUBLOADS_CONFIG[g.id] && SUBLOADS_CONFIG[g.id].items) || [];
+          let on = 0;
+          items.forEach(it => {
+              const w = parseFloat(STATES[it.pwrLive || it.pwr]?.state);
+              const b = STATES[it.bin]?.state;
+              if (b === 'on' || (!isNaN(w) && w > 5)) on++;
+          });
+          el.textContent = items.length ? (on + ' active / ' + items.length) : 'empty — add loads';
+      });
       document.getElementById('v-solar').textContent = getDisplay('dm.energy_potenza_fotovoltaico'); document.getElementById('v-grid').textContent = getDisplay('dm.energy_potenza_scambio_rete'); document.getElementById('v-battery').textContent = getDisplay('dm.energy_potenza_batteria'); document.getElementById('v-battery-soc').textContent = getDisplay('dm.energy_stato_carica_batteria'); document.getElementById('v-home').textContent = getDisplay('dm.energy_potenza_consumo_casa'); document.getElementById('v-boiler-p').textContent = getDisplay('dm.boiler_potenza_resistenza_boiler'); document.getElementById('v-wb-p').textContent = getDisplay('dm.ev_potenza_wallbox'); document.getElementById('v-clima-p').textContent = getDisplay('dm.energy_potenza_condizionatori'); document.getElementById('v-lav-p').textContent = getDisplay('dm.energy_somma_lavanderia_istantanea'); document.getElementById('v-cuc-p').textContent = getDisplay('dm.energy_somma_cucina_istantanea');
       const pwrSol = getPowerInWatts('dm.energy_potenza_fotovoltaico'); const pwrGri = getPowerInWatts('dm.energy_potenza_scambio_rete'); const pwrBat = getPowerInWatts('dm.energy_potenza_batteria'); const pwrWb = Math.abs(getPowerInWatts('dm.ev_potenza_wallbox')); const pwrBoiler = Math.abs(getPowerInWatts('dm.boiler_potenza_resistenza_boiler')); const pwrClima = Math.abs(getPowerInWatts('dm.energy_potenza_condizionatori')); const pwrLav = Math.abs(getPowerInWatts('dm.energy_somma_lavanderia_istantanea')); const pwrCuc = Math.abs(getPowerInWatts('dm.energy_somma_cucina_istantanea'));
       setNode('n-solar', pwrSol > 20); setNode('n-grid', Math.abs(pwrGri) > 20); setNode('n-battery', Math.abs(pwrBat) > 20); setNode('n-home', true); setNode('n-wb', pwrWb > 5); setNode('n-boiler', pwrBoiler > 5); setNode('n-clima', pwrClima > 5); setNode('n-lav', pwrLav > 5); setNode('n-cuc', pwrCuc > 5);

@@ -6,6 +6,15 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.6.0] — 2026-07-16
+
+### ✨ Aggiunto
+- **🔌 Gruppi di carichi personalizzati** *(issue #4)* — ⚙️ → Configura Entità → Carichi: crea i tuoi gruppi ("Garage", "Piano Terra"…), aggiungici i dispositivi e ottieni card dedicate nella sezione Energia con contatore attivi e popup.
+- **📊 Report Analisi configurabile** *(issue #6)* — i consumi mensili per dispositivo (lavatrice, asciugatrice, forno…) sono ora collegabili dal wizard: nuovo accordion "Report Analisi" con lente 🔍 e rilevamento automatico. Fine dei valori a zero.
+
+### 🐛 Corretto
+- **Avvisi che sparivano al refresh** *(issue #5)* — una corsa tra salvataggio locale e sincronizzazione cloud poteva sovrascrivere le modifiche appena fatte: ora ogni modifica locale ha sempre priorità.
+
 ## [0.5.2] — 2026-07-16
 
 ### 🐛 Corretto *(issue #3 — grazie per le segnalazioni!)*
@@ -196,6 +205,15 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.6.0] — 2026-07-16
+
+### ✨ Added
+- **🔌 Custom load groups** *(issue #4)* — ⚙️ → Configure Entities → Loads: create your own groups ("Garage", "Ground Floor"…), add devices and get dedicated cards in the Energy section with active counter and popup.
+- **📊 Configurable Analysis Report** *(issue #6)* — monthly per-device energy (washer, dryer, oven…) can now be linked from the wizard: new "Analysis Report" accordion with 🔍 picker and auto-detection. No more zeros.
+
+### 🐛 Fixed
+- **Alerts disappearing on refresh** *(issue #5)* — a race between local save and cloud sync could overwrite just-made changes: local edits now always win.
 
 ## [0.5.2] — 2026-07-16
 

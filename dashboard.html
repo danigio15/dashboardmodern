@@ -4269,13 +4269,13 @@ nav.tabs.bottom-nav-bar .tab.active .text {
   .ed-head { padding: 18px 24px 14px; }
   .ed-head-title { font-size: 19px; }
 }
-.ed-head { display: flex; justify-content: space-between; align-items: center; padding: 22px 24px 18px; border-bottom: 1px solid var(--card-border); }
+.ed-head { display: flex; justify-content: space-between; align-items: center; padding: 22px 24px 18px; flex-shrink: 0; border-bottom: 1px solid var(--card-border); }
 .ed-head-title { font-family: 'Oswald', sans-serif; font-size: 21px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
 .ed-head-icon { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg,#e0f2fe,#bae6fd); display: flex; align-items: center; justify-content: center; font-size: 20px; }
 .ed-head-close { cursor: pointer; width: 34px; height: 34px; border-radius: 50%; background: var(--surface-3); display: flex; align-items: center; justify-content: center; font-size: 15px; color: var(--text-dim); transition: 0.2s; }
 .ed-head-close:hover { background: #fee2e2; color: #dc2626; }
 
-.ed-tabs { display: flex; gap: 4px; padding: 12px 16px; overflow-x: auto; border-bottom: 1px solid var(--card-border); background: var(--bg-sculpted); -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.ed-tabs { display: flex; gap: 4px; padding: 12px 16px; overflow-x: auto; flex-shrink: 0; min-height: 52px; border-bottom: 1px solid var(--card-border); background: var(--bg-sculpted); -webkit-overflow-scrolling: touch; scrollbar-width: none; }
 .ed-tabs::-webkit-scrollbar { display: none; }
 .ed-tab { flex-shrink: 0; padding: 9px 14px; border: none; background: transparent; border-radius: 12px; font-size: 12px; font-weight: 800; color: var(--text-dim); cursor: pointer; transition: 0.2s; white-space: nowrap; font-family: 'Inter', sans-serif; }
 .ed-tab:hover { background: rgba(255,255,255,0.7); color: var(--text); }
@@ -4511,8 +4511,11 @@ html[data-theme="dark"] header { background: var(--card-glass); }
 .ed-acc-n { font-size: 10px; font-weight: 800; color: var(--text-dim); background: var(--surface-3); padding: 4px 10px; border-radius: 100px; }
 .ed-acc-body { padding: 13px 14px; display: flex; flex-direction: column; gap: 10px; }
 .ed-slot { display: flex; flex-direction: column; gap: 5px; }
-.wz-lbl-edit { border: none; background: transparent; font: inherit; color: inherit; width: 100%; padding: 0; border-bottom: 1px dashed transparent; }
-.wz-lbl-edit:hover, .wz-lbl-edit:focus { border-bottom-color: var(--text-dim); outline: none; }
+.theme-opt.nav-active { background: var(--card-bg, #fff); box-shadow: 0 2px 8px rgba(14,165,233,0.25); color: #0369a1; font-weight: 800; border-radius: 12px; }
+.wz-lbl-edit { border: none; background: transparent; font: inherit; color: inherit; width: calc(100% - 18px); padding: 0; border-bottom: 1px dashed rgba(148,163,184,0.55); }
+.wz-lbl-edit:hover, .wz-lbl-edit:focus { border-bottom-color: var(--accent, #0ea5e9); outline: none; }
+.ed-slot-lbl { position: relative; }
+.ed-slot-lbl::after { content: '✏️'; font-size: 10px; opacity: 0.55; margin-left: 4px; }
 .ed-slot-lbl { font-size: 11.5px; font-weight: 700; color: var(--text-dim); }
 .ed-slot-in { font-size: 11.5px !important; }
 
@@ -4865,14 +4868,14 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
                 <option value="">— Scegli —</option>
                 <optgroup label="Elettrodomestici">
                   <option value="dm.ev_energia_wallbox_mese">⚡ Wallbox</option>
-                  <option value="dm.core_027">🧊 Frigorifero</option>
-                  <option value="dm.core_029">🍽️ Lavastoviglie</option>
-                  <option value="dm.core_026">🍟 Friggitrice</option>
-                  <option value="dm.core_028">☕ Macchina Caffè</option>
-                  <option value="dm.core_024">💨 Asciugatrice</option>
-                  <option value="dm.core_030">🧺 Lavatrice</option>
-                  <option value="dm.core_025">♨️ Forno</option>
-                  <option value="dm.core_031">📡 Microonde</option>
+                  <option value="dm.core_028">🧊 Frigorifero</option>
+                  <option value="dm.core_030">🍽️ Lavastoviglie</option>
+                  <option value="dm.core_027">🍟 Friggitrice</option>
+                  <option value="dm.core_029">☕ Macchina Caffè</option>
+                  <option value="dm.core_025">💨 Asciugatrice</option>
+                  <option value="dm.core_031">🧺 Lavatrice</option>
+                  <option value="dm.core_026">♨️ Forno</option>
+                  <option value="dm.core_032">📡 Microonde</option>
                   <option value="dm.energy_boiler_mese">🔥 Boiler</option>
                 </optgroup>
                 <optgroup label="Climatizzazione">
@@ -5409,7 +5412,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
           </div>
           <span id="txt-chiave" style="display:none">CHIUSA</span>
         </div>
-        <div class="syn-pump" id="syn-p-ricircolo" style="left: 88%; top: 50%;" onclick="toggle('dm.core_040')">
+        <div class="syn-pump" id="syn-p-ricircolo" style="left: 88%; top: 50%;" onclick="toggle('dm.core_041')">
         </div>
       </div>
       
@@ -5430,13 +5433,13 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
 
       <div class="b-controls-grid">
         <div class="b-btn" id="b-c-pompasol" onclick="toggle('dm.boiler_pompa_solare')" style="--c-rgb: 234,88,12;"><div class="icon"><span class="spin-active">🔄</span></div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-ricircolo" onclick="toggle('dm.core_040')" style="--c-rgb: 124,58,237;"><div class="icon"><span class="spin-active">🔁</span></div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-ricircolo" onclick="toggle('dm.core_041')" style="--c-rgb: 124,58,237;"><div class="icon"><span class="spin-active">🔁</span></div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-centralina" onclick="toggle('dm.boiler_centralina_solare_termico')" style="--c-rgb: 245,158,11;"><div class="icon">⚙️</div><div class="lbl">Centralina</div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-solare" onclick="toggle('dm.boiler_interruttore_solare_termico')" style="--c-rgb: 245,158,11;"><div class="icon">♨️</div><div class="lbl">Ctrl Solare</div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-valvola" onclick="toggle('valve.chiave_solare_termico')" style="--c-rgb: 6,182,212;"><div class="icon">🎛️</div><div class="lbl">Valvola</div><div class="state">CHIUSA</div></div>
         <div class="b-btn" id="b-c-boiler" onclick="toggle('dm.boiler_interruttore_boiler')" style="--c-rgb: 30,64,175;"><div class="icon">🌊</div><div class="lbl">Boiler</div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-pdc" onclick="toggle('dm.core_039')" style="--c-rgb: 124,58,237;"><div class="icon">🌬️</div><div class="lbl">PdC</div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-boost" onclick="toggle('dm.core_037')" style="--c-rgb: 236,72,153;"><div class="icon">🚀</div><div class="lbl">Boost</div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-pdc" onclick="toggle('dm.core_040')" style="--c-rgb: 124,58,237;"><div class="icon">🌬️</div><div class="lbl">PdC</div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-boost" onclick="toggle('dm.core_038')" style="--c-rgb: 236,72,153;"><div class="icon">🚀</div><div class="lbl">Boost</div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-sicurezza" onclick="toggle('dm.boiler_valvola_di_sicurezza')" style="--c-rgb: 225,29,72;"><div class="icon"><span class="blink-active">🔒</span></div><div class="lbl">V. Sicurezza</div><div class="state">CHIUSA</div></div>
       </div>
     </div>
@@ -5820,7 +5823,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
         <div class="lav-area-mon">
            <div class="lav-mon-card"><div class="lbl">FASE ATTUALE</div><div class="val" id="v-lav-fase" style="color: var(--accent);">—</div></div>
            <div class="lav-mon-card"><div class="lbl">TEMPO RIMANENTE</div><div class="val" id="v-lav-tempo" style="color: var(--load);">—</div></div>
-           <div class="lav-mon-card hist-clickable" onclick="apriStorico(event, 'dm.core_032', 'Consumo Lavatrice')"><div class="lbl">ASSORBIMENTO</div><div class="val" id="v-lav-power-w" style="color: #f59e0b;">—</div></div>
+           <div class="lav-mon-card hist-clickable" onclick="apriStorico(event, 'dm.core_033', 'Consumo Lavatrice')"><div class="lbl">ASSORBIMENTO</div><div class="val" id="v-lav-power-w" style="color: #f59e0b;">—</div></div>
         </div>
 
         <div class="lav-area-manual">
@@ -6008,7 +6011,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.6.7';
+const DASHBOARD_VERSION = '0.7.0';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6474,7 +6477,7 @@ async function connect() {
             renderQuickClima();
           }
           // Switch termici → re-render pannello stato (visibile solo in modalità caldo)
-          if (eid === 'switch.caldaia' || eid === 'dm.core_042' || eid === 'dm.core_036') {
+          if (eid === 'switch.caldaia' || eid === 'dm.core_043' || eid === 'dm.core_037') {
             if (currentClimaMode === 'caldo') renderThermalPanel();
           }
         }
@@ -6738,7 +6741,9 @@ function editorRenderLoad() {
     const customGroups = (cdCfgList('cd_subload_groups')).map((g, i) => `<div class="ed-row"><div style="font-size:15px;">${g.icon||'🔌'}</div><div class="ed-row-main"><div class="ed-row-new">${g.name}</div><div class="ed-row-old mono">gruppo personalizzato</div></div><div class="ed-del" onclick="edDelLoadGroup(${i})">🗑️</div></div>`).join('');
     const fn = cdCfg('cd_flow_nodes') || {};
     /* v301: prima opzione = nessun popup (il nodo apre lo storico del suo sensore) */
-    const grpOpts = (sel) => '<option value=""' + (sel === '' || sel === undefined ? ' selected' : '') + '>📈 Nessun popup — apre lo storico</option>' + Object.entries(SUBLOADS_CONFIG).filter(([k]) => !k.endsWith('_day')).map(([k, g]) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${g.icon} ${g.title.replace(' Istantaneo','')}</option>`).join('');
+    const grpOpts = (sel) =>
+        '<option value=""' + (!sel ? ' selected' : '') + '>📈 Nessun popup — apre lo storico</option>' +
+        cdCfgList('cd_subload_groups').map(g => `<option value="${g.id}" ${sel === g.id ? 'selected' : ''}>${g.icon || '🔌'} ${g.name}</option>`).join('');
     const nodeForm = (key, defName) => `
           <div style="background:rgba(148,163,184,0.07); border-radius:12px; padding:10px; margin-bottom:8px;">
             <div style="font-weight:800; font-size:12px; margin-bottom:6px;">Nodo "${(fn[key] && fn[key].name) || defName}" nella mappa flussi</div>
@@ -6765,7 +6770,7 @@ function editorRenderLoad() {
       <div class="ed-list">${rows}</div>
       <div class="ed-form">
         <select id="ed-load-grp" class="ed-input" style="flex:0 0 38%;">
-                ${Object.entries(SUBLOADS_CONFIG).filter(([k]) => !k.endsWith('_day')).map(([k, g]) => `<option value="${k}">${g.icon} ${g.title.replace(' Istantaneo','')}</option>`).join('')}
+                ${Object.entries(SUBLOADS_CONFIG).filter(([k, g]) => !k.endsWith('_day') && (g.custom || k === 'cucina' || k === 'lavanderia')).map(([k, g]) => `<option value="${k}">${g.icon} ${(g.title || '').replace(' Istantaneo','')}</option>`).join('')}
               </select>
         <div class="ed-form-row">
           <input id="ed-load-name" class="ed-input" placeholder="Nome (es. Tostapane)" style="flex:1;">
@@ -6782,7 +6787,7 @@ function editorRenderLoad() {
         <input id="ed-rep-name" class="ed-input" style="flex:1;" placeholder="Nome (es. Piscina)">
       </div>
       <div style="display:flex; gap:6px; margin-bottom:8px;">
-        <input id="ed-rep-ent" class="ed-input mono" autocomplete="off" placeholder="dm.core_023" style="flex:1; font-family:monospace;">
+        <input id="ed-rep-ent" class="ed-input mono" autocomplete="off" placeholder="dm.core_024" style="flex:1; font-family:monospace;">
         <button type="button" onclick="wzPickEntity('#ed-rep-ent')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button>
       </div>
       <button class="ed-btn-add" style="width:100%;" onclick="edAddReportDevice()">＋ Aggiungi voce Report</button>
@@ -6812,6 +6817,62 @@ function edAddReportDevice() {
     try { cdMarkDirty(); cdSyncPush(); } catch(e){}
     buildReportSelect();
     editorSwitch('carichi');
+    edToast('Voce Report aggiunta');
+}
+
+function edAddLuce() {
+    const nm = (document.getElementById('ed-lu-name').value || '').trim();
+    const id = (document.getElementById('ed-lu-ent').value || '').trim();
+    if (!nm || !id.startsWith('light.')) { alert('Inserisci nome ed entità dm.core_022'); return; }
+    let L = {}; try { L = JSON.parse(localStorage.getItem('cd_luci')) || {}; } catch(e) {}
+    L[id] = nm;
+    localStorage.setItem('cd_luci', JSON.stringify(L));
+    try { LUCI_NAMES[id] = nm; if (GRUPPI_MONITORAGGIO.luci && !GRUPPI_MONITORAGGIO.luci.includes(id)) GRUPPI_MONITORAGGIO.luci.push(id); } catch(e) {}
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    editorSwitch('sezioni');
+    edToast('Luce aggiunta');
+}
+
+function edDelLuce(id) {
+    let L = {}; try { L = JSON.parse(localStorage.getItem('cd_luci')) || {}; } catch(e) {}
+    delete L[id];
+    localStorage.setItem('cd_luci', JSON.stringify(L));
+    try { delete LUCI_NAMES[id]; if (GRUPPI_MONITORAGGIO.luci) GRUPPI_MONITORAGGIO.luci = GRUPPI_MONITORAGGIO.luci.filter(x => x !== id); } catch(e) {}
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    editorSwitch('sezioni');
+    edToast('Luce rimossa');
+}
+
+function edAddStanza2() {
+    const name = (document.getElementById('ed-st2-name').value || '').trim();
+    const icon = (document.getElementById('ed-st2-icon').value || '🌡️').trim();
+    const temp = (document.getElementById('ed-st2-temp').value || '').trim();
+    const hum = (document.getElementById('ed-st2-hum').value || '').trim();
+    const floor = (document.getElementById('ed-st2-floor').value || '').trim();
+    if (!name || !temp.includes('.')) { alert('Inserisci nome e sensore temperatura'); return; }
+    const rooms = cdCfgList('cd_stanze');
+    const r = { name, icon, temp };
+    if (hum) r.hum = hum;
+    if (floor) r.floor = floor;
+    rooms.push(r);
+    localStorage.setItem('cd_stanze', JSON.stringify(rooms));
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    buildTempCards();
+    editorSwitch('sezioni');
+    edToast('Stanza aggiunta');
+}
+
+function edAddReportDevice2() {
+    const name = (document.getElementById('ed-rep2-name').value || '').trim();
+    const icon = (document.getElementById('ed-rep2-icon').value || '⚡').trim();
+    const ent = (document.getElementById('ed-rep2-ent').value || '').trim();
+    if (!name || !ent.includes('.')) { alert('Inserisci nome ed entità'); return; }
+    const devs = cdCfgList('cd_report_devices');
+    devs.push({ name, icon, entity: ent });
+    localStorage.setItem('cd_report_devices', JSON.stringify(devs));
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    buildReportSelect();
+    editorSwitch('sezioni');
     edToast('Voce Report aggiunta');
 }
 
@@ -7269,7 +7330,9 @@ function wzRender() {
           </div>
           <div style="font-size:11px; color:var(--text-dim); margin-top:6px;">A scomparsa: appare con swipe/tocco sulla linguetta. Fissa: sempre in vista.</div>
         </div>
-        <button class="wz-btn" onclick="WIZ.step=4; wzLoadLights();">Avanti →</button>`;
+        <button class="wz-btn" style="background:linear-gradient(135deg,#059669,#10b981);" onclick="wzFinishV7(true)">🪄 Rileva tutto e apri l'editor →</button>
+        <button class="wz-btn" style="background:#94a3b8; margin-top:8px;" onclick="wzFinishV7(false)">Salta il rilevamento →</button>
+        <div style="font-size:11px; color:var(--text-dim); margin-top:8px; text-align:center;">Il wizard finisce qui: luci, entità, stanze e tutto il resto si configurano nell'editor — lo stesso strumento che userai per ogni modifica futura.</div>`;
     }
 
     if (WIZ.step === 4) {
@@ -7289,10 +7352,10 @@ function wzRender() {
             const rows = sec.slots.map(sl => {
                 const cur = (WIZ.entities && WIZ.entities[sl.ref]) || ENTITY_OVERRIDES[sl.ref] || '';
                 const auto = WIZ.autoDetected && WIZ.autoDetected[sl.ref];
-                return `<div class="ed-slot"><div class="ed-slot-lbl">${sl.lbl}${auto ? ' <span style=\"background:#dcfce7; color:#15803d; font-size:9.5px; font-weight:800; padding:1px 7px; border-radius:8px; vertical-align:1px;\">🪄 auto</span>' : ''}</div>
+                return `<div class="ed-slot"><div class="ed-slot-lbl"><input class="wz-lbl-edit" value="${(cdCfg('cd_slot_labels')[sl.ref] || sl.lbl).replace(/"/g,'&quot;')}" onchange="wzRenameSlot('${sl.ref}', this.value)" title="Tocca per rinominare">${auto ? ' <span style=\"background:#dcfce7; color:#15803d; font-size:9.5px; font-weight:800; padding:1px 7px; border-radius:8px; vertical-align:1px;\">🪄 auto</span>' : ''}</div>
                   <div style="display:flex; gap:6px; align-items:center;">
                     <input class="wz-input mono" style="margin-bottom:0; flex:1; font-family:monospace; font-size:11.5px; ${auto ? 'background:#f0fdf4; border-color:#86efac;' : ''}" autocomplete="off"
-                           data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_034" onchange="wzSetSlot(this); if(WIZ.autoDetected) delete WIZ.autoDetected[this.dataset.ref];">
+                           data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_035" onchange="wzSetSlot(this); if(WIZ.autoDetected) delete WIZ.autoDetected[this.dataset.ref];">
                     <button type="button" onclick="wzPickEntity('${sl.ref}')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button>
                   </div></div>`;
             }).join('');
@@ -7321,7 +7384,7 @@ function wzRender() {
               <input id="wz-qa-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome">
             </div>
             <div id="wz-qa-ent-row" style="display:none; gap:6px; margin-bottom:8px;">
-              <input id="wz-qa-ent" class="wz-input mono" autocomplete="off" placeholder="dm.core_043 — l'entità da comandare" style="margin-bottom:0; flex:1; font-family:monospace;">
+              <input id="wz-qa-ent" class="wz-input mono" autocomplete="off" placeholder="dm.core_044 — l'entità da comandare" style="margin-bottom:0; flex:1; font-family:monospace;">
               <button type="button" onclick="wzPickEntity('__qa__')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button>
             </div>
             <div id="wz-qa-hint" style="font-size:11.5px; color:var(--text-dim); margin-bottom:8px; padding:0 2px;">💡 Dai un nome (es. "Piano Terra") e premi Aggiungi: sceglierai le luci da una lista con ricerca.</div>
@@ -7350,9 +7413,9 @@ function wzRender() {
               <input id="wz-dev-icon" class="wz-input" style="margin-bottom:0; flex:0 0 64px; text-align:center;" placeholder="🧺" maxlength="4">
               <input id="wz-dev-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome (es. Lavastoviglie)">
             </div>
-            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-sw" class="wz-input mono" autocomplete="off" placeholder="dm.core_041 (facoltativo)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-sw')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
-            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-pw" class="wz-input mono" autocomplete="off" placeholder="dm.core_035 (facoltativo)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-pw')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
-            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-sv" class="wz-input mono" autocomplete="off" placeholder="dm.core_033 (facoltativo)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-sv')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-sw" class="wz-input mono" autocomplete="off" placeholder="dm.core_042 (facoltativo)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-sw')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-pw" class="wz-input mono" autocomplete="off" placeholder="dm.core_036 (facoltativo)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-pw')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-sv" class="wz-input mono" autocomplete="off" placeholder="dm.core_034 (facoltativo)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-sv')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddDevice()">＋ Aggiungi dispositivo</button>
           </div>
         </details>` : ''}${WIZ.sections['energy'] !== false ? `
@@ -7365,7 +7428,7 @@ function wzRender() {
               <input id="wz-rep-name" class="wz-input" style="flex:1; margin-bottom:0;" placeholder="Nome (es. Piscina)">
             </div>
             <div style="display:flex; gap:6px; margin-bottom:8px;">
-              <input id="wz-rep-ent" class="wz-input mono" autocomplete="off" placeholder="dm.core_023 (kWh)" style="margin-bottom:0; flex:1; font-family:monospace;">
+              <input id="wz-rep-ent" class="wz-input mono" autocomplete="off" placeholder="dm.core_024 (kWh)" style="margin-bottom:0; flex:1; font-family:monospace;">
               <button type="button" onclick="wzPickEntity('#wz-rep-ent')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button>
             </div>
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddReportDevice()">＋ Aggiungi al Report</button>
@@ -7383,6 +7446,21 @@ function wzRender() {
             <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-st-hum" class="wz-input mono" autocomplete="off" placeholder="sensor.umidita_salone (facoltativo)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-st-hum')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddStanza()" id="wz-st-add-btn">＋ Aggiungi stanza</button>
           </div>
+        
+          <div style="display:flex; gap:8px; margin:10px 0 8px;">
+            <input id="ed-st2-icon" class="ed-input" style="flex:0 0 56px;" placeholder="🌡️" maxlength="4">
+            <input id="ed-st2-name" class="ed-input" style="flex:1;" placeholder="Nome stanza">
+            <input id="ed-st2-floor" class="ed-input" style="flex:0 0 32%;" placeholder="Piano (opz.)">
+          </div>
+          <div style="display:flex; gap:6px; margin-bottom:6px;">
+            <input id="ed-st2-temp" class="ed-input mono" autocomplete="off" placeholder="sensor.temperatura_x" style="flex:1; font-family:monospace;">
+            <button type="button" onclick="wzPickEntity('#ed-st2-temp')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button>
+          </div>
+          <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <input id="ed-st2-hum" class="ed-input mono" autocomplete="off" placeholder="sensor.umidita_x (facoltativo)" style="flex:1; font-family:monospace;">
+            <button type="button" onclick="wzPickEntity('#ed-st2-hum')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button>
+          </div>
+          <button class="ed-btn-add" style="width:100%;" onclick="edAddStanza2()">＋ Aggiungi stanza</button>
         </details>` : ''}${WIZ.sections['clima'] !== false ? `
         <details class="ed-acc"><summary class="ed-acc-head">❄️ Unità clima <span class="ed-acc-n">${(WIZ.climaUnits||[]).length}</span></summary>
           <div class="ed-acc-body">
@@ -7400,7 +7478,7 @@ function wzRender() {
               <div class="ed-slot-lbl">🔥 Entità caldaia (switch — opzionale)</div>
               <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" autocomplete="off"
                      data-ref="switch.caldaia" value="${(WIZ.entities && WIZ.entities['switch.caldaia']) || ENTITY_OVERRIDES['switch.caldaia'] || ''}"
-                     placeholder="es. dm.core_038" onchange="wzSetSlot(this)">
+                     placeholder="es. dm.core_039" onchange="wzSetSlot(this)">
             </div>
           </div>
         </details>` : ''}${WIZ.sections['security'] !== false ? `
@@ -8113,8 +8191,18 @@ function wzResetAll() {
 function cdApplyNavFixedBody() {
     const fixed = localStorage.getItem('cd_navbar_mode') === 'fixed';
     document.body.classList.toggle('cd-nav-fixed', fixed);
+    // v303: evidenzia la scelta attiva nella card di Config
+    const a = document.getElementById('nav-opt-auto'), f = document.getElementById('nav-opt-fixed');
+    if (a) a.classList.toggle('active', !fixed);
+    if (f) f.classList.toggle('active', fixed);
 }
 document.addEventListener('DOMContentLoaded', cdApplyNavFixedBody);
+document.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('cd_open_editor_after_reload')) {
+        sessionStorage.removeItem('cd_open_editor_after_reload');
+        setTimeout(() => { try { apriConfigEntita(); editorSwitch('sezioni'); } catch(e) { console.warn('[v0.7] apertura editor:', e); } }, 900);
+    }
+});
 
 function wzSetNavMode(mode) {
     localStorage.setItem('cd_navbar_mode', mode);
@@ -8123,6 +8211,16 @@ function wzSetNavMode(mode) {
     if (window.cdApplyNavMode) window.cdApplyNavMode();
     // v297: wzRender solo se il wizard è aperto (dalla Config il wizard non c'è)
     if (document.getElementById('wz-overlay')) { try { wzRender(); } catch(e){} }
+}
+
+/* ═══ v0.7.0 "One Editor": il wizard si ferma alle sezioni. Rilevamento automatico
+   integrato, poi salvataggio e apertura diretta dell'editor (unico luogo di configurazione). ═══ */
+function wzFinishV7(withDetect) {
+    if (withDetect) {
+        try { wzAutoDetect(); } catch(e) { console.warn('[wizard] auto-detect:', e); }
+    }
+    sessionStorage.setItem('cd_open_editor_after_reload', '1');
+    wzFinish();
 }
 
 function wzFinish() {
@@ -8295,7 +8393,7 @@ function editorRenderSezioni() {
               <div class="ed-slot-lbl"><input class="wz-lbl-edit" value="${lbl.replace(/"/g,'&quot;')}" onchange="wzRenameSlot('${sl.ref}', this.value)" title="Tocca per rinominare l'etichetta"></div>
               <div style="display:flex; gap:6px;">
                 <input class="ed-input mono ed-slot-in" autocomplete="off" style="flex:1;"
-                       data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_034"
+                       data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_035"
                        onchange="edSetSlot(this)">
                 <button type="button" onclick="wzPickEntity('${sl.ref}')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button>
               </div>
@@ -8355,7 +8453,7 @@ function editorRenderSezioni() {
               <input id="ed-qa-icon" class="ed-input ed-icon-input" placeholder="⚡" maxlength="4">
               <input id="ed-qa-name" class="ed-input" placeholder="Nome azione" style="flex:1;">
             </div>
-            <div id="ed-qa-ent-row" style="display:none; gap:6px;"><input id="ed-qa-ent" autocomplete="off" class="ed-input mono" placeholder="dm.core_043 / dm.core_022 / scene.x (non serve per i popup)"><button type="button" onclick="wzPickEntity('__ed_qa__')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
+            <div id="ed-qa-ent-row" style="display:none; gap:6px;"><input id="ed-qa-ent" autocomplete="off" class="ed-input mono" placeholder="dm.core_044 / dm.core_023 / scene.x (non serve per i popup)"><button type="button" onclick="wzPickEntity('__ed_qa__')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
               <div id="ed-qa-hint" style="font-size:11px; color:var(--text-dim); padding:0 2px;">💡 Dai un nome e premi Aggiungi: sceglierai le luci da una lista con ricerca.</div>
             <input id="ed-qa-confirm" class="ed-input" placeholder="Messaggio di conferma (facoltativo, es. Sei sicuro?)">
             <button class="ed-btn-add" onclick="edAddQA()">＋ Aggiungi azione rapida</button>
@@ -8385,7 +8483,7 @@ function editorRenderSezioni() {
             <div class="ed-slot" style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--card-border);">
               <div class="ed-slot-lbl">🔥 Entità caldaia (switch — opzionale)</div>
               <input class="ed-input mono ed-slot-in" list="ed-entity-list" data-ref="switch.caldaia"
-                     value="${ENTITY_OVERRIDES['switch.caldaia'] || ''}" placeholder="es. dm.core_038" onchange="edSetSlot(this)">
+                     value="${ENTITY_OVERRIDES['switch.caldaia'] || ''}" placeholder="es. dm.core_039" onchange="edSetSlot(this)">
             </div>
           </div>
         </div>
@@ -8406,6 +8504,35 @@ function editorRenderSezioni() {
             <input id="ed-cam-stream" class="ed-input mono" placeholder="Nome stream go2rtc (facoltativo, per WebRTC)">
             <button class="ed-btn-add" onclick="edAddCamera()">＋ Aggiungi telecamera</button>
           </div>
+        </div>
+      </details>
+      <details class="ed-acc"><summary class="ed-acc-head">💡 Luci <span class="ed-acc-n">${Object.keys((function(){ try { return JSON.parse(localStorage.getItem('cd_luci')) || {}; } catch(e) { return {}; } })()).length}</span></summary>
+        <div class="ed-acc-body">
+          <div class="ed-slot-lbl" style="margin-bottom:6px;">Le luci gestite dalla dashboard. Nomina "Stanza - Dettaglio" per il raggruppamento automatico.</div>
+          ${(function(){ let L = {}; try { L = JSON.parse(localStorage.getItem('cd_luci')) || {}; } catch(e) {} return Object.entries(L).map(([id, nm]) => `<div class="ed-row"><div style="font-size:15px;">💡</div><div class="ed-row-main"><div class="ed-row-new">${nm}</div><div class="ed-row-old mono">${id}</div></div><div class="ed-del" onclick="edDelLuce('${id}')">🗑️</div></div>`).join('') || '<div class="ed-empty">Nessuna luce configurata</div>'; })()}
+          <div style="display:flex; gap:8px; margin:10px 0 8px;">
+            <input id="ed-lu-name" class="ed-input" style="flex:1;" placeholder="Nome (es. Salone - Piantana)">
+          </div>
+          <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <input id="ed-lu-ent" class="ed-input mono" autocomplete="off" placeholder="dm.core_022" style="flex:1; font-family:monospace;">
+            <button type="button" onclick="wzPickEntity('#ed-lu-ent')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button>
+          </div>
+          <button class="ed-btn-add" style="width:100%;" onclick="edAddLuce()">＋ Aggiungi luce</button>
+        </div>
+      </details>
+      <details class="ed-acc"><summary class="ed-acc-head">📊 Report Analisi <span class="ed-acc-n">${cdCfgList('cd_report_devices').length} voci</span></summary>
+        <div class="ed-acc-body">
+          <div class="ed-slot-lbl" style="margin-bottom:6px;">Le voci del Report mensile (Energia → Analisi): nome, icona ed entità liberi.</div>
+          ${cdCfgList('cd_report_devices').map((d, ri) => `<div class="ed-row"><div style="font-size:15px;">${d.icon||'⚡'}</div><div class="ed-row-main"><div class="ed-row-new">${d.name}</div><div class="ed-row-old mono">${d.entity}</div></div><div class="ed-del" onclick="edDelReportDevice(${ri})">🗑️</div></div>`).join('') || '<div class="ed-empty">Nessuna voce</div>'}
+          <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <input id="ed-rep2-icon" class="ed-input" style="flex:0 0 60px;" placeholder="⚡" maxlength="4">
+            <input id="ed-rep2-name" class="ed-input" style="flex:1;" placeholder="Nome (es. Piscina)">
+          </div>
+          <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <input id="ed-rep2-ent" class="ed-input mono" autocomplete="off" placeholder="dm.core_024" style="flex:1; font-family:monospace;">
+            <button type="button" onclick="wzPickEntity('#ed-rep2-ent')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button>
+          </div>
+          <button class="ed-btn-add" style="width:100%;" onclick="edAddReportDevice2()">＋ Aggiungi voce Report</button>
         </div>
       </details>`;
 }
@@ -9743,7 +9870,7 @@ async function apriMeteo() {
   document.getElementById('weather-modal').classList.add('show');
   const list = document.getElementById('weather-forecast-list');
   list.innerHTML = '<div style="text-align:center; padding: 30px; font-weight:800; color:var(--text-dim);">Caricamento Previsioni...</div>';
-  const entityId = 'dm.core_044'; currentWeatherEntity = entityId;
+  const entityId = 'dm.core_045'; currentWeatherEntity = entityId;
 
   if (ws && ws.readyState === WebSocket.OPEN) {
       const reqId = msgId++;
@@ -10006,7 +10133,7 @@ function render() {
       if (panoramicaView && panoramicaView.classList.contains('active')) {
           edUpdateKpiOnly();
       }
-      const weatherEnt = cdFirstMapped('dm.core_044', 'weather.home', 'dm.home_meteo');
+      const weatherEnt = cdFirstMapped('dm.core_045', 'weather.home', 'dm.home_meteo');
       /* v273: meteo non configurato → widget nascosto del tutto (nessun return: siamo dentro render) */
       let wUnmapped = false;
       if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
@@ -10401,7 +10528,7 @@ function render() {
                   if (el) { const row = el.closest('.lav-ctrl-row, .lav-row, .d-row') || el; row.style.display = ghost ? 'none' : ''; }
               });
           }
-          const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('dm.core_032');
+          const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('dm.core_033');
           const mainPwrSwitch = STATES['dm.lavatrice_presa_avvio_lavatrice']; const btnMainPwr = document.getElementById('lav-btn-power'); const txtMainPwr = document.getElementById('lav-txt-power');
           if (btnMainPwr && mainPwrSwitch) { const isOn = mainPwrSwitch.state === 'on'; btnMainPwr.classList.toggle('active', isOn); txtMainPwr.textContent = isOn ? 'ACCESA' : 'SPENTA'; btnMainPwr.querySelector('.icon').textContent = isOn ? '⚡' : '🔌'; if(isOn) { btnMainPwr.style.setProperty('--btn-col', '#0ea5e9'); btnMainPwr.style.setProperty('--btn-bg', '#e0f2fe'); } else { btnMainPwr.style.setProperty('--btn-col', '#64748b'); btnMainPwr.style.setProperty('--btn-bg', '#fff'); } }
           const playSwitch = STATES['dm.lavatrice_avvio_ciclo']; const btnPlay = document.getElementById('lav-txt-play');
@@ -10414,11 +10541,11 @@ function render() {
       const updateBoilerBtn = (id, isActive, tOn='ON', tOff='OFF') => { const el = document.getElementById(id); if(el) { el.classList.toggle('active', isActive); const st = el.querySelector('.state'); if(st) st.textContent = isActive ? tOn : tOff; } };
       const isPompaSolActive = getRawState('dm.boiler_stato_pompa_solare') === 'on'; setActiveState('syn-p-solare', isPompaSolActive); updateBoilerBtn('b-c-pompasol', isPompaSolActive); const sun = document.getElementById('syn-sun'); if(sun) sun.classList.toggle('active', isPompaSolActive); setLine('flow-sol-hot', isPompaSolActive); setLine('flow-sol-cold', isPompaSolActive);
       const isPannelloSolActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; const sPanel = document.querySelector('.syn-solar-panel'); if(sPanel) sPanel.classList.toggle('active', isPannelloSolActive);
-      const isRicircoloActive = getRawState('dm.core_040') === 'on'; setActiveState('syn-p-ricircolo', isRicircoloActive); updateBoilerBtn('b-c-ricircolo', isRicircoloActive); setLine('flow-ricircolo', isRicircoloActive); 
+      const isRicircoloActive = getRawState('dm.core_041') === 'on'; setActiveState('syn-p-ricircolo', isRicircoloActive); updateBoilerBtn('b-c-ricircolo', isRicircoloActive); setLine('flow-ricircolo', isRicircoloActive); 
       const chiaveState = getRawState('valve.chiave_solare_termico'); const isChiaveOpen = chiaveState === 'open'; setActiveState('syn-v-chiave', isChiaveOpen); updateBoilerBtn('b-c-valvola', isChiaveOpen, 'APERTA', 'CHIUSA'); document.getElementById('txt-chiave').textContent = isChiaveOpen ? 'APERTA' : 'CHIUSA';
       const isCtrlSolareActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; updateBoilerBtn('b-c-solare', isCtrlSolareActive); 
       let isCoverOpen = false; let coverPos = 0; const coverObj = STATES['dm.boiler_valvola_di_sicurezza']; if(coverObj && coverObj.attributes) { coverPos = coverObj.attributes.current_position; if(coverPos !== undefined && coverPos > 0) isCoverOpen = true; } const synSafety = document.getElementById('syn-safety-icon'); if(synSafety) synSafety.classList.toggle('active', isCoverOpen); const synFaucet = document.getElementById('syn-faucet-wrap'); if(synFaucet) synFaucet.classList.toggle('open', isCoverOpen); const sBtn = document.getElementById('b-c-sicurezza'); if(sBtn) { sBtn.classList.toggle('active', isCoverOpen); const stNode = sBtn.querySelector('.state'); if(stNode) stNode.textContent = isCoverOpen ? `${coverPos}%` : 'CHIUSA'; }
-      updateBoilerBtn('b-c-centralina', getRawState('dm.boiler_centralina_solare_termico') === 'on'); updateBoilerBtn('b-c-boiler', getRawState('dm.boiler_interruttore_boiler') === 'on'); updateBoilerBtn('b-c-pdc', getRawState('dm.core_039') === 'on'); updateBoilerBtn('b-c-boost', getRawState('dm.core_037') === 'on');
+      updateBoilerBtn('b-c-centralina', getRawState('dm.boiler_centralina_solare_termico') === 'on'); updateBoilerBtn('b-c-boiler', getRawState('dm.boiler_interruttore_boiler') === 'on'); updateBoilerBtn('b-c-pdc', getRawState('dm.core_040') === 'on'); updateBoilerBtn('b-c-boost', getRawState('dm.core_038') === 'on');
 
       // ═══════ AGGIORNAMENTO PANNELLO ANTIFURTO PREMIUM ═══════
       (function() {
@@ -10703,7 +10830,7 @@ function apriQuickClimaCaldo() {
 function renderThermalPanel() {
     const map = [
       { entityId: 'switch.caldaia',                   rowEl: 'ns-thermal-row-caldaia',     stateEl: 'ns-thermal-caldaia',     textEl: 'ns-thermal-caldaia-text' },
-      { entityId: 'dm.core_042',               rowEl: 'ns-thermal-row-termocamino', stateEl: 'ns-thermal-termocamino', textEl: 'ns-thermal-termocamino-text' }
+      { entityId: 'dm.core_043',               rowEl: 'ns-thermal-row-termocamino', stateEl: 'ns-thermal-termocamino', textEl: 'ns-thermal-termocamino-text' }
     ];
     map.forEach(m => {
       const s = STATES[m.entityId];
@@ -10719,7 +10846,7 @@ function renderThermalPanel() {
       else                        { el.classList.add('unavail'); txt.textContent = 'N/D';   if (row) row.classList.add('is-unavail'); }
     });
     // Aspiratore (riga cliccabile)
-    const aspiratore = STATES['dm.core_036'];
+    const aspiratore = STATES['dm.core_037'];
     const aspRow = document.getElementById('ns-thermal-row-aspiratore');
     const aspBtn = document.getElementById('ns-thermal-aspiratore-btn');
     const aspText = document.getElementById('ns-thermal-aspiratore-text');
@@ -10745,11 +10872,11 @@ function renderThermalPanel() {
 function toggleAspiratoreCF() {
     if (!ws) return;
     if (navigator.vibrate) navigator.vibrate(15);
-    const cur = STATES['dm.core_036']?.state;
+    const cur = STATES['dm.core_037']?.state;
     const service = (cur === 'on') ? 'turn_off' : 'turn_on';
     ws.send(JSON.stringify({
       id: msgId++, type: 'call_service', domain: 'switch', service: service,
-      service_data: { entity_id: 'dm.core_036' }
+      service_data: { entity_id: 'dm.core_037' }
     }));
     setTimeout(renderThermalPanel, 300);
 }
@@ -10990,28 +11117,28 @@ const ED_SENSORS_CURR = {
 // Sensori dispositivi mese corrente → usati anche per mesi precedenti via History
 const ED_DEV_SENSORS_CURR = {
     wallbox:      'dm.ev_energia_wallbox_mese',
-    asciugatrice: 'dm.core_024',
-    frigo:        'dm.core_027',
-    lavastoviglie:'dm.core_029',
-    lavatrice:    'dm.core_030',
-    forno:        'dm.core_025',
-    friggitrice:  'dm.core_026',
-    caffe:         'dm.core_028',
-    microonde:    'dm.core_031',
+    asciugatrice: 'dm.core_025',
+    frigo:        'dm.core_028',
+    lavastoviglie:'dm.core_030',
+    lavatrice:    'dm.core_031',
+    forno:        'dm.core_026',
+    friggitrice:  'dm.core_027',
+    caffe:         'dm.core_029',
+    microonde:    'dm.core_032',
     boiler:       'dm.energy_boiler_mese',
 };
 
 const ED_DEVICES = [
     { key:'wallbox',      name:'Wallbox',          icon:'⚡', color:'#06b6d4', sensor:'dm.ev_energia_wallbox_mese',               bg:'rgba(6,182,212,0.1)' },
     { key:'clima',        name:'Condizionatori',   icon:'❄️', color:'#0ea5e9', sensor:'dm.energy_condizionatori_mese',         bg:'rgba(14,165,233,0.1)' },
-    { key:'frigo',        name:'Frigorifero',      icon:'🧊', color:'#1e40af', sensor:'dm.core_027',                 bg:'rgba(30,64,175,0.1)' },
-    { key:'lavastoviglie',name:'Lavastoviglie',    icon:'🍽️', color:'#059669', sensor:'dm.core_029',         bg:'rgba(5,150,105,0.1)' },
-    { key:'friggitrice',  name:'Friggitrice',      icon:'🍟', color:'#ea580c', sensor:'dm.core_026',           bg:'rgba(234,88,12,0.1)' },
-    { key:'caffe',         name:'Macchina Caffè',             icon:'☕', color:'#a16207', sensor:'dm.core_028',                  bg:'rgba(161,98,7,0.1)' },
-    { key:'asciugatrice', name:'Asciugatrice',     icon:'💨', color:'#f59e0b', sensor:'dm.core_024',          bg:'rgba(245,158,11,0.1)' },
-    { key:'lavatrice',    name:'Lavatrice',        icon:'🧺', color:'#7c3aed', sensor:'dm.core_030',             bg:'rgba(124,58,237,0.1)' },
-    { key:'forno',        name:'Forno',            icon:'♨️', color:'#e11d48', sensor:'dm.core_025',                 bg:'rgba(225,29,72,0.1)' },
-    { key:'microonde',    name:'Microonde',        icon:'📡', color:'#8b5cf6', sensor:'dm.core_031',             bg:'rgba(139,92,246,0.1)' },
+    { key:'frigo',        name:'Frigorifero',      icon:'🧊', color:'#1e40af', sensor:'dm.core_028',                 bg:'rgba(30,64,175,0.1)' },
+    { key:'lavastoviglie',name:'Lavastoviglie',    icon:'🍽️', color:'#059669', sensor:'dm.core_030',         bg:'rgba(5,150,105,0.1)' },
+    { key:'friggitrice',  name:'Friggitrice',      icon:'🍟', color:'#ea580c', sensor:'dm.core_027',           bg:'rgba(234,88,12,0.1)' },
+    { key:'caffe',         name:'Macchina Caffè',             icon:'☕', color:'#a16207', sensor:'dm.core_029',                  bg:'rgba(161,98,7,0.1)' },
+    { key:'asciugatrice', name:'Asciugatrice',     icon:'💨', color:'#f59e0b', sensor:'dm.core_025',          bg:'rgba(245,158,11,0.1)' },
+    { key:'lavatrice',    name:'Lavatrice',        icon:'🧺', color:'#7c3aed', sensor:'dm.core_031',             bg:'rgba(124,58,237,0.1)' },
+    { key:'forno',        name:'Forno',            icon:'♨️', color:'#e11d48', sensor:'dm.core_026',                 bg:'rgba(225,29,72,0.1)' },
+    { key:'microonde',    name:'Microonde',        icon:'📡', color:'#8b5cf6', sensor:'dm.core_032',             bg:'rgba(139,92,246,0.1)' },
     { key:'boiler',       name:'Boiler Elettrico', icon:'🔥', color:'#f97316', sensor:'dm.energy_boiler_mese',    bg:'rgba(249,115,22,0.1)' },
 ];
 
@@ -12701,7 +12828,7 @@ async function edCaricaDettaglio() {
     if (cdNavFixed()) setTimeout(() => window.cdApplyNavMode(), 300);
     setTimeout(() => {
         const cur = cdNavFixed() ? 'nav-opt-fixed' : 'nav-opt-auto';
-        document.getElementById(cur)?.classList.add('active');
+        document.getElementById(cur)?.classList.add('nav-active');
     }, 400);
 
     function showNav() {

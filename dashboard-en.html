@@ -5974,7 +5974,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.4.2';
+const DASHBOARD_VERSION = '0.4.3';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -7113,7 +7113,7 @@ function wzRender() {
                 const auto = WIZ.autoDetected && WIZ.autoDetected[sl.ref];
                 return `<div class="ed-slot"><div class="ed-slot-lbl">${sl.lbl}${auto ? ' <span style=\"background:#dcfce7; color:#15803d; font-size:9.5px; font-weight:800; padding:1px 7px; border-radius:8px; vertical-align:1px;\">🪄 auto</span>' : ''}</div>
                   <div style="display:flex; gap:6px; align-items:center;">
-                    <input class="wz-input mono" style="margin-bottom:0; flex:1; font-family:monospace; font-size:11.5px; ${auto ? 'background:#f0fdf4; border-color:#86efac;' : ''}" list="wz-entity-list"
+                    <input class="wz-input mono" style="margin-bottom:0; flex:1; font-family:monospace; font-size:11.5px; ${auto ? 'background:#f0fdf4; border-color:#86efac;' : ''}" autocomplete="off"
                            data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_033" onchange="wzSetSlot(this); if(WIZ.autoDetected) delete WIZ.autoDetected[this.dataset.ref];">
                     <button type="button" onclick="wzPickEntity('${sl.ref}')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button>
                   </div></div>`;
@@ -7143,7 +7143,7 @@ function wzRender() {
               <input id="wz-qa-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome">
             </div>
             <div id="wz-qa-ent-row" style="display:none; gap:6px; margin-bottom:8px;">
-              <input id="wz-qa-ent" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_044 — the entity to control" style="margin-bottom:0; flex:1; font-family:monospace;">
+              <input id="wz-qa-ent" class="wz-input mono" autocomplete="off" placeholder="dm.core_044 — the entity to control" style="margin-bottom:0; flex:1; font-family:monospace;">
               <button type="button" onclick="wzPickEntity('__qa__')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button>
             </div>
             <div id="wz-qa-hint" style="font-size:11.5px; color:var(--text-dim); margin-bottom:8px; padding:0 2px;">💡 Give it a name (e.g. "Ground Floor") and press Add: you will pick the lights from a searchable list.</div>
@@ -7161,7 +7161,7 @@ function wzRender() {
               <select id="wz-av-grp" class="wz-input" style="margin-bottom:0; flex:0 0 46%;"><option value="win">🚪 Opening</option><option value="batt">🔋 Battery</option></select>
               <input id="wz-av-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Name (e.g. Office Window)">
             </div>
-            <input id="wz-av-ent" class="wz-input mono" list="wz-entity-list" placeholder="binary_sensor.finestra_studio_contact" style="margin-bottom:8px; font-family:monospace;">
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-av-ent" class="wz-input mono" autocomplete="off" placeholder="binary_sensor.finestra_studio_contact" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-av-ent')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddAvviso()">＋ Add to Alerts Panel</button>
           </div>
         </details>` : ''}${WIZ.sections['home'] !== false ? `
@@ -7172,9 +7172,9 @@ function wzRender() {
               <input id="wz-dev-icon" class="wz-input" style="margin-bottom:0; flex:0 0 64px; text-align:center;" placeholder="🧺" maxlength="4">
               <input id="wz-dev-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Name (e.g. Dishwasher)">
             </div>
-            <input id="wz-dev-sw" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_041 (optional)" style="margin-bottom:8px; font-family:monospace;">
-            <input id="wz-dev-pw" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_034 (optional)" style="margin-bottom:8px; font-family:monospace;">
-            <input id="wz-dev-sv" class="wz-input mono" list="wz-entity-list" placeholder="dm.core_032 (optional)" style="margin-bottom:8px; font-family:monospace;">
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-sw" class="wz-input mono" autocomplete="off" placeholder="dm.core_041 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-sw')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-pw" class="wz-input mono" autocomplete="off" placeholder="dm.core_034 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-pw')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-sv" class="wz-input mono" autocomplete="off" placeholder="dm.core_032 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-sv')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddDevice()">＋ Add appliance</button>
           </div>
         </details>` : ''}${WIZ.sections['temp'] !== false ? `
@@ -7185,8 +7185,8 @@ function wzRender() {
               <input id="wz-st-icon" class="wz-input" style="margin-bottom:0; flex:0 0 64px; text-align:center;" placeholder="🛋️" maxlength="4">
               <input id="wz-st-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Room name (es. Salone)">
             </div>
-            <input id="wz-st-temp" class="wz-input mono" list="wz-entity-list" placeholder="sensor.temperatura_salone (temperatura)" style="margin-bottom:8px; font-family:monospace;">
-            <input id="wz-st-hum" class="wz-input mono" list="wz-entity-list" placeholder="sensor.umidita_salone (optional)" style="margin-bottom:8px; font-family:monospace;">
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-st-temp" class="wz-input mono" autocomplete="off" placeholder="sensor.temperatura_salone (temperatura)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-st-temp')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-st-hum" class="wz-input mono" autocomplete="off" placeholder="sensor.umidita_salone (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-st-hum')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddStanza()">＋ Add room</button>
           </div>
         </details>` : ''}${WIZ.sections['clima'] !== false ? `
@@ -7197,14 +7197,14 @@ function wzRender() {
               <select id="wz-cl-type" class="wz-input" style="margin-bottom:0; flex:0 0 46%;"><option value="clima">❄️ Air conditioner</option><option value="termo">🔥 Radiator</option></select>
               <input id="wz-cl-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Name (e.g. Office)">
             </div>
-            <input id="wz-cl-ent" class="wz-input mono" list="wz-entity-list" placeholder="climate.studio" style="margin-bottom:8px; font-family:monospace;">
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-cl-ent" class="wz-input mono" autocomplete="off" placeholder="climate.studio" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-cl-ent')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddClima()">＋ Add unit</button>
             <div class="ed-slot" style="margin-top:12px;"><div class="ed-slot-lbl">🔥 Boiler entity (switch — optional)</div>
-              <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" list="wz-entity-list"
+              <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" autocomplete="off"
                      data-ref="switch.caldaia" value="${(WIZ.entities && WIZ.entities['switch.caldaia']) || ENTITY_OVERRIDES['switch.caldaia'] || ''}" placeholder="switch.caldaia" onchange="wzSetSlot(this)"></div>
             <div class="ed-slot" style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--card-border);">
               <div class="ed-slot-lbl">🔥 Boiler entity (switch — optional)</div>
-              <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" list="wz-entity-list"
+              <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" autocomplete="off"
                      data-ref="switch.caldaia" value="${(WIZ.entities && WIZ.entities['switch.caldaia']) || ENTITY_OVERRIDES['switch.caldaia'] || ''}"
                      placeholder="es. dm.core_038" onchange="wzSetSlot(this)">
             </div>
@@ -7238,7 +7238,7 @@ function wzRender() {
           <div class="ed-acc-body">
             ${(WIZ.cameras||[]).map((cam, i) => `<div class="ed-row"><div class="ed-row-main"><div class="ed-row-new">${cam.name}</div><div class="ed-row-old mono">${cam.entity}</div></div><div class="ed-del" onclick="WIZ.cameras.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
             <input id="wz-cam-name" class="wz-input" placeholder="Name (e.g. Garden)" style="margin-bottom:8px;">
-            <input id="wz-cam-ent" class="wz-input mono" list="wz-entity-list" placeholder="camera.giardino" style="margin-bottom:8px; font-family:monospace;">
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-cam-ent" class="wz-input mono" autocomplete="off" placeholder="camera.giardino" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-cam-ent')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
             <input id="wz-cam-stream" class="wz-input mono" placeholder="Stream go2rtc (optional)" style="margin-bottom:8px; font-family:monospace;">
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddCamera()">＋ Add camera</button>
           </div>
@@ -7503,6 +7503,7 @@ function cdEpFilter(q) {
 function cdEpChoose(id) {
     const ref = window._cdEpRef;
     document.getElementById('cd-entpick')?.remove();
+    if (ref && ref.startsWith('#')) { const el = document.getElementById(ref.slice(1)); if (el) el.value = id; return; }
     if (ref === '__qa__') { const qa = document.getElementById('wz-qa-ent'); if (qa) qa.value = id; return; }
     if (ref === '__ed_qa__') { const qa = document.getElementById('ed-qa-ent'); if (qa) qa.value = id; return; }
     const inp = document.querySelector(`input[data-ref="${ref}"]`);
@@ -8040,7 +8041,7 @@ function editorRenderSezioni() {
               <input id="ed-qa-icon" class="ed-input ed-icon-input" placeholder="⚡" maxlength="4">
               <input id="ed-qa-name" class="ed-input" placeholder="Nome azione" style="flex:1;">
             </div>
-            <div id="ed-qa-ent-row" style="display:none; gap:6px;"><input id="ed-qa-ent" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_044 / dm.core_022 / scene.x (non serve per i popup)"><button type="button" onclick="wzPickEntity('__ed_qa__')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
+            <div id="ed-qa-ent-row" style="display:none; gap:6px;"><input id="ed-qa-ent" autocomplete="off" class="ed-input mono" placeholder="dm.core_044 / dm.core_022 / scene.x (non serve per i popup)"><button type="button" onclick="wzPickEntity('__ed_qa__')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
               <div id="ed-qa-hint" style="font-size:11px; color:var(--text-dim); padding:0 2px;">💡 Give it a name and press Add: you will pick the lights from a searchable list.</div>
             <input id="ed-qa-confirm" class="ed-input" placeholder="Messaggio di conferma (facoltativo, es. Sei sicuro?)">
             <button class="ed-btn-add" onclick="edAddQA()">＋ Add quick action</button>

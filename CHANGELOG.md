@@ -6,6 +6,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.4.3] — 2026-07-16
+
+### 🐛 Corretto
+- **Menu autocomplete invasivo su mobile** — toccando un campo entità, Android apriva l'elenco nativo con tutte le entità sopra la tastiera. Rimosso ovunque: ora i campi sono a scrittura libera e la scelta guidata avviene solo con la lente 🔍 (lista completa + ricerca), presente su tutti i campi del wizard: sezioni, avvisi, dispositivi, stanze, clima e telecamere.
+
 ## [0.4.2] — 2026-07-15
 
 ### ✨ Migliorato
@@ -172,6 +177,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.4.3] — 2026-07-16
+
+### 🐛 Fixed
+- **Invasive autocomplete menu on mobile** — tapping an entity field made Android open the native list of all entities above the keyboard. Removed everywhere: fields are now free-typing and guided selection happens only via the 🔍 button (full list + search), now available on every wizard field: sections, alerts, devices, rooms, climate and cameras.
 
 ## [0.4.2] — 2026-07-15
 

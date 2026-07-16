@@ -4868,14 +4868,14 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
                 <option value="">— Scegli —</option>
                 <optgroup label="Elettrodomestici">
                   <option value="dm.ev_energia_wallbox_mese">⚡ Wallbox</option>
-                  <option value="dm.core_028">🧊 Frigorifero</option>
-                  <option value="dm.core_030">🍽️ Lavastoviglie</option>
-                  <option value="dm.core_027">🍟 Friggitrice</option>
-                  <option value="dm.core_029">☕ Macchina Caffè</option>
-                  <option value="dm.core_025">💨 Asciugatrice</option>
-                  <option value="dm.core_031">🧺 Lavatrice</option>
-                  <option value="dm.core_026">♨️ Forno</option>
-                  <option value="dm.core_032">📡 Microonde</option>
+                  <option value="dm.core_032">🧊 Frigorifero</option>
+                  <option value="dm.core_034">🍽️ Lavastoviglie</option>
+                  <option value="dm.core_031">🍟 Friggitrice</option>
+                  <option value="dm.core_033">☕ Macchina Caffè</option>
+                  <option value="dm.core_029">💨 Asciugatrice</option>
+                  <option value="dm.core_035">🧺 Lavatrice</option>
+                  <option value="dm.core_030">♨️ Forno</option>
+                  <option value="dm.core_036">📡 Microonde</option>
                   <option value="dm.energy_boiler_mese">🔥 Boiler</option>
                 </optgroup>
                 <optgroup label="Climatizzazione">
@@ -5412,7 +5412,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
           </div>
           <span id="txt-chiave" style="display:none">CHIUSA</span>
         </div>
-        <div class="syn-pump" id="syn-p-ricircolo" style="left: 88%; top: 50%;" onclick="toggle('dm.core_041')">
+        <div class="syn-pump" id="syn-p-ricircolo" style="left: 88%; top: 50%;" onclick="toggle('dm.core_051')">
         </div>
       </div>
       
@@ -5433,13 +5433,13 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
 
       <div class="b-controls-grid">
         <div class="b-btn" id="b-c-pompasol" onclick="toggle('dm.boiler_pompa_solare')" style="--c-rgb: 234,88,12;"><div class="icon"><span class="spin-active">🔄</span></div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-ricircolo" onclick="toggle('dm.core_041')" style="--c-rgb: 124,58,237;"><div class="icon"><span class="spin-active">🔁</span></div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-ricircolo" onclick="toggle('dm.core_051')" style="--c-rgb: 124,58,237;"><div class="icon"><span class="spin-active">🔁</span></div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-centralina" onclick="toggle('dm.boiler_centralina_solare_termico')" style="--c-rgb: 245,158,11;"><div class="icon">⚙️</div><div class="lbl">Centralina</div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-solare" onclick="toggle('dm.boiler_interruttore_solare_termico')" style="--c-rgb: 245,158,11;"><div class="icon">♨️</div><div class="lbl">Ctrl Solare</div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-valvola" onclick="toggle('valve.chiave_solare_termico')" style="--c-rgb: 6,182,212;"><div class="icon">🎛️</div><div class="lbl">Valvola</div><div class="state">CHIUSA</div></div>
         <div class="b-btn" id="b-c-boiler" onclick="toggle('dm.boiler_interruttore_boiler')" style="--c-rgb: 30,64,175;"><div class="icon">🌊</div><div class="lbl">Boiler</div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-pdc" onclick="toggle('dm.core_040')" style="--c-rgb: 124,58,237;"><div class="icon">🌬️</div><div class="lbl">PdC</div><div class="state">OFF</div></div>
-        <div class="b-btn" id="b-c-boost" onclick="toggle('dm.core_038')" style="--c-rgb: 236,72,153;"><div class="icon">🚀</div><div class="lbl">Boost</div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-pdc" onclick="toggle('dm.core_050')" style="--c-rgb: 124,58,237;"><div class="icon">🌬️</div><div class="lbl">PdC</div><div class="state">OFF</div></div>
+        <div class="b-btn" id="b-c-boost" onclick="toggle('dm.core_048')" style="--c-rgb: 236,72,153;"><div class="icon">🚀</div><div class="lbl">Boost</div><div class="state">OFF</div></div>
         <div class="b-btn" id="b-c-sicurezza" onclick="toggle('dm.boiler_valvola_di_sicurezza')" style="--c-rgb: 225,29,72;"><div class="icon"><span class="blink-active">🔒</span></div><div class="lbl">V. Sicurezza</div><div class="state">CHIUSA</div></div>
       </div>
     </div>
@@ -5823,7 +5823,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
         <div class="lav-area-mon">
            <div class="lav-mon-card"><div class="lbl">FASE ATTUALE</div><div class="val" id="v-lav-fase" style="color: var(--accent);">—</div></div>
            <div class="lav-mon-card"><div class="lbl">TEMPO RIMANENTE</div><div class="val" id="v-lav-tempo" style="color: var(--load);">—</div></div>
-           <div class="lav-mon-card hist-clickable" onclick="apriStorico(event, 'dm.core_033', 'Consumo Lavatrice')"><div class="lbl">ASSORBIMENTO</div><div class="val" id="v-lav-power-w" style="color: #f59e0b;">—</div></div>
+           <div class="lav-mon-card hist-clickable" onclick="apriStorico(event, 'dm.core_037', 'Consumo Lavatrice')"><div class="lbl">ASSORBIMENTO</div><div class="val" id="v-lav-power-w" style="color: #f59e0b;">—</div></div>
         </div>
 
         <div class="lav-area-manual">
@@ -6449,10 +6449,13 @@ async function connect() {
       // v290: la configurazione salvata su HA (per-utente) viene propagata a questo dispositivo
       window._cdSyncReqId = msgId;
       ws.send(JSON.stringify({id:msgId++, type:'frontend/get_user_data', key:'dashboard_modern_config'}));
+      setTimeout(cdTotalsRun, 2500);
+      if (!window._cdTotalsTimer) window._cdTotalsTimer = setInterval(cdTotalsRun, 30 * 60 * 1000);
       ws.send(JSON.stringify({id:msgId++, type:'get_states'}));
       ws.send(JSON.stringify({id:msgId++, type:'subscribe_events', event_type:'state_changed'}));
       refreshCameras(); 
     }
+    if (m.type === 'result' && cdTotalsHandle(m)) return;
     if (m.type === 'result' && m.id === window._cdSyncReqId) {
       try {
         const v = m.result && m.result.value;
@@ -6477,7 +6480,7 @@ async function connect() {
             renderQuickClima();
           }
           // Switch termici → re-render pannello stato (visibile solo in modalità caldo)
-          if (eid === 'switch.caldaia' || eid === 'dm.core_043' || eid === 'dm.core_037') {
+          if (eid === 'switch.caldaia' || eid === 'dm.core_053' || eid === 'dm.core_047') {
             if (currentClimaMode === 'caldo') renderThermalPanel();
           }
         }
@@ -6787,7 +6790,7 @@ function editorRenderLoad() {
         <input id="ed-rep-name" class="ed-input" style="flex:1;" placeholder="Name (e.g. Pool)">
       </div>
       <div style="display:flex; gap:6px; margin-bottom:8px;">
-        <input id="ed-rep-ent" class="ed-input mono" autocomplete="off" placeholder="dm.core_024" style="flex:1; font-family:monospace;">
+        <input id="ed-rep-ent" class="ed-input mono" autocomplete="off" placeholder="dm.core_028" style="flex:1; font-family:monospace;">
         <button type="button" onclick="wzPickEntity('#ed-rep-ent')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button>
       </div>
       <button class="ed-btn-add" style="width:100%;" onclick="edAddReportDevice()">＋ Add Report entry</button>
@@ -7355,7 +7358,7 @@ function wzRender() {
                 return `<div class="ed-slot"><div class="ed-slot-lbl"><input class="wz-lbl-edit" value="${(cdCfg('cd_slot_labels')[sl.ref] || sl.lbl).replace(/"/g,'&quot;')}" onchange="wzRenameSlot('${sl.ref}', this.value)" title="Tap to rename">${auto ? ' <span style=\"background:#dcfce7; color:#15803d; font-size:9.5px; font-weight:800; padding:1px 7px; border-radius:8px; vertical-align:1px;\">🪄 auto</span>' : ''}</div>
                   <div style="display:flex; gap:6px; align-items:center;">
                     <input class="wz-input mono" style="margin-bottom:0; flex:1; font-family:monospace; font-size:11.5px; ${auto ? 'background:#f0fdf4; border-color:#86efac;' : ''}" autocomplete="off"
-                           data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_035" onchange="wzSetSlot(this); if(WIZ.autoDetected) delete WIZ.autoDetected[this.dataset.ref];">
+                           data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_039" onchange="wzSetSlot(this); if(WIZ.autoDetected) delete WIZ.autoDetected[this.dataset.ref];">
                     <button type="button" onclick="wzPickEntity('${sl.ref}')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button>
                   </div></div>`;
             }).join('');
@@ -7384,7 +7387,7 @@ function wzRender() {
               <input id="wz-qa-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome">
             </div>
             <div id="wz-qa-ent-row" style="display:none; gap:6px; margin-bottom:8px;">
-              <input id="wz-qa-ent" class="wz-input mono" autocomplete="off" placeholder="dm.core_044 — the entity to control" style="margin-bottom:0; flex:1; font-family:monospace;">
+              <input id="wz-qa-ent" class="wz-input mono" autocomplete="off" placeholder="dm.core_054 — the entity to control" style="margin-bottom:0; flex:1; font-family:monospace;">
               <button type="button" onclick="wzPickEntity('__qa__')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button>
             </div>
             <div id="wz-qa-hint" style="font-size:11.5px; color:var(--text-dim); margin-bottom:8px; padding:0 2px;">💡 Give it a name (e.g. "Ground Floor") and press Add: you will pick the lights from a searchable list.</div>
@@ -7413,9 +7416,9 @@ function wzRender() {
               <input id="wz-dev-icon" class="wz-input" style="margin-bottom:0; flex:0 0 64px; text-align:center;" placeholder="🧺" maxlength="4">
               <input id="wz-dev-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Name (e.g. Dishwasher)">
             </div>
-            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-sw" class="wz-input mono" autocomplete="off" placeholder="dm.core_042 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-sw')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
-            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-pw" class="wz-input mono" autocomplete="off" placeholder="dm.core_036 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-pw')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
-            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-sv" class="wz-input mono" autocomplete="off" placeholder="dm.core_034 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-sv')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-sw" class="wz-input mono" autocomplete="off" placeholder="dm.core_052 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-sw')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-pw" class="wz-input mono" autocomplete="off" placeholder="dm.core_040 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-pw')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-sv" class="wz-input mono" autocomplete="off" placeholder="dm.core_038 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-sv')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddDevice()">＋ Add appliance</button>
           </div>
         </details>` : ''}${WIZ.sections['energy'] !== false ? `
@@ -7428,7 +7431,7 @@ function wzRender() {
               <input id="wz-rep-name" class="wz-input" style="flex:1; margin-bottom:0;" placeholder="Name (e.g. Pool)">
             </div>
             <div style="display:flex; gap:6px; margin-bottom:8px;">
-              <input id="wz-rep-ent" class="wz-input mono" autocomplete="off" placeholder="dm.core_024 (kWh)" style="margin-bottom:0; flex:1; font-family:monospace;">
+              <input id="wz-rep-ent" class="wz-input mono" autocomplete="off" placeholder="dm.core_028 (kWh)" style="margin-bottom:0; flex:1; font-family:monospace;">
               <button type="button" onclick="wzPickEntity('#wz-rep-ent')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button>
             </div>
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddReportDevice()">＋ Add to Report</button>
@@ -7478,7 +7481,7 @@ function wzRender() {
               <div class="ed-slot-lbl">🔥 Boiler entity (switch — optional)</div>
               <input class="wz-input mono" style="margin-bottom:0; font-family:monospace; font-size:11.5px;" autocomplete="off"
                      data-ref="switch.caldaia" value="${(WIZ.entities && WIZ.entities['switch.caldaia']) || ENTITY_OVERRIDES['switch.caldaia'] || ''}"
-                     placeholder="es. dm.core_039" onchange="wzSetSlot(this)">
+                     placeholder="es. dm.core_049" onchange="wzSetSlot(this)">
             </div>
           </div>
         </details>` : ''}${WIZ.sections['security'] !== false ? `
@@ -7544,6 +7547,75 @@ function cdSyncApply(data) {
 function cdMarkDirty() {
     localStorage.setItem('cd_sync_ts', String(Date.now()));
     localStorage.setItem('cd_sync_dirty', '1'); // v299: modifiche locali non ancora inviate
+}
+
+/* ═══ v0.7.0 "Totali intelligenti" (richiesta utenti): chi ha solo i sensori TOTALI
+   cumulativi (gli stessi della dashboard Energia di HA) mappa quelli, e la dashboard
+   calcola da sola oggi/mese/anno usando le statistiche a lungo termine di HA — che
+   conservano lo storico per sempre, senza helper e senza perdere nulla. ═══ */
+const CD_TOTALS_MAP = {
+    'dm.core_046':   { day: 'dm.energy_produzione_solare_oggi',      month: 'dm.energy_produzione_solare_mese',     year: 'dm.energy_produzione_solare_anno' },
+    'dm.core_043':    { day: 'dm.energy_consumo_casa_oggi', month: 'dm.energy_consumo_casa_mese',          year: 'dm.energy_consumo_casa_anno' },
+    'dm.core_045':   { day: 'dm.energy_energia_prelevata_oggi',    month: 'dm.energy_rete_acquistata_mese' },
+    'dm.core_044': { day: 'dm.energy_energia_immessa_oggi',      month: 'dm.energy_rete_venduta_mese' },
+    'dm.core_041': { day: 'dm.energy_batteria_caricata_oggi',   month: 'dm.energy_batteria_caricata_mese' },
+    'dm.core_042':{ day: 'dm.energy_batteria_scaricata_oggi',month: 'dm.energy_batteria_usata_mese' }
+};
+
+function cdTotalsRun() {
+    try {
+        if (!ws || ws.readyState !== 1) return;
+        const jobs = [];
+        Object.entries(CD_TOTALS_MAP).forEach(([totRef, targets]) => {
+            const real = ENTITY_OVERRIDES[totRef];
+            if (real) jobs.push({ real, targets });
+        });
+        if (!jobs.length) return;
+        const ids = jobs.map(j => j.real);
+        const now = new Date();
+        const startYear = new Date(now.getFullYear(), 0, 1).toISOString();
+        const startDay  = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+        window._cdStatMonthly = msgId;
+        ws.send(JSON.stringify({ id: msgId++, type: 'recorder/statistics_during_period', start_time: startYear, statistic_ids: ids, period: 'month', types: ['change'] }));
+        window._cdStatDaily = msgId;
+        ws.send(JSON.stringify({ id: msgId++, type: 'recorder/statistics_during_period', start_time: startDay, statistic_ids: ids, period: 'day', types: ['change'] }));
+        window._cdStatJobs = jobs;
+    } catch(e) { console.warn('[Totali]', e); }
+}
+
+function cdTotalsInject(ref, value) {
+    // stato virtuale SOLO se l'utente non ha già collegato quello slot
+    if (ENTITY_OVERRIDES[ref]) return;
+    _RAW_STATES[ref] = { entity_id: ref, state: String(Math.round(value * 10) / 10), attributes: { unit_of_measurement: 'kWh', friendly_name: ref } };
+}
+
+function cdTotalsHandle(m) {
+    try {
+        const jobs = window._cdStatJobs || [];
+        if (m.id === window._cdStatMonthly && m.result) {
+            jobs.forEach(j => {
+                const rows = m.result[j.real] || [];
+                if (!rows.length) return;
+                const monthSum = rows[rows.length - 1].change || 0;                 // mese corrente
+                const yearSum  = rows.reduce((s, r) => s + (r.change || 0), 0);     // anno
+                if (j.targets.month) cdTotalsInject(j.targets.month, monthSum);
+                if (j.targets.year)  cdTotalsInject(j.targets.year, yearSum);
+            });
+            if (typeof render === 'function') try { render(); } catch(e) {}
+            return true;
+        }
+        if (m.id === window._cdStatDaily && m.result) {
+            jobs.forEach(j => {
+                const rows = m.result[j.real] || [];
+                if (!rows.length) return;
+                const today = rows.reduce((s, r) => s + (r.change || 0), 0);
+                if (j.targets.day) cdTotalsInject(j.targets.day, today);
+            });
+            if (typeof render === 'function') try { render(); } catch(e) {}
+            return true;
+        }
+    } catch(e) { console.warn('[Totali] handle:', e); }
+    return false;
 }
 
 function cdSyncPush(silent = true) {
@@ -8393,7 +8465,7 @@ function editorRenderSezioni() {
               <div class="ed-slot-lbl"><input class="wz-lbl-edit" value="${lbl.replace(/"/g,'&quot;')}" onchange="wzRenameSlot('${sl.ref}', this.value)" title="Tap to rename the label"></div>
               <div style="display:flex; gap:6px;">
                 <input class="ed-input mono ed-slot-in" autocomplete="off" style="flex:1;"
-                       data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_035"
+                       data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_039"
                        onchange="edSetSlot(this)">
                 <button type="button" onclick="wzPickEntity('${sl.ref}')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button>
               </div>
@@ -8453,7 +8525,7 @@ function editorRenderSezioni() {
               <input id="ed-qa-icon" class="ed-input ed-icon-input" placeholder="⚡" maxlength="4">
               <input id="ed-qa-name" class="ed-input" placeholder="Nome azione" style="flex:1;">
             </div>
-            <div id="ed-qa-ent-row" style="display:none; gap:6px;"><input id="ed-qa-ent" autocomplete="off" class="ed-input mono" placeholder="dm.core_044 / dm.core_023 / scene.x (non serve per i popup)"><button type="button" onclick="wzPickEntity('__ed_qa__')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
+            <div id="ed-qa-ent-row" style="display:none; gap:6px;"><input id="ed-qa-ent" autocomplete="off" class="ed-input mono" placeholder="dm.core_054 / dm.core_023 / scene.x (non serve per i popup)"><button type="button" onclick="wzPickEntity('__ed_qa__')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
               <div id="ed-qa-hint" style="font-size:11px; color:var(--text-dim); padding:0 2px;">💡 Give it a name and press Add: you will pick the lights from a searchable list.</div>
             <input id="ed-qa-confirm" class="ed-input" placeholder="Messaggio di conferma (facoltativo, es. Sei sicuro?)">
             <button class="ed-btn-add" onclick="edAddQA()">＋ Add quick action</button>
@@ -8483,7 +8555,7 @@ function editorRenderSezioni() {
             <div class="ed-slot" style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--card-border);">
               <div class="ed-slot-lbl">🔥 Boiler entity (switch — optional)</div>
               <input class="ed-input mono ed-slot-in" list="ed-entity-list" data-ref="switch.caldaia"
-                     value="${ENTITY_OVERRIDES['switch.caldaia'] || ''}" placeholder="es. dm.core_039" onchange="edSetSlot(this)">
+                     value="${ENTITY_OVERRIDES['switch.caldaia'] || ''}" placeholder="es. dm.core_049" onchange="edSetSlot(this)">
             </div>
           </div>
         </div>
@@ -8529,7 +8601,7 @@ function editorRenderSezioni() {
             <input id="ed-rep2-name" class="ed-input" style="flex:1;" placeholder="Name (e.g. Pool)">
           </div>
           <div style="display:flex; gap:6px; margin-bottom:8px;">
-            <input id="ed-rep2-ent" class="ed-input mono" autocomplete="off" placeholder="dm.core_024" style="flex:1; font-family:monospace;">
+            <input id="ed-rep2-ent" class="ed-input mono" autocomplete="off" placeholder="dm.core_028" style="flex:1; font-family:monospace;">
             <button type="button" onclick="wzPickEntity('#ed-rep2-ent')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button>
           </div>
           <button class="ed-btn-add" style="width:100%;" onclick="edAddReportDevice2()">＋ Add Report entry</button>
@@ -9474,6 +9546,70 @@ function cdFirstMapped() {
     return null;
 }
 
+/* ═══ v0.7.0: DERIVAZIONE AUTOMATICA da entità TOTALI cumulative ═══
+   L'utente collega i totali "lifetime" (gli stessi del tab Energia di HA);
+   la dashboard calcola oggi / mese / anno leggendo la cronologia: valore attuale
+   meno il valore a inizio periodo. Niente utility_meter, storico intatto.
+   I valori derivati riempiono SOLO gli slot che l'utente non ha mappato. */
+const CD_TOTAL_DERIVATIONS = [
+    { total: 'dm.core_026',  daily: 'dm.energy_produzione_solare_oggi',       monthly: 'dm.energy_produzione_solare_mese',    yearly: 'dm.energy_produzione_solare_anno' },
+    { total: 'dm.core_025', daily: 'dm.energy_consumo_casa_oggi', monthly: 'dm.energy_consumo_casa_mese',         yearly: 'dm.energy_consumo_casa_anno' },
+    { total: 'dm.core_024',      daily: 'dm.energy_energia_prelevata_oggi',    monthly: 'dm.energy_rete_acquistata_mese', yearly: null },
+    { total: 'dm.core_027',        daily: 'dm.energy_energia_immessa_oggi',      monthly: 'dm.energy_rete_venduta_mese',   yearly: null },
+];
+
+async function cdDeriveFromTotals() {
+    try {
+        if (typeof HA_HTTP_URL === 'undefined' || typeof LONG_LIVED_TOKEN === 'undefined' || !LONG_LIVED_TOKEN) return;
+        const now = new Date();
+        const dayStart = new Date(now); dayStart.setHours(0,0,0,0);
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const yearStart = new Date(now.getFullYear(), 0, 1);
+
+        for (const d of CD_TOTAL_DERIVATIONS) {
+            const src = ENTITY_OVERRIDES[d.total];
+            if (!src) continue; // totale non collegato
+            const cur = parseFloat(STATES[d.total]?.state);
+            if (isNaN(cur)) continue;
+
+            // Prima lettura del periodo (dall'inizio anno copro anche mese e giorno)
+            const start = (d.yearly ? yearStart : monthStart).toISOString();
+            let arr = [];
+            try {
+                const res = await fetch(`${HA_HTTP_URL}/api/history/period/${start}?filter_entity_id=${src}&minimal_response&no_attributes`,
+                    { headers: { 'Authorization': `Bearer ${LONG_LIVED_TOKEN}` } });
+                if (!res.ok) continue;
+                arr = (await res.json())[0] || [];
+            } catch(e) { continue; }
+            if (!arr.length) continue;
+
+            const firstAfter = (t) => {
+                for (const p of arr) {
+                    if (p.state === 'unknown' || p.state === 'unavailable') continue;
+                    if (new Date(p.last_changed || p.last_updated) >= t) return parseFloat(p.state);
+                }
+                return NaN;
+            };
+            const baseDay = firstAfter(dayStart);
+            const baseMonth = firstAfter(monthStart);
+            const baseYear = d.yearly ? firstAfter(yearStart) : NaN;
+
+            const put = (ref, v) => {
+                if (!ref || isNaN(v) || v < 0) return;
+                if (ENTITY_OVERRIDES[ref]) return; // slot già mappato dall'utente: non tocco
+                _RAW_STATES[ref] = { entity_id: ref, state: v.toFixed(1), attributes: { unit_of_measurement: 'kWh', friendly_name: ref, cd_derived: true } };
+            };
+            put(d.daily, cur - baseDay);
+            put(d.monthly, cur - baseMonth);
+            put(d.yearly, cur - baseYear);
+        }
+        if (typeof render === 'function') { try { render(); } catch(e) {} }
+    } catch(e) { console.warn('[Totali] derivazione:', e); }
+}
+// al load (dopo la connessione) e ogni 10 minuti
+setTimeout(cdDeriveFromTotals, 4000);
+setInterval(cdDeriveFromTotals, 10 * 60 * 1000);
+
 function updateClimaCards() {
     try {
         const climas = getClimaUnits().map(u => u.entity);
@@ -9870,7 +10006,7 @@ async function apriMeteo() {
   document.getElementById('weather-modal').classList.add('show');
   const list = document.getElementById('weather-forecast-list');
   list.innerHTML = '<div style="text-align:center; padding: 30px; font-weight:800; color:var(--text-dim);">Caricamento Previsioni...</div>';
-  const entityId = 'dm.core_045'; currentWeatherEntity = entityId;
+  const entityId = 'dm.core_055'; currentWeatherEntity = entityId;
 
   if (ws && ws.readyState === WebSocket.OPEN) {
       const reqId = msgId++;
@@ -10133,7 +10269,7 @@ function render() {
       if (panoramicaView && panoramicaView.classList.contains('active')) {
           edUpdateKpiOnly();
       }
-      const weatherEnt = cdFirstMapped('dm.core_045', 'weather.home', 'dm.home_meteo');
+      const weatherEnt = cdFirstMapped('dm.core_055', 'weather.home', 'dm.home_meteo');
       /* v273: meteo non configurato → widget nascosto del tutto (nessun return: siamo dentro render) */
       let wUnmapped = false;
       if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
@@ -10528,7 +10664,7 @@ function render() {
                   if (el) { const row = el.closest('.lav-ctrl-row, .lav-row, .d-row') || el; row.style.display = ghost ? 'none' : ''; }
               });
           }
-          const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('dm.core_033');
+          const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('dm.core_037');
           const mainPwrSwitch = STATES['dm.lavatrice_presa_avvio_lavatrice']; const btnMainPwr = document.getElementById('lav-btn-power'); const txtMainPwr = document.getElementById('lav-txt-power');
           if (btnMainPwr && mainPwrSwitch) { const isOn = mainPwrSwitch.state === 'on'; btnMainPwr.classList.toggle('active', isOn); txtMainPwr.textContent = isOn ? 'ON' : 'OFF'; btnMainPwr.querySelector('.icon').textContent = isOn ? '⚡' : '🔌'; if(isOn) { btnMainPwr.style.setProperty('--btn-col', '#0ea5e9'); btnMainPwr.style.setProperty('--btn-bg', '#e0f2fe'); } else { btnMainPwr.style.setProperty('--btn-col', '#64748b'); btnMainPwr.style.setProperty('--btn-bg', '#fff'); } }
           const playSwitch = STATES['dm.lavatrice_avvio_ciclo']; const btnPlay = document.getElementById('lav-txt-play');
@@ -10541,11 +10677,11 @@ function render() {
       const updateBoilerBtn = (id, isActive, tOn='ON', tOff='OFF') => { const el = document.getElementById(id); if(el) { el.classList.toggle('active', isActive); const st = el.querySelector('.state'); if(st) st.textContent = isActive ? tOn : tOff; } };
       const isPompaSolActive = getRawState('dm.boiler_stato_pompa_solare') === 'on'; setActiveState('syn-p-solare', isPompaSolActive); updateBoilerBtn('b-c-pompasol', isPompaSolActive); const sun = document.getElementById('syn-sun'); if(sun) sun.classList.toggle('active', isPompaSolActive); setLine('flow-sol-hot', isPompaSolActive); setLine('flow-sol-cold', isPompaSolActive);
       const isPannelloSolActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; const sPanel = document.querySelector('.syn-solar-panel'); if(sPanel) sPanel.classList.toggle('active', isPannelloSolActive);
-      const isRicircoloActive = getRawState('dm.core_041') === 'on'; setActiveState('syn-p-ricircolo', isRicircoloActive); updateBoilerBtn('b-c-ricircolo', isRicircoloActive); setLine('flow-ricircolo', isRicircoloActive); 
+      const isRicircoloActive = getRawState('dm.core_051') === 'on'; setActiveState('syn-p-ricircolo', isRicircoloActive); updateBoilerBtn('b-c-ricircolo', isRicircoloActive); setLine('flow-ricircolo', isRicircoloActive); 
       const chiaveState = getRawState('valve.chiave_solare_termico'); const isChiaveOpen = chiaveState === 'open'; setActiveState('syn-v-chiave', isChiaveOpen); updateBoilerBtn('b-c-valvola', isChiaveOpen, 'OPEN', 'CHIUSA'); document.getElementById('txt-chiave').textContent = isChiaveOpen ? 'OPEN' : 'CHIUSA';
       const isCtrlSolareActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; updateBoilerBtn('b-c-solare', isCtrlSolareActive); 
       let isCoverOpen = false; let coverPos = 0; const coverObj = STATES['dm.boiler_valvola_di_sicurezza']; if(coverObj && coverObj.attributes) { coverPos = coverObj.attributes.current_position; if(coverPos !== undefined && coverPos > 0) isCoverOpen = true; } const synSafety = document.getElementById('syn-safety-icon'); if(synSafety) synSafety.classList.toggle('active', isCoverOpen); const synFaucet = document.getElementById('syn-faucet-wrap'); if(synFaucet) synFaucet.classList.toggle('open', isCoverOpen); const sBtn = document.getElementById('b-c-sicurezza'); if(sBtn) { sBtn.classList.toggle('active', isCoverOpen); const stNode = sBtn.querySelector('.state'); if(stNode) stNode.textContent = isCoverOpen ? `${coverPos}%` : 'CHIUSA'; }
-      updateBoilerBtn('b-c-centralina', getRawState('dm.boiler_centralina_solare_termico') === 'on'); updateBoilerBtn('b-c-boiler', getRawState('dm.boiler_interruttore_boiler') === 'on'); updateBoilerBtn('b-c-pdc', getRawState('dm.core_040') === 'on'); updateBoilerBtn('b-c-boost', getRawState('dm.core_038') === 'on');
+      updateBoilerBtn('b-c-centralina', getRawState('dm.boiler_centralina_solare_termico') === 'on'); updateBoilerBtn('b-c-boiler', getRawState('dm.boiler_interruttore_boiler') === 'on'); updateBoilerBtn('b-c-pdc', getRawState('dm.core_050') === 'on'); updateBoilerBtn('b-c-boost', getRawState('dm.core_048') === 'on');
 
       // ═══════ AGGIORNAMENTO PANNELLO ANTIFURTO PREMIUM ═══════
       (function() {
@@ -10830,7 +10966,7 @@ function apriQuickClimaCaldo() {
 function renderThermalPanel() {
     const map = [
       { entityId: 'switch.caldaia',                   rowEl: 'ns-thermal-row-caldaia',     stateEl: 'ns-thermal-caldaia',     textEl: 'ns-thermal-caldaia-text' },
-      { entityId: 'dm.core_043',               rowEl: 'ns-thermal-row-termocamino', stateEl: 'ns-thermal-termocamino', textEl: 'ns-thermal-termocamino-text' }
+      { entityId: 'dm.core_053',               rowEl: 'ns-thermal-row-termocamino', stateEl: 'ns-thermal-termocamino', textEl: 'ns-thermal-termocamino-text' }
     ];
     map.forEach(m => {
       const s = STATES[m.entityId];
@@ -10846,7 +10982,7 @@ function renderThermalPanel() {
       else                        { el.classList.add('unavail'); txt.textContent = 'N/D';   if (row) row.classList.add('is-unavail'); }
     });
     // Aspiratore (riga cliccabile)
-    const aspiratore = STATES['dm.core_037'];
+    const aspiratore = STATES['dm.core_047'];
     const aspRow = document.getElementById('ns-thermal-row-aspiratore');
     const aspBtn = document.getElementById('ns-thermal-aspiratore-btn');
     const aspText = document.getElementById('ns-thermal-aspiratore-text');
@@ -10872,11 +11008,11 @@ function renderThermalPanel() {
 function toggleAspiratoreCF() {
     if (!ws) return;
     if (navigator.vibrate) navigator.vibrate(15);
-    const cur = STATES['dm.core_037']?.state;
+    const cur = STATES['dm.core_047']?.state;
     const service = (cur === 'on') ? 'turn_off' : 'turn_on';
     ws.send(JSON.stringify({
       id: msgId++, type: 'call_service', domain: 'switch', service: service,
-      service_data: { entity_id: 'dm.core_037' }
+      service_data: { entity_id: 'dm.core_047' }
     }));
     setTimeout(renderThermalPanel, 300);
 }
@@ -11117,28 +11253,28 @@ const ED_SENSORS_CURR = {
 // Sensori dispositivi mese corrente → usati anche per mesi precedenti via History
 const ED_DEV_SENSORS_CURR = {
     wallbox:      'dm.ev_energia_wallbox_mese',
-    asciugatrice: 'dm.core_025',
-    frigo:        'dm.core_028',
-    lavastoviglie:'dm.core_030',
-    lavatrice:    'dm.core_031',
-    forno:        'dm.core_026',
-    friggitrice:  'dm.core_027',
-    caffe:         'dm.core_029',
-    microonde:    'dm.core_032',
+    asciugatrice: 'dm.core_029',
+    frigo:        'dm.core_032',
+    lavastoviglie:'dm.core_034',
+    lavatrice:    'dm.core_035',
+    forno:        'dm.core_030',
+    friggitrice:  'dm.core_031',
+    caffe:         'dm.core_033',
+    microonde:    'dm.core_036',
     boiler:       'dm.energy_boiler_mese',
 };
 
 const ED_DEVICES = [
     { key:'wallbox',      name:'Wallbox',          icon:'⚡', color:'#06b6d4', sensor:'dm.ev_energia_wallbox_mese',               bg:'rgba(6,182,212,0.1)' },
     { key:'clima',        name:'Condizionatori',   icon:'❄️', color:'#0ea5e9', sensor:'dm.energy_condizionatori_mese',         bg:'rgba(14,165,233,0.1)' },
-    { key:'frigo',        name:'Frigorifero',      icon:'🧊', color:'#1e40af', sensor:'dm.core_028',                 bg:'rgba(30,64,175,0.1)' },
-    { key:'lavastoviglie',name:'Lavastoviglie',    icon:'🍽️', color:'#059669', sensor:'dm.core_030',         bg:'rgba(5,150,105,0.1)' },
-    { key:'friggitrice',  name:'Friggitrice',      icon:'🍟', color:'#ea580c', sensor:'dm.core_027',           bg:'rgba(234,88,12,0.1)' },
-    { key:'caffe',         name:'Macchina Caffè',             icon:'☕', color:'#a16207', sensor:'dm.core_029',                  bg:'rgba(161,98,7,0.1)' },
-    { key:'asciugatrice', name:'Asciugatrice',     icon:'💨', color:'#f59e0b', sensor:'dm.core_025',          bg:'rgba(245,158,11,0.1)' },
-    { key:'lavatrice',    name:'Lavatrice',        icon:'🧺', color:'#7c3aed', sensor:'dm.core_031',             bg:'rgba(124,58,237,0.1)' },
-    { key:'forno',        name:'Forno',            icon:'♨️', color:'#e11d48', sensor:'dm.core_026',                 bg:'rgba(225,29,72,0.1)' },
-    { key:'microonde',    name:'Microonde',        icon:'📡', color:'#8b5cf6', sensor:'dm.core_032',             bg:'rgba(139,92,246,0.1)' },
+    { key:'frigo',        name:'Frigorifero',      icon:'🧊', color:'#1e40af', sensor:'dm.core_032',                 bg:'rgba(30,64,175,0.1)' },
+    { key:'lavastoviglie',name:'Lavastoviglie',    icon:'🍽️', color:'#059669', sensor:'dm.core_034',         bg:'rgba(5,150,105,0.1)' },
+    { key:'friggitrice',  name:'Friggitrice',      icon:'🍟', color:'#ea580c', sensor:'dm.core_031',           bg:'rgba(234,88,12,0.1)' },
+    { key:'caffe',         name:'Macchina Caffè',             icon:'☕', color:'#a16207', sensor:'dm.core_033',                  bg:'rgba(161,98,7,0.1)' },
+    { key:'asciugatrice', name:'Asciugatrice',     icon:'💨', color:'#f59e0b', sensor:'dm.core_029',          bg:'rgba(245,158,11,0.1)' },
+    { key:'lavatrice',    name:'Lavatrice',        icon:'🧺', color:'#7c3aed', sensor:'dm.core_035',             bg:'rgba(124,58,237,0.1)' },
+    { key:'forno',        name:'Forno',            icon:'♨️', color:'#e11d48', sensor:'dm.core_030',                 bg:'rgba(225,29,72,0.1)' },
+    { key:'microonde',    name:'Microonde',        icon:'📡', color:'#8b5cf6', sensor:'dm.core_036',             bg:'rgba(139,92,246,0.1)' },
     { key:'boiler',       name:'Boiler Elettrico', icon:'🔥', color:'#f97316', sensor:'dm.energy_boiler_mese',    bg:'rgba(249,115,22,0.1)' },
 ];
 

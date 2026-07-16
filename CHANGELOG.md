@@ -6,6 +6,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.5.1] — 2026-07-16
+
+### 🐛 Corretto
+- **Popup gruppo luci che mostrava tutte le luci** — dopo un attimo il popup di un gruppo personalizzato veniva rigenerato senza filtro dall'aggiornamento automatico: ora filtro e titolo del gruppo vengono mantenuti.
+
 ## [0.5.0] — 2026-07-16
 
 ### ✨ Novità principali
@@ -184,6 +189,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.5.1] — 2026-07-16
+
+### 🐛 Fixed
+- **Light-group popup showing all lights** — after a moment the custom group popup was regenerated without its filter by the auto-refresh: group filter and title are now preserved.
 
 ## [0.5.0] — 2026-07-16
 

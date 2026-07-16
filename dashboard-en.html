@@ -5974,7 +5974,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.4.3';
+const DASHBOARD_VERSION = '0.5.0';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6412,9 +6412,24 @@ async function connect() {
     if(m.type === 'auth_ok') {
       document.getElementById('conn-text').textContent = 'Connesso';
       document.getElementById('live-dot').classList.add('connected');
+      // v290: la configurazione salvata su HA (per-utente) viene propagata a questo dispositivo
+      window._cdSyncReqId = msgId;
+      ws.send(JSON.stringify({id:msgId++, type:'frontend/get_user_data', key:'dashboard_modern_config'}));
       ws.send(JSON.stringify({id:msgId++, type:'get_states'}));
       ws.send(JSON.stringify({id:msgId++, type:'subscribe_events', event_type:'state_changed'}));
       refreshCameras(); 
+    }
+    if (m.type === 'result' && m.id === window._cdSyncReqId) {
+      try {
+        const v = m.result && m.result.value;
+        const localTs = parseInt(localStorage.getItem('cd_sync_ts') || '0');
+        if (v && v.__ts && v.__ts > localTs && !sessionStorage.getItem('cd_sync_reloading')) {
+          const n = cdSyncApply(v);
+          localStorage.setItem('cd_sync_ts', String(v.__ts));
+          if (n > 0) { sessionStorage.setItem('cd_sync_reloading', '1'); console.log('[Sync] config più recente da HA — ricarico'); location.reload(); }
+        } else { sessionStorage.removeItem('cd_sync_reloading'); }
+      } catch(e) { console.warn('[Sync] pull check:', e); }
+      return;
     }
     if(m.type === 'result' && Array.isArray(m.result)) { m.result.forEach(s => STATES[s.entity_id] = s); render(); }
     if(m.type === 'event' && m.event.event_type === 'state_changed') { 
@@ -7293,7 +7308,10 @@ function cdSyncApply(data) {
 function cdSyncPush(silent = true) {
     try {
         if (!ws || ws.readyState !== 1) return;
-        ws.send(JSON.stringify({ id: msgId++, type: 'frontend/set_user_data', key: 'dashboard_modern_config', value: cdSyncCollect() }));
+        const payload = cdSyncCollect();
+        payload.__ts = Date.now();
+        localStorage.setItem('cd_sync_ts', String(payload.__ts));
+        ws.send(JSON.stringify({ id: msgId++, type: 'frontend/set_user_data', key: 'dashboard_modern_config', value: payload }));
         if (!silent && typeof edToast === 'function') edToast('☁️ Configuration saved to Home Assistant');
         console.log('[Sync] configurazione inviata a HA');
     } catch(e) { console.warn('[Sync] push fallito:', e); }
@@ -7408,7 +7426,22 @@ function wzLoadAllEntities() {
         tws.onmessage = (ev) => {
             const m = JSON.parse(ev.data);
             if (m.type === 'auth_required') tws.send(JSON.stringify({ type: 'auth', access_token: WIZ.token }));
-            if (m.type === 'auth_ok') tws.send(JSON.stringify({ id: mid++, type: 'get_states' }));
+            if (m.type === 'auth_ok') {
+                tws.send(JSON.stringify({ id: mid++, type: 'get_states' }));
+                // v290: registri ufficiali HA — aree, dispositivi, entità (per il rilevamento per stanza)
+                WIZ._ridArea = mid; tws.send(JSON.stringify({ id: mid++, type: 'config/area_registry/list' }));
+                WIZ._ridDev  = mid; tws.send(JSON.stringify({ id: mid++, type: 'config/device_registry/list' }));
+                WIZ._ridEnt  = mid; tws.send(JSON.stringify({ id: mid++, type: 'config/entity_registry/list' }));
+            }
+            if (m.type === 'result' && m.id === WIZ._ridArea && Array.isArray(m.result)) {
+                WIZ.areaNames = {}; m.result.forEach(a => WIZ.areaNames[a.area_id] = a.name); return;
+            }
+            if (m.type === 'result' && m.id === WIZ._ridDev && Array.isArray(m.result)) {
+                WIZ.devArea = {}; m.result.forEach(d => { if (d.area_id) WIZ.devArea[d.id] = d.area_id; }); return;
+            }
+            if (m.type === 'result' && m.id === WIZ._ridEnt && Array.isArray(m.result)) {
+                WIZ.entReg = {}; m.result.forEach(e => WIZ.entReg[e.entity_id] = { a: e.area_id, d: e.device_id }); return;
+            }
             if (m.type === 'result' && Array.isArray(m.result)) {
                 WIZ.allEntities = m.result.map(s => s.entity_id).sort();
                 // v265: metadati per l'auto-rilevamento
@@ -7548,6 +7581,16 @@ function cdPickLights(groupName, onDone, preselected) {
 
 /* ═══ v267: AUTO-RILEVAMENTO v3 — scoring intelligente con sinonimi e vincoli di unità.
    Tutto resta modificabile: sono solo proposte pre-compilate. ═══ */
+/* v290: nome dell'area (stanza) ufficiale di un'entità, se assegnata in HA */
+function wzAreaOf(entityId) {
+    try {
+        const r = WIZ.entReg && WIZ.entReg[entityId];
+        if (!r) return null;
+        const areaId = r.a || (r.d && WIZ.devArea && WIZ.devArea[r.d]) || null;
+        return (areaId && WIZ.areaNames && WIZ.areaNames[areaId]) || null;
+    } catch(e) { return null; }
+}
+
 function wzAutoDetect() {
     if (!WIZ.allMeta || !WIZ.allMeta.length) { alert('Wait for entities to load…'); return; }
     const M = WIZ.allMeta;
@@ -7557,36 +7600,53 @@ function wzAutoDetect() {
     if (!Object.keys(WIZ.luci || {}).length) {
         M.filter(e => e.id.startsWith('light.')).slice(0, 40).forEach(e => {
             if (!WIZ.luci) WIZ.luci = {};
-            WIZ.luci[e.id] = e.name;
+            const area = wzAreaOf(e.id);
+            WIZ.luci[e.id] = area && !e.name.toLowerCase().includes(area.toLowerCase()) ? area + ' - ' + e.name : e.name;
             nLuci++;
         });
     }
 
     // — Unità clima
     if (!(WIZ.climaUnits || []).length) {
-        WIZ.climaUnits = M.filter(e => e.id.startsWith('climate.')).map(e => ({
-            name: e.name.replace(/termosifone|radiator|thermostat|condizionatore|clima/gi, '').trim() || e.name,
-            entity: e.id,
-            type: /termo|radiat|riscald|heat|valve|trv/i.test(e.id + ' ' + e.name) ? 'termo' : 'clima'
-        }));
+        WIZ.climaUnits = M.filter(e => e.id.startsWith('climate.')).map(e => {
+            let nm = e.name.replace(/termosifone|radiator|thermostat|condizionatore|clima/gi, '').trim() || e.name;
+            const area = wzAreaOf(e.id);
+            if (area && !nm.toLowerCase().includes(area.toLowerCase())) nm = area;
+            return { name: nm, entity: e.id, type: /termo|radiat|riscald|heat|valve|trv/i.test(e.id + ' ' + e.name) ? 'termo' : 'clima' };
+        });
         nClima = WIZ.climaUnits.length;
     }
 
     // — Telecamere
     if (!(WIZ.cameras || []).length) {
-        WIZ.cameras = M.filter(e => e.id.startsWith('camera.')).map(e => ({ name: e.name, entity: e.id }));
+        WIZ.cameras = M.filter(e => e.id.startsWith('camera.')).map(e => {
+            const area = wzAreaOf(e.id);
+            return { name: area && !e.name.toLowerCase().includes(area.toLowerCase()) ? area + ' - ' + e.name : e.name, entity: e.id };
+        });
         nCam = WIZ.cameras.length;
     }
 
     // — Stanze: temperatura + umidità gemella
     if (!(WIZ.stanze || []).length) {
         const temps = M.filter(e => e.id.startsWith('sensor.') && (e.dc === 'temperature' || /temperatur/i.test(e.id)) && (e.unit || '').includes('°'));
-        WIZ.stanze = temps.slice(0, 14).map(e => {
+        // v290: prima le AREE ufficiali di HA — una stanza per area, col suo sensore
+        const byArea = {};
+        temps.forEach(e => { const a = wzAreaOf(e.id); if (a && !byArea[a]) byArea[a] = e; });
+        const used = new Set();
+        WIZ.stanze = Object.entries(byArea).slice(0, 14).map(([areaName, e]) => {
+            used.add(e.id);
+            const r = { name: areaName, icon: '🌡️', temp: e.id };
+            const hums = M.filter(h => h.id.startsWith('sensor.') && (h.dc === 'humidity' || /umidit|humidity/i.test(h.id)) && wzAreaOf(h.id) === areaName);
+            if (hums.length) r.hum = hums[0].id;
+            return r;
+        });
+        // fallback per i sensori senza area: euristica sul nome (come prima)
+        temps.filter(e => !used.has(e.id) && !wzAreaOf(e.id)).slice(0, Math.max(0, 14 - WIZ.stanze.length)).forEach(e => {
             const r = { name: e.name.replace(/temperatura|temperature|sensore?/gi, '').trim() || e.name, icon: '🌡️', temp: e.id };
             const base = e.id.replace(/_?temperatur[ae]?/i, '');
             const hum = M.find(h => h.id.startsWith('sensor.') && (h.dc === 'humidity' || /umidit|humidity/i.test(h.id)) && h.id.replace(/_?(umidita|humidity)/i, '') === base);
             if (hum) r.hum = hum.id;
-            return r;
+            WIZ.stanze.push(r);
         });
         nStanze = WIZ.stanze.length;
     }
@@ -7839,7 +7899,9 @@ function wzFinish() {
         Object.assign(cur, WIZ.entities);
         localStorage.setItem('cd_entity_overrides', JSON.stringify(cur));
     }
-    location.reload();
+    // v290: la config del wizard viene salvata su HA prima del reload (sync multi-dispositivo)
+    try { cdSyncPush(); } catch(e) {}
+    setTimeout(() => location.reload(), 600);
 }
 
 /* ═══ v257: REGISTRY SLOT — entità di riferimento per sezione, con etichette umane.
@@ -8945,6 +9007,27 @@ function getClimaUnits() {
 
 /* ═══ v274: aggiornamento card clima AUTONOMO — proprio try/catch, chiamato dal render,
    dopo ogni rigenerazione delle card e periodicamente come rete di sicurezza. ═══ */
+/* v290: stato visivo di un nodo dei flussi energia:
+   - entità non configurata → nodo e linea rimossi dalla vista
+   - configurata ma ~0 W → nodo attenuato e flusso fermo */
+function cdEnergyNodeState(nodeId, lineId, ref) {
+    try {
+        const node = document.getElementById(nodeId);
+        const line = document.getElementById(lineId);
+        if (!node) return;
+        const s = STATES[ref];
+        const ghost = !s || s.entity_id === 'dm.unmapped';
+        const unmapped = (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) && ghost;
+        node.style.display = unmapped ? 'none' : '';
+        if (line) line.style.display = unmapped ? 'none' : '';
+        if (unmapped) return;
+        const w = parseFloat(s && s.state);
+        const idle = isNaN(w) || Math.abs(w) < 3;
+        node.style.opacity = idle ? '0.42' : '1';
+        if (line) { line.style.opacity = idle ? '0.15' : '1'; line.style.animationPlayState = idle ? 'paused' : 'running'; }
+    } catch(e) {}
+}
+
 function updateClimaCards() {
     try {
         const climas = getClimaUnits().map(u => u.entity);
@@ -9717,6 +9800,12 @@ function render() {
         }
       })();
 
+      /* v290: nodi subload — nascosti se l'entità non è configurata, attenuati se a riposo */
+      cdEnergyNodeState('n-boiler', 'line-home-boiler', 'dm.boiler_potenza_resistenza_boiler');
+      cdEnergyNodeState('n-wb', 'line-home-wb', 'dm.ev_potenza_wallbox');
+      cdEnergyNodeState('n-clima', 'line-home-clima', 'dm.energy_potenza_condizionatori');
+      cdEnergyNodeState('n-lav', 'line-home-lav', 'dm.energy_somma_lavanderia_istantanea');
+      cdEnergyNodeState('n-cuc', 'line-home-cuc', 'dm.energy_somma_cucina_istantanea');
       document.getElementById('v-solar').textContent = getDisplay('dm.energy_potenza_fotovoltaico'); document.getElementById('v-grid').textContent = getDisplay('dm.energy_potenza_scambio_rete'); document.getElementById('v-battery').textContent = getDisplay('dm.energy_potenza_batteria'); document.getElementById('v-battery-soc').textContent = getDisplay('dm.energy_stato_carica_batteria'); document.getElementById('v-home').textContent = getDisplay('dm.energy_potenza_consumo_casa'); document.getElementById('v-boiler-p').textContent = getDisplay('dm.boiler_potenza_resistenza_boiler'); document.getElementById('v-wb-p').textContent = getDisplay('dm.ev_potenza_wallbox'); document.getElementById('v-clima-p').textContent = getDisplay('dm.energy_potenza_condizionatori'); document.getElementById('v-lav-p').textContent = getDisplay('dm.energy_somma_lavanderia_istantanea'); document.getElementById('v-cuc-p').textContent = getDisplay('dm.energy_somma_cucina_istantanea');
       const pwrSol = getPowerInWatts('dm.energy_potenza_fotovoltaico'); const pwrGri = getPowerInWatts('dm.energy_potenza_scambio_rete'); const pwrBat = getPowerInWatts('dm.energy_potenza_batteria'); const pwrWb = Math.abs(getPowerInWatts('dm.ev_potenza_wallbox')); const pwrBoiler = Math.abs(getPowerInWatts('dm.boiler_potenza_resistenza_boiler')); const pwrClima = Math.abs(getPowerInWatts('dm.energy_potenza_condizionatori')); const pwrLav = Math.abs(getPowerInWatts('dm.energy_somma_lavanderia_istantanea')); const pwrCuc = Math.abs(getPowerInWatts('dm.energy_somma_cucina_istantanea'));
       setNode('n-solar', pwrSol > 20); setNode('n-grid', Math.abs(pwrGri) > 20); setNode('n-battery', Math.abs(pwrBat) > 20); setNode('n-home', true); setNode('n-wb', pwrWb > 5); setNode('n-boiler', pwrBoiler > 5); setNode('n-clima', pwrClima > 5); setNode('n-lav', pwrLav > 5); setNode('n-cuc', pwrCuc > 5);

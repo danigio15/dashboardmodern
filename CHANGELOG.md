@@ -6,6 +6,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.5.0] — 2026-07-16
+
+### ✨ Novità principali
+- **🏠 Rilevamento dalle Aree di Home Assistant** — il 🪄 ora legge il registro ufficiale di HA: luci nominate "Stanza - Nome" (raggruppamento automatico), una card stanza per ogni Area con temperatura e umidità abbinate dall'area (non più dal nome), clima e telecamere già intitolati con la loro stanza. Precisione da integrazione, semplicità di un file.
+- **☁️ Configurazione sincronizzata tra dispositivi** — la config viene salvata sul tuo utente Home Assistant: configuri sul telefono e il tablet si allinea da solo al prossimo avvio (e viceversa). Vale per wizard ed editor; al primo avvio su un nuovo dispositivo basta il token e tutto torna.
+- **⚡ Flussi energia puliti** — i nodi Wallbox/Cucina/Lavanderia/Boiler/Clima spariscono se non configurati e si attenuano (flusso fermo) quando il carico è a riposo.
+
 ## [0.4.3] — 2026-07-16
 
 ### 🐛 Corretto
@@ -177,6 +184,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.5.0] — 2026-07-16
+
+### ✨ Highlights
+- **🏠 Detection from Home Assistant Areas** — 🪄 now reads HA's official registry: lights named "Room - Name" (auto grouping), one room card per Area with temperature and humidity paired by area (no longer by name), climate and cameras titled with their room. Integration-grade precision, single-file simplicity.
+- **☁️ Config synced across devices** — the configuration is stored on your Home Assistant user: set up on your phone and the tablet aligns on next start (and vice versa). Works for wizard and editor; on a new device just enter the token and everything comes back.
+- **⚡ Clean energy flows** — Wallbox/Kitchen/Laundry/Boiler/Climate nodes disappear when not configured and dim (flow paused) when the load is idle.
 
 ## [0.4.3] — 2026-07-16
 

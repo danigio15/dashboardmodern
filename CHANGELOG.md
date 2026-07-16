@@ -6,6 +6,19 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.6.1] — 2026-07-16
+
+### ✨ Aggiunto
+- **📌 Barra di navigazione fissa o a scomparsa** — nuova opzione nel wizard (step Sezioni) e in ⚙️ Config: chi preferisce le icone delle sezioni sempre in vista può fissare la barra; il comportamento a scomparsa resta il default.
+
+### ✨ Migliorato
+- **📊 Report Analisi a voci libere** — niente più nomi blindati: nel wizard (accordion "Report Analisi") aggiungi le TUE voci con nome, icona ed entità a piacere; il selettore del Report le usa automaticamente.
+- **💡 Luci (e Clima/Riscaldamento) configurabili negli Avvisi** — il menu del Quadro Avvisi nel wizard ora include anche Luce, Clima e Riscaldamento.
+
+### 🐛 Corretto
+- **Tab "Carichi" vuota nell'editor** *(issue #4)* — su installazioni senza configurazione precedente la scheda non si apriva: risolto.
+- **Doppio accordion "Dispositivi" nel wizard** — rimosso il duplicato.
+
 ## [0.6.0] — 2026-07-16
 
 ### ✨ Aggiunto
@@ -205,6 +218,19 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.6.1] — 2026-07-16
+
+### ✨ Added
+- **📌 Fixed or auto-hide navigation bar** — new option in the wizard (Sections step) and in ⚙️ Config: keep the section icons always in view, or stick with the default auto-hide behaviour.
+
+### ✨ Improved
+- **📊 Free-form Analysis Report** — no more locked names: in the wizard ("Analysis Report" accordion) add YOUR entries with any name, icon and entity; the Report selector uses them automatically.
+- **💡 Lights (and Climate/Heating) configurable in Alerts** — the wizard's Alerts Panel menu now includes Light, Climate and Heating.
+
+### 🐛 Fixed
+- **Empty "Loads" tab in the editor** *(issue #4)* — on installs without previous configuration the tab would not open: fixed.
+- **Duplicate "Devices" accordion in the wizard** — removed.
 
 ## [0.6.0] — 2026-07-16
 

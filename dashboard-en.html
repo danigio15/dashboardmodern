@@ -4845,14 +4845,14 @@ html[data-theme="dark"] header { background: var(--card-glass); }
                 <option value="">— Scegli —</option>
                 <optgroup label="Elettrodomestici">
                   <option value="dm.ev_energia_wallbox_mese">⚡ Wallbox</option>
-                  <option value="dm.core_026">🧊 Frigorifero</option>
-                  <option value="dm.core_028">🍽️ Lavastoviglie</option>
-                  <option value="dm.core_025">🍟 Friggitrice</option>
-                  <option value="dm.core_027">☕ Macchina Caffè</option>
-                  <option value="dm.core_023">💨 Asciugatrice</option>
-                  <option value="dm.core_029">🧺 Lavatrice</option>
-                  <option value="dm.core_024">♨️ Forno</option>
-                  <option value="dm.core_030">📡 Microonde</option>
+                  <option value="dm.core_027">🧊 Frigorifero</option>
+                  <option value="dm.core_029">🍽️ Lavastoviglie</option>
+                  <option value="dm.core_026">🍟 Friggitrice</option>
+                  <option value="dm.core_028">☕ Macchina Caffè</option>
+                  <option value="dm.core_024">💨 Asciugatrice</option>
+                  <option value="dm.core_030">🧺 Lavatrice</option>
+                  <option value="dm.core_025">♨️ Forno</option>
+                  <option value="dm.core_031">📡 Microonde</option>
                   <option value="dm.energy_boiler_mese">🔥 Boiler</option>
                 </optgroup>
                 <optgroup label="Climatizzazione">
@@ -5605,6 +5605,17 @@ html[data-theme="dark"] header { background: var(--card-glass); }
             <button class="theme-opt" data-theme="auto" onclick="setTheme('auto')"><span class="theme-opt-ico">📱</span><span>Auto</span></button>
           </div>
         </div>
+      <div class="cfg-card">
+        <div class="cfg-card-ico">📌</div>
+        <div class="cfg-card-txt">
+          <div class="cfg-card-title">Barra di navigazione</div>
+          <div class="cfg-card-sub">On this device</div>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="theme-btn" onclick="wzSetNavMode('auto'); location.reload();">👆 Auto-hide</button>
+            <button class="theme-btn" onclick="wzSetNavMode('fixed'); location.reload();">📌 Fixed</button>
+          </div>
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -5789,7 +5800,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
         <div class="lav-area-mon">
            <div class="lav-mon-card"><div class="lbl">FASE ATTUALE</div><div class="val" id="v-lav-fase" style="color: var(--accent);">—</div></div>
            <div class="lav-mon-card"><div class="lbl">TEMPO RIMANENTE</div><div class="val" id="v-lav-tempo" style="color: var(--load);">—</div></div>
-           <div class="lav-mon-card hist-clickable" onclick="apriStorico(event, 'dm.core_031', 'Consumo Lavatrice')"><div class="lbl">ASSORBIMENTO</div><div class="val" id="v-lav-power-w" style="color: #f59e0b;">—</div></div>
+           <div class="lav-mon-card hist-clickable" onclick="apriStorico(event, 'dm.core_032', 'Consumo Lavatrice')"><div class="lbl">ASSORBIMENTO</div><div class="val" id="v-lav-power-w" style="color: #f59e0b;">—</div></div>
         </div>
 
         <div class="lav-area-manual">
@@ -5977,7 +5988,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.6.0';
+const DASHBOARD_VERSION = '0.6.1';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6006,6 +6017,12 @@ window.CD_BAKED_CONFIG = {
 function cdCfg(key) {
   try { const ls = localStorage.getItem(key); if (ls) return JSON.parse(ls); } catch(e) {}
   try { return (window.CD_BAKED_CONFIG && window.CD_BAKED_CONFIG[key]) || {}; } catch(e) { return {}; }
+}
+/* v294 (issue #4): per le chiavi-lista cdCfg può restituire {} (default) — questo
+   helper garantisce sempre un array, evitando .map/.forEach su oggetti. */
+function cdCfgList(key) {
+  const v = cdCfg(key);
+  return Array.isArray(v) ? v : [];
 }
 
 /* ═══ v254: SISTEMA OVERRIDE ENTITÀ (configurabile da UI, solo admin) ═══ */
@@ -6436,7 +6453,7 @@ async function connect() {
             renderQuickClima();
           }
           // Switch termici → re-render pannello stato (visibile solo in modalità caldo)
-          if (eid === 'switch.caldaia' || eid === 'dm.core_043' || eid === 'dm.core_036') {
+          if (eid === 'switch.caldaia' || eid === 'dm.core_042' || eid === 'dm.core_036') {
             if (currentClimaMode === 'caldo') renderThermalPanel();
           }
         }
@@ -6668,6 +6685,16 @@ function edDelOverride(o) {
 
 /* ─────────── TAB 2: CARICHI ─────────── */
 function edGetExtra(key) { return cdCfg(key); }
+/* v295: le voci del Report Analisi vengono dalla lista libera dell'utente */
+function buildReportSelect() {
+    const sel = document.getElementById('ed-dev-selector');
+    if (!sel) return;
+    const devs = cdCfgList('cd_report_devices');
+    if (!devs.length) return; // nessuna voce utente → restano le option di default
+    sel.innerHTML = devs.map(d => `<option value="${d.entity}">${d.icon || '⚡'} ${d.name}</option>`).join('');
+}
+document.addEventListener('DOMContentLoaded', buildReportSelect);
+
 function editorRenderLoad() {
     const ext = edGetExtra('cd_subloads_extra');
     let rows = '';
@@ -6683,7 +6710,7 @@ function editorRenderLoad() {
         });
     });
     if (!rows) rows = '<div class="ed-empty">Nessun carico aggiunto</div>';
-    const customGroups = (cdCfg('cd_subload_groups') || []).map((g, i) => `<div class="ed-row"><div style="font-size:15px;">${g.icon||'🔌'}</div><div class="ed-row-main"><div class="ed-row-new">${g.name}</div><div class="ed-row-old mono">custom group</div></div><div class="ed-del" onclick="edDelLoadGroup(${i})">🗑️</div></div>`).join('');
+    const customGroups = (cdCfgList('cd_subload_groups')).map((g, i) => `<div class="ed-row"><div style="font-size:15px;">${g.icon||'🔌'}</div><div class="ed-row-main"><div class="ed-row-new">${g.name}</div><div class="ed-row-old mono">custom group</div></div><div class="ed-del" onclick="edDelLoadGroup(${i})">🗑️</div></div>`).join('');
     return `
           <div class="ed-sec-title">➕ New load group</div>
           <div style="display:flex; gap:8px; margin-bottom:8px;">
@@ -6724,7 +6751,7 @@ function edAddLoadGroup() {
     const name = (document.getElementById('ed-lg-name').value || '').trim();
     const icon = (document.getElementById('ed-lg-icon').value || '🔌').trim();
     if (!name) { alert('Name the group'); return; }
-    const groups = cdCfg('cd_subload_groups') || [];
+    const groups = cdCfgList('cd_subload_groups');
     const id = 'cl_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
     if (groups.some(g => g.id === id) || SUBLOADS_CONFIG[id]) { alert('A group with this name already exists'); return; }
     groups.push({ id, name, icon });
@@ -6737,7 +6764,7 @@ function edAddLoadGroup() {
 }
 
 function edDelLoadGroup(i) {
-    const groups = cdCfg('cd_subload_groups') || [];
+    const groups = cdCfgList('cd_subload_groups');
     const g = groups[i];
     if (!g) return;
     if (!confirm('Delete group "' + g.name + '" and its loads?')) return;
@@ -6785,8 +6812,8 @@ function editorRenderAvvisi() {
           <option value="win">🚪 Aperture (contact)</option>
           <option value="batt">🔋 Batterie (%)</option>
           <option value="luci">💡 Luci</option>
-          <option value="clima">❄️ Clima</option>
-          <option value="risc">🔥 Riscaldamento</option>
+          <option value="clima">❄️ Climate</option>
+          <option value="risc">🔥 Heating</option>
         </select>
         <input id="ed-avv-ent" list="ed-entity-list" class="ed-input mono" placeholder="binary_sensor.finestra_x_contact">
         <input id="ed-avv-name" class="ed-input" placeholder="Nome pulito (es. Finestra Studio)">
@@ -6958,7 +6985,7 @@ async function edDownloadHTML() {
     }
 
     // Costruisci il nuovo blocco baked dai localStorage attuali (le personalizzazioni di questo dispositivo)
-    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
+    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
     const merged = {};
     keys.forEach(k => { merged[k] = cdCfg(k); });  // cdCfg = localStorage o baked precedente
     const bakedBlock = '/* CD_BAKED_START */\n'
@@ -7021,7 +7048,7 @@ function edImport() {
     let cfg;
     try { cfg = JSON.parse(raw); } catch(e) { alert('JSON non valido: ' + e.message); return; }
     const map = {
-        entity_overrides:'cd_entity_overrides', subloads_extra:'cd_subloads_extra', subload_groups:'cd_subload_groups',
+        entity_overrides:'cd_entity_overrides', subloads_extra:'cd_subloads_extra', subload_groups:'cd_subload_groups', report_devices:'cd_report_devices',
         gruppi_extra:'cd_gruppi_extra', avvisi_names_extra:'cd_avvisi_names_extra',
         text_overrides:'cd_text_overrides', hidden_elements:'cd_hidden_elements'
     };
@@ -7031,7 +7058,7 @@ function edImport() {
 }
 function edResetAll() {
     if (!confirm('Rimuovere TUTTE le personalizzazioni di questo dispositivo?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
     location.reload();
 }
 
@@ -7142,6 +7169,14 @@ function wzRender() {
             </div>
             <div class="wz-check" onclick="WIZ.sections['${k}'] = !(WIZ.sections['${k}'] !== false); wzRender();">${WIZ.sections[k] !== false ? '✓' : ''}</div>
           </div>`).join('')}</div>
+        <div style="margin-top:12px; padding:12px 14px; background:rgba(148,163,184,0.08); border-radius:14px;">
+          <div style="font-weight:800; font-size:13px; margin-bottom:8px;">📌 Navigation bar</div>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="wz-btn" style="flex:1; font-size:12.5px; ${(localStorage.getItem('cd_navbar_mode')||'auto') !== 'fixed' ? '' : 'background:#94a3b8;'}" onclick="wzSetNavMode('auto')">👆 Auto-hide</button>
+            <button type="button" class="wz-btn" style="flex:1; font-size:12.5px; ${(localStorage.getItem('cd_navbar_mode')||'auto') === 'fixed' ? '' : 'background:#94a3b8;'}" onclick="wzSetNavMode('fixed')">📌 Always visible</button>
+          </div>
+          <div style="font-size:11px; color:var(--text-dim); margin-top:6px;">Auto-hide: appears with a swipe/tap on the handle. Fixed: always in view.</div>
+        </div>
         <button class="wz-btn" onclick="WIZ.step=4; wzLoadLights();">Next →</button>`;
     }
 
@@ -7165,7 +7200,7 @@ function wzRender() {
                 return `<div class="ed-slot"><div class="ed-slot-lbl">${sl.lbl}${auto ? ' <span style=\"background:#dcfce7; color:#15803d; font-size:9.5px; font-weight:800; padding:1px 7px; border-radius:8px; vertical-align:1px;\">🪄 auto</span>' : ''}</div>
                   <div style="display:flex; gap:6px; align-items:center;">
                     <input class="wz-input mono" style="margin-bottom:0; flex:1; font-family:monospace; font-size:11.5px; ${auto ? 'background:#f0fdf4; border-color:#86efac;' : ''}" autocomplete="off"
-                           data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_033" onchange="wzSetSlot(this); if(WIZ.autoDetected) delete WIZ.autoDetected[this.dataset.ref];">
+                           data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_034" onchange="wzSetSlot(this); if(WIZ.autoDetected) delete WIZ.autoDetected[this.dataset.ref];">
                     <button type="button" onclick="wzPickEntity('${sl.ref}')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button>
                   </div></div>`;
             }).join('');
@@ -7194,7 +7229,7 @@ function wzRender() {
               <input id="wz-qa-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome">
             </div>
             <div id="wz-qa-ent-row" style="display:none; gap:6px; margin-bottom:8px;">
-              <input id="wz-qa-ent" class="wz-input mono" autocomplete="off" placeholder="dm.core_044 — the entity to control" style="margin-bottom:0; flex:1; font-family:monospace;">
+              <input id="wz-qa-ent" class="wz-input mono" autocomplete="off" placeholder="dm.core_043 — the entity to control" style="margin-bottom:0; flex:1; font-family:monospace;">
               <button type="button" onclick="wzPickEntity('__qa__')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button>
             </div>
             <div id="wz-qa-hint" style="font-size:11.5px; color:var(--text-dim); margin-bottom:8px; padding:0 2px;">💡 Give it a name (e.g. "Ground Floor") and press Add: you will pick the lights from a searchable list.</div>
@@ -7209,7 +7244,7 @@ function wzRender() {
                 return `<div class="ed-row"><div style="font-size:15px;">${grp==='win'?'🚪':'🔋'}</div><div class="ed-row-main"><div class="ed-row-new">${nm}</div><div class="ed-row-old mono">${id}</div></div><div class="ed-del" onclick="wzDelAvviso('${grp}','${id}')">🗑️</div></div>`;
             }).join('')).join('')}
             <div style="display:flex; gap:8px; margin-bottom:8px; margin-top:6px;">
-              <select id="wz-av-grp" class="wz-input" style="margin-bottom:0; flex:0 0 46%;"><option value="win">🚪 Opening</option><option value="batt">🔋 Battery</option></select>
+              <select id="wz-av-grp" class="wz-input" style="margin-bottom:0; flex:0 0 46%;"><option value="win">🚪 Opening</option><option value="batt">🔋 Battery</option><option value="luci">💡 Light</option><option value="clima">❄️ Climate</option><option value="risc">🔥 Heating</option></select>
               <input id="wz-av-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Name (e.g. Office Window)">
             </div>
             <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-av-ent" class="wz-input mono" autocomplete="off" placeholder="binary_sensor.finestra_studio_contact" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-av-ent')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
@@ -7224,9 +7259,24 @@ function wzRender() {
               <input id="wz-dev-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Name (e.g. Dishwasher)">
             </div>
             <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-sw" class="wz-input mono" autocomplete="off" placeholder="dm.core_041 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-sw')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
-            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-pw" class="wz-input mono" autocomplete="off" placeholder="dm.core_034 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-pw')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
-            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-sv" class="wz-input mono" autocomplete="off" placeholder="dm.core_032 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-sv')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-pw" class="wz-input mono" autocomplete="off" placeholder="dm.core_035 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-pw')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-dev-sv" class="wz-input mono" autocomplete="off" placeholder="dm.core_033 (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-dev-sv')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddDevice()">＋ Add appliance</button>
+          </div>
+        </details>` : ''}${WIZ.sections['energy'] !== false ? `
+        <details class="ed-acc"><summary class="ed-acc-head">📊 Analysis Report (per-device consumption) <span class="ed-acc-n">${(WIZ.reportDevices||[]).length}</span></summary>
+          <div class="ed-acc-body">
+            <div class="ed-slot-lbl" style="margin-bottom:6px;">The monthly Report entries in Energy → Analysis: name, icon and entity (monthly kWh) of your choice.</div>
+            ${(WIZ.reportDevices||[]).map((d, i) => `<div class="ed-row"><div style="font-size:15px;">${d.icon||'⚡'}</div><div class="ed-row-main"><div class="ed-row-new">${d.name}</div><div class="ed-row-old mono">${d.entity}</div></div><div class="ed-del" onclick="WIZ.reportDevices.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+              <input id="wz-rep-icon" class="wz-input" style="flex:0 0 64px; margin-bottom:0;" placeholder="⚡" maxlength="4">
+              <input id="wz-rep-name" class="wz-input" style="flex:1; margin-bottom:0;" placeholder="Name (e.g. Pool)">
+            </div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+              <input id="wz-rep-ent" class="wz-input mono" autocomplete="off" placeholder="dm.core_023 (kWh)" style="margin-bottom:0; flex:1; font-family:monospace;">
+              <button type="button" onclick="wzPickEntity('#wz-rep-ent')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button>
+            </div>
+            <button class="ed-btn-add" style="width:100%;" onclick="wzAddReportDevice()">＋ Add to Report</button>
           </div>
         </details>` : ''}${WIZ.sections['temp'] !== false ? `
         <details class="ed-acc"><summary class="ed-acc-head">🌡️ Rooms (temperatures) <span class="ed-acc-n">${(WIZ.stanze||[]).length}</span></summary>
@@ -7261,30 +7311,6 @@ function wzRender() {
             </div>
           </div>
         </details>` : ''}${WIZ.sections['security'] !== false ? `
-        <details class="ed-acc"><summary class="ed-acc-head">🔌 Appliances (dishwasher, stove…) <span class="ed-acc-n">${getDevices().length}</span></summary>
-        <div class="ed-acc-body">
-          <div class="ed-slot-lbl" style="margin-bottom:6px;">Home cards for any appliance: switch and/or power sensor (state from 5W threshold) and/or value sensor (e.g. pellet level).</div>
-          <div class="ed-list">${getDevices().map((d, i) => `
-            <div class="ed-row">
-              <div style="font-size:16px;">${d.icon || '🔌'}</div>
-              <div class="ed-row-main">
-                <div class="ed-row-new">${d.name}</div>
-                <div class="ed-row-old mono">${[d.switch, d.power, d.sensor].filter(Boolean).join(' · ')}</div>
-              </div>
-              <div class="ed-del" onclick="edDelDevice(${i})">🗑️</div>
-            </div>`).join('')}</div>
-          <div class="ed-form">
-            <div class="ed-form-row">
-              <input id="ed-dev-icon" class="ed-input" style="flex:0 0 64px; text-align:center;" placeholder="🧺" maxlength="4">
-              <input id="ed-dev-name" class="ed-input" style="flex:1;" placeholder="Name (e.g. Dishwasher)">
-            </div>
-            <input id="ed-dev-sw" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_042 (optional)">
-            <input id="ed-dev-pw" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_035 (optional)">
-            <input id="ed-dev-sv" list="ed-entity-list" class="ed-input mono" placeholder="dm.core_032 (optional)">
-            <button class="ed-btn-add" onclick="edAddDevice()">＋ Add appliance</button>
-          </div>
-        </div>
-      </details>
       <details class="ed-acc"><summary class="ed-acc-head">📹 Cameras <span class="ed-acc-n">${(WIZ.cameras||[]).length}</span></summary>
           <div class="ed-acc-body">
             ${(WIZ.cameras||[]).map((cam, i) => `<div class="ed-row"><div class="ed-row-main"><div class="ed-row-new">${cam.name}</div><div class="ed-row-old mono">${cam.entity}</div></div><div class="ed-del" onclick="WIZ.cameras.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
@@ -7327,7 +7353,7 @@ function wzRender() {
 /* ═══ v270: SINCRONIZZAZIONE MULTI-DISPOSITIVO ═══
    La configurazione viene salvata anche nell'archivio utente di Home Assistant
    (frontend user_data): configuri una volta, la ritrovi su ogni dispositivo. */
-const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'];
+const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'];
 
 function cdSyncCollect() {
     const out = { _savedAt: Date.now() };
@@ -7831,7 +7857,8 @@ function wzAddDevice() {
     const pw = (document.getElementById('wz-dev-pw').value || '').trim();
     const sv = (document.getElementById('wz-dev-sv').value || '').trim();
     if (!name || (!sw && !pw && !sv)) { alert('Enter a name and at least one entity'); return; }
-    if (!WIZ.devices) WIZ.devices = [];
+    if (!WIZ.devices) WIZ.reportDevices = cdCfgList('cd_report_devices');
+    WIZ.devices = [];
     const d = { name, icon };
     if (sw.includes('.')) d.switch = sw;
     if (pw.includes('.')) d.power = pw;
@@ -7839,6 +7866,16 @@ function wzAddDevice() {
     WIZ.devices.push(d);
     wzRender();
 }
+function wzAddReportDevice() {
+    const name = (document.getElementById('wz-rep-name').value || '').trim();
+    const icon = (document.getElementById('wz-rep-icon').value || '⚡').trim();
+    const ent = (document.getElementById('wz-rep-ent').value || '').trim();
+    if (!name || !ent.includes('.')) { alert('Enter a name and entity'); return; }
+    if (!WIZ.reportDevices) WIZ.reportDevices = [];
+    WIZ.reportDevices.push({ name, icon, entity: ent });
+    wzRender();
+}
+
 function wzAddAvviso() {
     const grp = document.getElementById('wz-av-grp').value;
     const name = (document.getElementById('wz-av-name').value || '').trim();
@@ -7920,9 +7957,16 @@ function wzAddCamera() {
 }
 function wzResetAll() {
     if (!confirm('Delete ALL configuration saved on this device (token, sections, lights, entities, rooms, cameras, theme)?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
     location.reload();
 }
+function wzSetNavMode(mode) {
+    localStorage.setItem('cd_navbar_mode', mode);
+    try { cdMarkDirty(); } catch(e){}
+    if (window.cdApplyNavMode) window.cdApplyNavMode();
+    wzRender();
+}
+
 function wzFinish() {
     localStorage.setItem('cd_connection', JSON.stringify({ token: WIZ.token, admin_users: WIZ.admin ? [WIZ.admin] : [], remote_url: WIZ.remoteUrl || '' }));
     localStorage.setItem('cd_branding', JSON.stringify({ title: WIZ.title, subtitle: WIZ.subtitle }));
@@ -7934,8 +7978,10 @@ function wzFinish() {
     if (WIZ.climaUnits) localStorage.setItem('cd_clima_units', JSON.stringify(WIZ.climaUnits));
     if (WIZ.stanze) localStorage.setItem('cd_stanze', JSON.stringify(WIZ.stanze));
     if (WIZ.devices) localStorage.setItem('cd_devices', JSON.stringify(WIZ.devices));
+    if (WIZ.reportDevices) localStorage.setItem('cd_report_devices', JSON.stringify(WIZ.reportDevices));
     if (WIZ.stanze) localStorage.setItem('cd_stanze', JSON.stringify(WIZ.stanze));
     if (WIZ.devices) localStorage.setItem('cd_devices', JSON.stringify(WIZ.devices));
+    if (WIZ.reportDevices) localStorage.setItem('cd_report_devices', JSON.stringify(WIZ.reportDevices));
     if (WIZ.quickActions) localStorage.setItem('cd_quick_actions', JSON.stringify(WIZ.quickActions));
     if (WIZ.evImage !== undefined) localStorage.setItem('cd_ev_image', JSON.stringify(WIZ.evImage || ''));
     if (WIZ.entities && Object.keys(WIZ.entities).length) {
@@ -8046,16 +8092,6 @@ const CD_SLOTS = {
         { ref: 'dm.lavatrice_script_programma_59',           lbl: 'Script programma 59\'' },
         { ref: 'dm.lavatrice_script_programma_misto_colorati', lbl: 'Script programma misto/colorati' },
     ]},
-    'report': { label: '📊 Analysis Report (monthly energy per device)', slots: [
-        { ref: 'dm.ev_energia_wallbox_mese',       lbl: 'Monthly energy Wallbox (kWh)' },
-        { ref: 'dm.core_026',         lbl: 'Monthly energy Fridge (kWh)' },
-        { ref: 'dm.core_028', lbl: 'Monthly energy Dishwasher (kWh)' },
-        { ref: 'dm.core_025',   lbl: 'Monthly energy Air fryer (kWh)' },
-        { ref: 'dm.core_027',          lbl: 'Monthly energy Coffee machine (kWh)' },
-        { ref: 'dm.core_023',  lbl: 'Monthly energy Dryer (kWh)' },
-        { ref: 'dm.core_029',     lbl: 'Monthly energy Washer (kWh)' },
-        { ref: 'dm.core_024',         lbl: 'Monthly energy Oven (kWh)' },
-    ]},
     server: { label: '🖥️ MiniPC', slots: [
         { ref: 'dm.server_cpu',    lbl: 'CPU (%)' },
         { ref: 'dm.server_ram',   lbl: 'RAM (%)' },
@@ -8099,7 +8135,7 @@ function editorRenderSezioni() {
             return `<div class="ed-slot">
               <div class="ed-slot-lbl">${sl.lbl}</div>
               <input class="ed-input mono ed-slot-in" list="ed-entity-list" 
-                     data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_033"
+                     data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_034"
                      onchange="edSetSlot(this)">
             </div>`;
         }).join('');
@@ -8157,7 +8193,7 @@ function editorRenderSezioni() {
               <input id="ed-qa-icon" class="ed-input ed-icon-input" placeholder="⚡" maxlength="4">
               <input id="ed-qa-name" class="ed-input" placeholder="Nome azione" style="flex:1;">
             </div>
-            <div id="ed-qa-ent-row" style="display:none; gap:6px;"><input id="ed-qa-ent" autocomplete="off" class="ed-input mono" placeholder="dm.core_044 / dm.core_022 / scene.x (non serve per i popup)"><button type="button" onclick="wzPickEntity('__ed_qa__')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
+            <div id="ed-qa-ent-row" style="display:none; gap:6px;"><input id="ed-qa-ent" autocomplete="off" class="ed-input mono" placeholder="dm.core_043 / dm.core_022 / scene.x (non serve per i popup)"><button type="button" onclick="wzPickEntity('__ed_qa__')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
               <div id="ed-qa-hint" style="font-size:11px; color:var(--text-dim); padding:0 2px;">💡 Give it a name and press Add: you will pick the lights from a searchable list.</div>
             <input id="ed-qa-confirm" class="ed-input" placeholder="Messaggio di conferma (facoltativo, es. Sei sicuro?)">
             <button class="ed-btn-add" onclick="edAddQA()">＋ Add quick action</button>
@@ -8414,8 +8450,8 @@ function copyEditUrl() {
 
 /* v254: mostra le card "Editor Plancia" e "Configure Entities" solo agli admin. */
 /* ═══ v256: GESTIONE TEMA (chiaro / scuro / auto) ═══
-   Salvato in localStorage 'cd_theme'. 'auto' segue prefers-color-scheme del dispositivo. */
-function getThemePref() { try { return localStorage.getItem('cd_theme') || 'auto'; } catch(e) { return 'auto'; } }
+   Salvato in localStorage 'cd_theme','cd_navbar_mode'. 'auto' segue prefers-color-scheme del dispositivo. */
+function getThemePref() { try { return localStorage.getItem('cd_theme','cd_navbar_mode') || 'auto'; } catch(e) { return 'auto'; } }
 
 function applyTheme() {
     const pref = getThemePref();
@@ -8429,7 +8465,7 @@ function applyTheme() {
 
 function setTheme(pref) {
     if(navigator.vibrate) navigator.vibrate(8);
-    try { localStorage.setItem('cd_theme', pref); } catch(e) {}
+    try { localStorage.setItem('cd_theme','cd_navbar_mode', pref); } catch(e) {}
     applyTheme();
 }
 
@@ -9293,8 +9329,8 @@ document.addEventListener('DOMContentLoaded', () => setTimeout(cdAutoHide, 300))
 function cdEmptyStateCheck() {
     if (typeof CD_REQUIRE_MAPPING === 'undefined' || !CD_REQUIRE_MAPPING) return;
     const noSlots = !Object.keys(ENTITY_OVERRIDES || {}).length;
-    const noRooms = !(cdCfg('cd_stanze') || []).length;
-    const noClima = !(cdCfg('cd_clima_units') || []).length;
+    const noRooms = !(cdCfgList('cd_stanze')).length;
+    const noClima = !(cdCfgList('cd_clima_units')).length;
     const noLights = !Object.keys(cdCfg('cd_luci') || {}).length;
     if (!(noSlots && noRooms && noClima && noLights)) return;
     const home = document.getElementById('page-home');
@@ -9488,7 +9524,7 @@ async function apriMeteo() {
   document.getElementById('weather-modal').classList.add('show');
   const list = document.getElementById('weather-forecast-list');
   list.innerHTML = '<div style="text-align:center; padding: 30px; font-weight:800; color:var(--text-dim);">Caricamento Previsioni...</div>';
-  const entityId = 'dm.core_045'; currentWeatherEntity = entityId;
+  const entityId = 'dm.core_044'; currentWeatherEntity = entityId;
 
   if (ws && ws.readyState === WebSocket.OPEN) {
       const reqId = msgId++;
@@ -9758,7 +9794,7 @@ function render() {
       if (panoramicaView && panoramicaView.classList.contains('active')) {
           edUpdateKpiOnly();
       }
-      const weatherEnt = cdFirstMapped('dm.core_045', 'weather.home', 'dm.home_meteo');
+      const weatherEnt = cdFirstMapped('dm.core_044', 'weather.home', 'dm.home_meteo');
       /* v273: meteo non configurato → widget nascosto del tutto (nessun return: siamo dentro render) */
       let wUnmapped = false;
       if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
@@ -9871,7 +9907,7 @@ function render() {
       cdEnergyNodeState('n-lav', 'line-home-lav', 'dm.energy_somma_lavanderia_istantanea');
       cdEnergyNodeState('n-cuc', 'line-home-cuc', 'dm.energy_somma_cucina_istantanea');
       /* v293: contatore attivi sulle card dei gruppi carico personalizzati */
-      (cdCfg('cd_subload_groups') || []).forEach(g => {
+      (cdCfgList('cd_subload_groups')).forEach(g => {
           const el = document.getElementById('cl-count-' + g.id);
           if (!el) return;
           const items = (SUBLOADS_CONFIG[g.id] && SUBLOADS_CONFIG[g.id].items) || [];
@@ -10145,7 +10181,7 @@ function render() {
                   if (el) { const row = el.closest('.lav-ctrl-row, .lav-row, .d-row') || el; row.style.display = ghost ? 'none' : ''; }
               });
           }
-          const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('dm.core_031');
+          const elPwrLav = document.getElementById('v-lav-power-w'); if(elPwrLav) elPwrLav.textContent = getDisplay('dm.core_032');
           const mainPwrSwitch = STATES['dm.lavatrice_presa_avvio_lavatrice']; const btnMainPwr = document.getElementById('lav-btn-power'); const txtMainPwr = document.getElementById('lav-txt-power');
           if (btnMainPwr && mainPwrSwitch) { const isOn = mainPwrSwitch.state === 'on'; btnMainPwr.classList.toggle('active', isOn); txtMainPwr.textContent = isOn ? 'ON' : 'OFF'; btnMainPwr.querySelector('.icon').textContent = isOn ? '⚡' : '🔌'; if(isOn) { btnMainPwr.style.setProperty('--btn-col', '#0ea5e9'); btnMainPwr.style.setProperty('--btn-bg', '#e0f2fe'); } else { btnMainPwr.style.setProperty('--btn-col', '#64748b'); btnMainPwr.style.setProperty('--btn-bg', '#fff'); } }
           const playSwitch = STATES['dm.lavatrice_avvio_ciclo']; const btnPlay = document.getElementById('lav-txt-play');
@@ -10447,7 +10483,7 @@ function apriQuickClimaCaldo() {
 function renderThermalPanel() {
     const map = [
       { entityId: 'switch.caldaia',                   rowEl: 'ns-thermal-row-caldaia',     stateEl: 'ns-thermal-caldaia',     textEl: 'ns-thermal-caldaia-text' },
-      { entityId: 'dm.core_043',               rowEl: 'ns-thermal-row-termocamino', stateEl: 'ns-thermal-termocamino', textEl: 'ns-thermal-termocamino-text' }
+      { entityId: 'dm.core_042',               rowEl: 'ns-thermal-row-termocamino', stateEl: 'ns-thermal-termocamino', textEl: 'ns-thermal-termocamino-text' }
     ];
     map.forEach(m => {
       const s = STATES[m.entityId];
@@ -10724,28 +10760,28 @@ const ED_SENSORS_CURR = {
 // Sensori dispositivi mese corrente → usati anche per mesi precedenti via History
 const ED_DEV_SENSORS_CURR = {
     wallbox:      'dm.ev_energia_wallbox_mese',
-    asciugatrice: 'dm.core_023',
-    frigo:        'dm.core_026',
-    lavastoviglie:'dm.core_028',
-    lavatrice:    'dm.core_029',
-    forno:        'dm.core_024',
-    friggitrice:  'dm.core_025',
-    caffe:         'dm.core_027',
-    microonde:    'dm.core_030',
+    asciugatrice: 'dm.core_024',
+    frigo:        'dm.core_027',
+    lavastoviglie:'dm.core_029',
+    lavatrice:    'dm.core_030',
+    forno:        'dm.core_025',
+    friggitrice:  'dm.core_026',
+    caffe:         'dm.core_028',
+    microonde:    'dm.core_031',
     boiler:       'dm.energy_boiler_mese',
 };
 
 const ED_DEVICES = [
     { key:'wallbox',      name:'Wallbox',          icon:'⚡', color:'#06b6d4', sensor:'dm.ev_energia_wallbox_mese',               bg:'rgba(6,182,212,0.1)' },
     { key:'clima',        name:'Condizionatori',   icon:'❄️', color:'#0ea5e9', sensor:'dm.energy_condizionatori_mese',         bg:'rgba(14,165,233,0.1)' },
-    { key:'frigo',        name:'Frigorifero',      icon:'🧊', color:'#1e40af', sensor:'dm.core_026',                 bg:'rgba(30,64,175,0.1)' },
-    { key:'lavastoviglie',name:'Lavastoviglie',    icon:'🍽️', color:'#059669', sensor:'dm.core_028',         bg:'rgba(5,150,105,0.1)' },
-    { key:'friggitrice',  name:'Friggitrice',      icon:'🍟', color:'#ea580c', sensor:'dm.core_025',           bg:'rgba(234,88,12,0.1)' },
-    { key:'caffe',         name:'Macchina Caffè',             icon:'☕', color:'#a16207', sensor:'dm.core_027',                  bg:'rgba(161,98,7,0.1)' },
-    { key:'asciugatrice', name:'Asciugatrice',     icon:'💨', color:'#f59e0b', sensor:'dm.core_023',          bg:'rgba(245,158,11,0.1)' },
-    { key:'lavatrice',    name:'Lavatrice',        icon:'🧺', color:'#7c3aed', sensor:'dm.core_029',             bg:'rgba(124,58,237,0.1)' },
-    { key:'forno',        name:'Forno',            icon:'♨️', color:'#e11d48', sensor:'dm.core_024',                 bg:'rgba(225,29,72,0.1)' },
-    { key:'microonde',    name:'Microonde',        icon:'📡', color:'#8b5cf6', sensor:'dm.core_030',             bg:'rgba(139,92,246,0.1)' },
+    { key:'frigo',        name:'Frigorifero',      icon:'🧊', color:'#1e40af', sensor:'dm.core_027',                 bg:'rgba(30,64,175,0.1)' },
+    { key:'lavastoviglie',name:'Lavastoviglie',    icon:'🍽️', color:'#059669', sensor:'dm.core_029',         bg:'rgba(5,150,105,0.1)' },
+    { key:'friggitrice',  name:'Friggitrice',      icon:'🍟', color:'#ea580c', sensor:'dm.core_026',           bg:'rgba(234,88,12,0.1)' },
+    { key:'caffe',         name:'Macchina Caffè',             icon:'☕', color:'#a16207', sensor:'dm.core_028',                  bg:'rgba(161,98,7,0.1)' },
+    { key:'asciugatrice', name:'Asciugatrice',     icon:'💨', color:'#f59e0b', sensor:'dm.core_024',          bg:'rgba(245,158,11,0.1)' },
+    { key:'lavatrice',    name:'Lavatrice',        icon:'🧺', color:'#7c3aed', sensor:'dm.core_030',             bg:'rgba(124,58,237,0.1)' },
+    { key:'forno',        name:'Forno',            icon:'♨️', color:'#e11d48', sensor:'dm.core_025',                 bg:'rgba(225,29,72,0.1)' },
+    { key:'microonde',    name:'Microonde',        icon:'📡', color:'#8b5cf6', sensor:'dm.core_031',             bg:'rgba(139,92,246,0.1)' },
     { key:'boiler',       name:'Boiler Elettrico', icon:'🔥', color:'#f97316', sensor:'dm.energy_boiler_mese',    bg:'rgba(249,115,22,0.1)' },
 ];
 
@@ -12387,15 +12423,24 @@ async function edCaricaDettaglio() {
     
     let autoHideTimer = null;
     const AUTO_HIDE_MS = 4000; // Auto-nascondi dopo 4 secondi di inattività
-    
+
+    /* v294: modalità barra fissa (richiesta utenti) — sempre visibile, niente auto-hide */
+    const cdNavFixed = () => (localStorage.getItem('cd_navbar_mode') || cdCfg('cd_navbar_mode') || 'auto') === 'fixed';
+    window.cdApplyNavMode = function() {
+        if (cdNavFixed()) { nav.classList.add('visible'); document.body.classList.add('nav-visible'); clearTimeout(autoHideTimer); }
+        else { nav.classList.remove('visible'); document.body.classList.remove('nav-visible'); }
+    };
+    if (cdNavFixed()) setTimeout(() => window.cdApplyNavMode(), 300);
+
     function showNav() {
         nav.classList.add('visible');
         document.body.classList.add('nav-visible');
-        scheduleAutoHide();
+        if (!cdNavFixed()) scheduleAutoHide();
         if (navigator.vibrate) navigator.vibrate(15);
     }
     
     function hideNav() {
+        if (cdNavFixed()) return; // fissa: mai nascondere
         nav.classList.remove('visible');
         document.body.classList.remove('nav-visible');
         clearTimeout(autoHideTimer);

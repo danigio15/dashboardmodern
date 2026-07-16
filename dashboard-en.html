@@ -5988,7 +5988,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.6.1';
+const DASHBOARD_VERSION = '0.6.2';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6695,6 +6695,7 @@ function buildReportSelect() {
 }
 document.addEventListener('DOMContentLoaded', buildReportSelect);
 
+
 function editorRenderLoad() {
     const ext = edGetExtra('cd_subloads_extra');
     let rows = '';
@@ -6711,7 +6712,22 @@ function editorRenderLoad() {
     });
     if (!rows) rows = '<div class="ed-empty">Nessun carico aggiunto</div>';
     const customGroups = (cdCfgList('cd_subload_groups')).map((g, i) => `<div class="ed-row"><div style="font-size:15px;">${g.icon||'🔌'}</div><div class="ed-row-main"><div class="ed-row-new">${g.name}</div><div class="ed-row-old mono">custom group</div></div><div class="ed-del" onclick="edDelLoadGroup(${i})">🗑️</div></div>`).join('');
+    const fn = cdCfg('cd_flow_nodes') || {};
+    const grpOpts = (sel) => Object.entries(SUBLOADS_CONFIG).filter(([k]) => !k.endsWith('_day')).map(([k, g]) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${g.icon} ${g.title.replace(' Istantaneo','')}</option>`).join('');
+    const nodeForm = (key, defName) => `
+          <div style="background:rgba(148,163,184,0.07); border-radius:12px; padding:10px; margin-bottom:8px;">
+            <div style="font-weight:800; font-size:12px; margin-bottom:6px;">Nodo "${(fn[key] && fn[key].name) || defName}" nella mappa flussi</div>
+            <div style="display:flex; gap:6px; margin-bottom:6px;">
+              <input id="ed-fn-${key}-icon" class="ed-input" style="flex:0 0 56px;" placeholder="🧺" maxlength="4" value="${(fn[key] && fn[key].icon) || ''}">
+              <input id="ed-fn-${key}-name" class="ed-input" style="flex:1;" placeholder="${defName}" value="${(fn[key] && fn[key].name) || ''}">
+              <select id="ed-fn-${key}-group" class="ed-input" style="flex:0 0 34%;">${grpOpts((fn[key] && fn[key].group) || '')}</select>
+            </div>
+            <input id="ed-fn-${key}-pwr" class="ed-input mono" style="width:100%; font-family:monospace;" placeholder="Sensore potenza (W) del nodo" value="${(fn[key] && fn[key].pwr) || ''}">
+          </div>`;
     return `
+          <div class="ed-sec-title">🗺️ Nodi della mappa flussi</div>
+          ${nodeForm('lav', 'Lavanderia')}${nodeForm('cuc', 'Cucina')}
+          <button class="ed-btn" style="width:100%; margin-bottom:14px;" onclick="edSaveFlowNodes()">💾 Salva nodi mappa</button>
           <div class="ed-sec-title">➕ New load group</div>
           <div style="display:flex; gap:8px; margin-bottom:8px;">
             <input id="ed-lg-icon" class="ed-input" style="flex:0 0 64px;" placeholder="🔌" maxlength="4">
@@ -6747,6 +6763,20 @@ function edAddLoad() {
     editorSwitch('load');
     edToast('Carico aggiunto — ricarica per vederlo');
 }
+function edSaveFlowNodes() {
+    const fn = {};
+    ['lav','cuc'].forEach(k => {
+        const icon = (document.getElementById('ed-fn-'+k+'-icon').value || '').trim();
+        const name = (document.getElementById('ed-fn-'+k+'-name').value || '').trim();
+        const group = document.getElementById('ed-fn-'+k+'-group').value;
+        const pwr = (document.getElementById('ed-fn-'+k+'-pwr').value || '').trim();
+        if (icon || name || pwr || group) fn[k] = { icon, name, group, pwr };
+    });
+    localStorage.setItem('cd_flow_nodes', JSON.stringify(fn));
+    try { cdMarkDirty(); } catch(e){}
+    edToast('Nodi mappa salvati');
+}
+
 function edAddLoadGroup() {
     const name = (document.getElementById('ed-lg-name').value || '').trim();
     const icon = (document.getElementById('ed-lg-icon').value || '🔌').trim();
@@ -6985,7 +7015,7 @@ async function edDownloadHTML() {
     }
 
     // Costruisci il nuovo blocco baked dai localStorage attuali (le personalizzazioni di questo dispositivo)
-    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
+    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
     const merged = {};
     keys.forEach(k => { merged[k] = cdCfg(k); });  // cdCfg = localStorage o baked precedente
     const bakedBlock = '/* CD_BAKED_START */\n'
@@ -7048,7 +7078,7 @@ function edImport() {
     let cfg;
     try { cfg = JSON.parse(raw); } catch(e) { alert('JSON non valido: ' + e.message); return; }
     const map = {
-        entity_overrides:'cd_entity_overrides', subloads_extra:'cd_subloads_extra', subload_groups:'cd_subload_groups', report_devices:'cd_report_devices',
+        entity_overrides:'cd_entity_overrides', subloads_extra:'cd_subloads_extra', subload_groups:'cd_subload_groups', report_devices:'cd_report_devices', flow_nodes:'cd_flow_nodes',
         gruppi_extra:'cd_gruppi_extra', avvisi_names_extra:'cd_avvisi_names_extra',
         text_overrides:'cd_text_overrides', hidden_elements:'cd_hidden_elements'
     };
@@ -7058,7 +7088,7 @@ function edImport() {
 }
 function edResetAll() {
     if (!confirm('Rimuovere TUTTE le personalizzazioni di questo dispositivo?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
     location.reload();
 }
 
@@ -7244,7 +7274,7 @@ function wzRender() {
                 return `<div class="ed-row"><div style="font-size:15px;">${grp==='win'?'🚪':'🔋'}</div><div class="ed-row-main"><div class="ed-row-new">${nm}</div><div class="ed-row-old mono">${id}</div></div><div class="ed-del" onclick="wzDelAvviso('${grp}','${id}')">🗑️</div></div>`;
             }).join('')).join('')}
             <div style="display:flex; gap:8px; margin-bottom:8px; margin-top:6px;">
-              <select id="wz-av-grp" class="wz-input" style="margin-bottom:0; flex:0 0 46%;"><option value="win">🚪 Opening</option><option value="batt">🔋 Battery</option><option value="luci">💡 Light</option><option value="clima">❄️ Climate</option><option value="risc">🔥 Heating</option></select>
+              <select id="wz-av-grp" class="wz-input" style="margin-bottom:0; flex:0 0 46%;"><option value="win">🚪 Opening</option><option value="batt">🔋 Battery</option></select>
               <input id="wz-av-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Name (e.g. Office Window)">
             </div>
             <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-av-ent" class="wz-input mono" autocomplete="off" placeholder="binary_sensor.finestra_studio_contact" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-av-ent')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
@@ -7353,7 +7383,7 @@ function wzRender() {
 /* ═══ v270: SINCRONIZZAZIONE MULTI-DISPOSITIVO ═══
    La configurazione viene salvata anche nell'archivio utente di Home Assistant
    (frontend user_data): configuri una volta, la ritrovi su ogni dispositivo. */
-const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'];
+const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'];
 
 function cdSyncCollect() {
     const out = { _savedAt: Date.now() };
@@ -7957,7 +7987,7 @@ function wzAddCamera() {
 }
 function wzResetAll() {
     if (!confirm('Delete ALL configuration saved on this device (token, sections, lights, entities, rooms, cameras, theme)?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
     location.reload();
 }
 function wzSetNavMode(mode) {
@@ -8028,10 +8058,10 @@ const CD_SLOTS = {
         { ref: 'dm.energy_rete_venduta_mese',     lbl: 'Rete venduta mese (kWh)' },
         { ref: 'dm.energy_batteria_caricata_mese', lbl: 'Batteria caricata mese (kWh)' },
         { ref: 'dm.energy_batteria_usata_mese',    lbl: 'Batteria usata mese (kWh)' },
-        { ref: 'dm.energy_somma_cucina_istantanea', lbl: 'Somma cucina istantanea (W)' },
+        { ref: 'dm.energy_potenza_carichi_nodo_2_cucina', lbl: 'Potenza carichi — nodo 2/Cucina (W)' },
         { ref: 'dm.energy_somma_cucina_oggi',lbl: 'Somma cucina oggi (kWh)' },
         { ref: 'dm.energy_somma_cucina_mese',    lbl: 'Somma cucina mese (kWh)' },
-        { ref: 'dm.energy_somma_lavanderia_istantanea',     lbl: 'Somma lavanderia istantanea (W)' },
+        { ref: 'dm.energy_potenza_carichi_nodo_1_lavanderia',     lbl: 'Potenza carichi — nodo 1/Lavanderia (W)' },
         { ref: 'dm.energy_somma_lavanderia_oggi',    lbl: 'Somma lavanderia oggi (kWh)' },
         { ref: 'dm.energy_somma_lavanderia_mese',        lbl: 'Somma lavanderia mese (kWh)' },
         { ref: 'dm.energy_condizionatori_oggi',       lbl: 'Condizionatori oggi (kWh)' },
@@ -9100,6 +9130,46 @@ function getClimaUnits() {
 /* v290: stato visivo di un nodo dei flussi energia:
    - entità non configurata → nodo e linea rimossi dalla vista
    - configurata ma ~0 W → nodo attenuato e flusso fermo */
+function cdApplyFlowNode(nodeId, conf, defGroup, defIcon, defName) {
+    try {
+        const node = document.getElementById(nodeId);
+        if (!node) return;
+        const name = (conf && conf.name) || defName;
+        const icon = (conf && conf.icon) || defIcon;
+        const group = (conf && conf.group) || defGroup;
+        const lbl = node.querySelector('.node-label');
+        const ico = node.querySelector('.node-icon');
+        if (lbl && lbl.textContent !== name) lbl.textContent = name;
+        if (ico && ico.textContent !== icon) ico.textContent = icon;
+        node.setAttribute('onclick', "apriSubLoads('" + group + "')");
+    } catch(e) {}
+}
+
+/* v296: nodo flusso — se rimappato su un gruppo custom, il valore è la somma
+   delle potenze dei suoi membri; altrimenti comportamento standard. */
+function cdUpdateFlowNode(nodeId, lineId, valId, defaultRef) {
+    const node = document.getElementById(nodeId);
+    if (!node) return;
+    const gid = node.dataset.customGroup;
+    if (gid && SUBLOADS_CONFIG[gid]) {
+        const items = SUBLOADS_CONFIG[gid].items || [];
+        let tot = 0, any = false;
+        items.forEach(it => {
+            const w = parseFloat(STATES[it.pwrLive || it.pwr]?.state);
+            if (!isNaN(w)) { tot += w; any = true; }
+        });
+        const valEl = document.getElementById(valId);
+        if (valEl) valEl.textContent = any ? Math.round(tot) + ' W' : '—';
+        const line = document.getElementById(lineId);
+        node.style.display = ''; if (line) line.style.display = '';
+        const idle = !any || Math.abs(tot) < 3;
+        node.style.opacity = idle ? '0.42' : '1';
+        if (line) { line.style.opacity = idle ? '0.15' : '1'; line.style.animationPlayState = idle ? 'paused' : 'running'; }
+        return;
+    }
+    cdEnergyNodeState(nodeId, lineId, defaultRef);
+}
+
 function cdEnergyNodeState(nodeId, lineId, ref) {
     try {
         const node = document.getElementById(nodeId);
@@ -9669,27 +9739,18 @@ function apriDettagli(e, tipo) {
     if(tipo === 'luci' && st === 'on') items.push({ id, nm, st: 'ON', icon: '💡', canOff: true });
     else if(tipo === 'clima' && !['off', 'unavailable', 'unknown'].includes(st)) items.push({ id, nm, st: st.toUpperCase(), icon: '❄️', canOff: true });
     else if(tipo === 'risc' && ['heat', 'heating', 'on'].includes(st)) items.push({ id, nm, st: 'ACCESO', icon: '🔥', canOff: true });
-    else if(tipo === 'win') {
-      // v271 (issue #2): mostra TUTTE le aperture con lo stato, aperte in cima
+    else if(tipo === 'win' && st === 'on') {
+      // v296: SOLO le aperture aperte (coerente col contatore)
       const winIcon = /porta/i.test(nm) ? '🚪' : '🪟';
-      const open = st === 'on';
-      items.push({ id, nm, st: open ? 'OPEN' : 'Closed', icon: winIcon, canOff: false, ok: !open, ord: open ? 0 : 1 });
+      items.push({ id, nm, st: 'OPEN', icon: winIcon, canOff: false });
     }
     else if(tipo === 'batt') {
-      // v271 (issue #2): mostra TUTTE le batterie con la %, le più scariche in cima
+      // v296: SOLO le batterie scariche (≤20%)
       let v = parseFloat(st);
-      if(!isNaN(v)) items.push({ id, nm, st: v + '%', icon: v <= 20 ? '🪫' : '🔋', canOff: false, ok: v > 20, ord: v });
+      if(!isNaN(v) && v <= 20) items.push({ id, nm, st: v + '%', icon: '🪫', canOff: false, ord: v });
     }
   });
-  if (tipo === 'win' || tipo === 'batt') {
-      items.sort((a, b) => (a.ord ?? 0) - (b.ord ?? 0));
-      // v273: due sezioni — prima i problemi (= ciò che conta il Quadro Avvisi), poi il resto
-      const alert_ = items.filter(i => i.ok === false);
-      const okList = items.filter(i => i.ok !== false);
-      items = [];
-      if (alert_.length) items.push({ hdr: (tipo === 'win' ? '⚠️ OPEN (' : '🪫 LOW (') + alert_.length + ')' }, ...alert_);
-      if (okList.length) items.push({ hdr: '✓ ALL OK (' + okList.length + ')' }, ...okList);
-  }
+  if (tipo === 'batt') items.sort((a, b) => (a.ord ?? 0) - (b.ord ?? 0));
 
   if(items.length === 0) { html = '<div style="text-align:center; padding: 30px; color:var(--text-dim); font-weight:800; text-transform:uppercase; letter-spacing:1px; font-size:13px;">Nessun elemento attivo.</div>'; } 
   else { items.forEach(it => {
@@ -9904,8 +9965,12 @@ function render() {
       cdEnergyNodeState('n-boiler', 'line-home-boiler', 'dm.boiler_potenza_resistenza_boiler');
       cdEnergyNodeState('n-wb', 'line-home-wb', 'dm.ev_potenza_wallbox');
       cdEnergyNodeState('n-clima', 'line-home-clima', 'dm.energy_potenza_condizionatori');
-      cdEnergyNodeState('n-lav', 'line-home-lav', 'dm.energy_somma_lavanderia_istantanea');
-      cdEnergyNodeState('n-cuc', 'line-home-cuc', 'dm.energy_somma_cucina_istantanea');
+      /* v296: i due nodi sotto la casa sono personalizzabili (nome, icona, gruppo, sensore) */
+      const _fn = cdCfg('cd_flow_nodes') || {};
+      cdApplyFlowNode('n-lav', _fn.lav, 'lavanderia', '🧺', 'Lavanderia');
+      cdApplyFlowNode('n-cuc', _fn.cuc, 'cucina', '🍳', 'Cucina');
+      cdEnergyNodeState('n-lav', 'line-home-lav', (_fn.lav && _fn.lav.pwr) || 'dm.energy_potenza_carichi_nodo_1_lavanderia');
+      cdEnergyNodeState('n-cuc', 'line-home-cuc', (_fn.cuc && _fn.cuc.pwr) || 'dm.energy_potenza_carichi_nodo_2_cucina');
       /* v293: contatore attivi sulle card dei gruppi carico personalizzati */
       (cdCfgList('cd_subload_groups')).forEach(g => {
           const el = document.getElementById('cl-count-' + g.id);
@@ -9919,8 +9984,8 @@ function render() {
           });
           el.textContent = items.length ? (on + ' active / ' + items.length) : 'empty — add loads';
       });
-      document.getElementById('v-solar').textContent = getDisplay('dm.energy_potenza_fotovoltaico'); document.getElementById('v-grid').textContent = getDisplay('dm.energy_potenza_scambio_rete'); document.getElementById('v-battery').textContent = getDisplay('dm.energy_potenza_batteria'); document.getElementById('v-battery-soc').textContent = getDisplay('dm.energy_stato_carica_batteria'); document.getElementById('v-home').textContent = getDisplay('dm.energy_potenza_consumo_casa'); document.getElementById('v-boiler-p').textContent = getDisplay('dm.boiler_potenza_resistenza_boiler'); document.getElementById('v-wb-p').textContent = getDisplay('dm.ev_potenza_wallbox'); document.getElementById('v-clima-p').textContent = getDisplay('dm.energy_potenza_condizionatori'); document.getElementById('v-lav-p').textContent = getDisplay('dm.energy_somma_lavanderia_istantanea'); document.getElementById('v-cuc-p').textContent = getDisplay('dm.energy_somma_cucina_istantanea');
-      const pwrSol = getPowerInWatts('dm.energy_potenza_fotovoltaico'); const pwrGri = getPowerInWatts('dm.energy_potenza_scambio_rete'); const pwrBat = getPowerInWatts('dm.energy_potenza_batteria'); const pwrWb = Math.abs(getPowerInWatts('dm.ev_potenza_wallbox')); const pwrBoiler = Math.abs(getPowerInWatts('dm.boiler_potenza_resistenza_boiler')); const pwrClima = Math.abs(getPowerInWatts('dm.energy_potenza_condizionatori')); const pwrLav = Math.abs(getPowerInWatts('dm.energy_somma_lavanderia_istantanea')); const pwrCuc = Math.abs(getPowerInWatts('dm.energy_somma_cucina_istantanea'));
+      document.getElementById('v-solar').textContent = getDisplay('dm.energy_potenza_fotovoltaico'); document.getElementById('v-grid').textContent = getDisplay('dm.energy_potenza_scambio_rete'); document.getElementById('v-battery').textContent = getDisplay('dm.energy_potenza_batteria'); document.getElementById('v-battery-soc').textContent = getDisplay('dm.energy_stato_carica_batteria'); document.getElementById('v-home').textContent = getDisplay('dm.energy_potenza_consumo_casa'); document.getElementById('v-boiler-p').textContent = getDisplay('dm.boiler_potenza_resistenza_boiler'); document.getElementById('v-wb-p').textContent = getDisplay('dm.ev_potenza_wallbox'); document.getElementById('v-clima-p').textContent = getDisplay('dm.energy_potenza_condizionatori'); document.getElementById('v-lav-p').textContent = getDisplay('dm.energy_potenza_carichi_nodo_1_lavanderia'); document.getElementById('v-cuc-p').textContent = getDisplay('dm.energy_potenza_carichi_nodo_2_cucina');
+      const pwrSol = getPowerInWatts('dm.energy_potenza_fotovoltaico'); const pwrGri = getPowerInWatts('dm.energy_potenza_scambio_rete'); const pwrBat = getPowerInWatts('dm.energy_potenza_batteria'); const pwrWb = Math.abs(getPowerInWatts('dm.ev_potenza_wallbox')); const pwrBoiler = Math.abs(getPowerInWatts('dm.boiler_potenza_resistenza_boiler')); const pwrClima = Math.abs(getPowerInWatts('dm.energy_potenza_condizionatori')); const pwrLav = Math.abs(getPowerInWatts('dm.energy_potenza_carichi_nodo_1_lavanderia')); const pwrCuc = Math.abs(getPowerInWatts('dm.energy_potenza_carichi_nodo_2_cucina'));
       setNode('n-solar', pwrSol > 20); setNode('n-grid', Math.abs(pwrGri) > 20); setNode('n-battery', Math.abs(pwrBat) > 20); setNode('n-home', true); setNode('n-wb', pwrWb > 5); setNode('n-boiler', pwrBoiler > 5); setNode('n-clima', pwrClima > 5); setNode('n-lav', pwrLav > 5); setNode('n-cuc', pwrCuc > 5);
       setLine('line-solar-home', pwrSol > 20); setLine('line-grid-home', pwrGri > 20); setLine('line-solar-grid', pwrGri < -20); setLine('line-battery-home', pwrBat > 20); setLine('line-solar-battery', pwrBat < -20); setLine('line-home-wb', pwrWb > 5); setLine('line-home-boiler', pwrBoiler > 5); setLine('line-home-clima', pwrClima > 5); setLine('line-home-lav', pwrLav > 5); setLine('line-home-cuc', pwrCuc > 5);
 

@@ -6,18 +6,23 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.6.2] — 2026-07-16
+
+### ✨ Migliorato
+- **📊 Report Analisi a voci libere** — niente più nomi blindati: nel wizard aggiungi le TUE voci con nome, icona ed entità a piacere; il selettore del Report le usa automaticamente.
+- **🗺️ Nodi dei flussi personalizzabili** — i primi due gruppi di carichi creati sostituiscono Lavanderia/Cucina nella mappa: nome, icona, popup e potenza (somma del gruppo) tuoi.
+- **🔔 Avvisi automatici e puliti** — luci, clima e riscaldamento del Quadro Avvisi si popolano da soli dalle sezioni configurate; i popup mostrano solo ciò che richiede attenzione (accese/aperte/scariche).
+
+### 🐛 Corretto
+- **Doppio accordion "Dispositivi" nel wizard** — rimosso il duplicato.
+
 ## [0.6.1] — 2026-07-16
 
 ### ✨ Aggiunto
-- **📌 Barra di navigazione fissa o a scomparsa** — nuova opzione nel wizard (step Sezioni) e in ⚙️ Config: chi preferisce le icone delle sezioni sempre in vista può fissare la barra; il comportamento a scomparsa resta il default.
-
-### ✨ Migliorato
-- **📊 Report Analisi a voci libere** — niente più nomi blindati: nel wizard (accordion "Report Analisi") aggiungi le TUE voci con nome, icona ed entità a piacere; il selettore del Report le usa automaticamente.
-- **💡 Luci (e Clima/Riscaldamento) configurabili negli Avvisi** — il menu del Quadro Avvisi nel wizard ora include anche Luce, Clima e Riscaldamento.
+- **📌 Barra di navigazione fissa o a scomparsa** — nuova opzione nel wizard (step Sezioni) e in ⚙️ Config.
 
 ### 🐛 Corretto
-- **Tab "Carichi" vuota nell'editor** *(issue #4)* — su installazioni senza configurazione precedente la scheda non si apriva: risolto.
-- **Doppio accordion "Dispositivi" nel wizard** — rimosso il duplicato.
+- **Tab "Carichi" vuota nell'editor** *(issue #4)* — risolto su installazioni nuove.
 
 ## [0.6.0] — 2026-07-16
 
@@ -219,18 +224,23 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
 
+## [0.6.2] — 2026-07-16
+
+### ✨ Improved
+- **📊 Free-form Analysis Report** — no more locked names: add YOUR entries (name, icon, entity) from the wizard; the Report selector uses them automatically.
+- **🗺️ Customizable flow nodes** — the first two load groups you create replace Laundry/Kitchen on the map: your name, icon, popup and power (group sum).
+- **🔔 Automatic, clean alerts** — lights, climate and heating populate themselves from your sections; popups only show what needs attention (on/open/low).
+
+### 🐛 Fixed
+- **Duplicate "Devices" accordion in the wizard** — removed.
+
 ## [0.6.1] — 2026-07-16
 
 ### ✨ Added
-- **📌 Fixed or auto-hide navigation bar** — new option in the wizard (Sections step) and in ⚙️ Config: keep the section icons always in view, or stick with the default auto-hide behaviour.
-
-### ✨ Improved
-- **📊 Free-form Analysis Report** — no more locked names: in the wizard ("Analysis Report" accordion) add YOUR entries with any name, icon and entity; the Report selector uses them automatically.
-- **💡 Lights (and Climate/Heating) configurable in Alerts** — the wizard's Alerts Panel menu now includes Light, Climate and Heating.
+- **📌 Fixed or auto-hide navigation bar** — new option in the wizard (Sections step) and in ⚙️ Config.
 
 ### 🐛 Fixed
-- **Empty "Loads" tab in the editor** *(issue #4)* — on installs without previous configuration the tab would not open: fixed.
-- **Duplicate "Devices" accordion in the wizard** — removed.
+- **Empty "Loads" tab in the editor** *(issue #4)* — fixed on fresh installs.
 
 ## [0.6.0] — 2026-07-16
 

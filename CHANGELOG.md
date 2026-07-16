@@ -13,8 +13,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 - **🗺️ Nodi dei flussi personalizzabili** — i primi due gruppi di carichi creati sostituiscono Lavanderia/Cucina nella mappa: nome, icona, popup e potenza (somma del gruppo) tuoi.
 - **🔔 Avvisi automatici e puliti** — luci, clima e riscaldamento del Quadro Avvisi si popolano da soli dalle sezioni configurate; i popup mostrano solo ciò che richiede attenzione (accese/aperte/scariche).
 
+- **✏️ Etichette rinominabili nel wizard** — ogni voce degli slot (Energia, EV, Boiler…) si rinomina toccandola: niente più nomi imposti.
+- **📊 "Attività Dispositivi" segue le tue voci** — la lista del Report mostra solo i dispositivi che hai configurato; senza configurazione resta vuota (niente elenchi finti a zero).
+
 ### 🐛 Corretto
 - **Doppio accordion "Dispositivi" nel wizard** — rimosso il duplicato.
+- **Barra di navigazione: il pulsante "Fissa" non applicava la scelta** dalla pagina Config; sistemata anche la card (era fuori layout).
+- **Editor più leggibile su desktop** — finestra più larga e schede su più righe (niente più tagli).
 
 ## [0.6.1] — 2026-07-16
 
@@ -231,8 +236,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](h
 - **🗺️ Customizable flow nodes** — the first two load groups you create replace Laundry/Kitchen on the map: your name, icon, popup and power (group sum).
 - **🔔 Automatic, clean alerts** — lights, climate and heating populate themselves from your sections; popups only show what needs attention (on/open/low).
 
+- **✏️ Renamable labels in the wizard** — every slot label (Energy, EV, Boiler…) can be renamed by tapping it: no more imposed names.
+- **📊 "Device Activity" follows your entries** — the Report list only shows devices you configured; unconfigured means empty (no fake zero rows).
+
 ### 🐛 Fixed
 - **Duplicate "Devices" accordion in the wizard** — removed.
+- **Navigation bar: the "Fixed" button did not apply** from the Config page; the card layout was also fixed.
+- **More readable editor on desktop** — wider window and multi-row tabs (no more clipping).
 
 ## [0.6.1] — 2026-07-16
 

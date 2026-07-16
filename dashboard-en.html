@@ -4262,6 +4262,12 @@ nav.tabs.bottom-nav-bar .tab.active .text {
 
 /* ═══ v255: EDITOR VISUALE — stile ═══ */
 .ed-shell { max-width: 560px; width: 100%; padding: 0; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; }
+@media (min-width: 700px) {
+  .ed-shell { max-width: 760px; }
+  .ed-tabs { flex-wrap: wrap; overflow-x: visible; }
+  .ed-head { padding: 18px 24px 14px; }
+  .ed-head-title { font-size: 19px; }
+}
 .ed-head { display: flex; justify-content: space-between; align-items: center; padding: 22px 24px 18px; border-bottom: 1px solid var(--card-border); }
 .ed-head-title { font-family: 'Oswald', sans-serif; font-size: 21px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
 .ed-head-icon { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg,#e0f2fe,#bae6fd); display: flex; align-items: center; justify-content: center; font-size: 20px; }
@@ -4504,6 +4510,8 @@ html[data-theme="dark"] header { background: var(--card-glass); }
 .ed-acc-n { font-size: 10px; font-weight: 800; color: var(--text-dim); background: var(--surface-3); padding: 4px 10px; border-radius: 100px; }
 .ed-acc-body { padding: 13px 14px; display: flex; flex-direction: column; gap: 10px; }
 .ed-slot { display: flex; flex-direction: column; gap: 5px; }
+.wz-lbl-edit { border: none; background: transparent; font: inherit; color: inherit; width: 100%; padding: 0; border-bottom: 1px dashed transparent; }
+.wz-lbl-edit:hover, .wz-lbl-edit:focus { border-bottom-color: var(--text-dim); outline: none; }
 .ed-slot-lbl { font-size: 11.5px; font-weight: 700; color: var(--text-dim); }
 .ed-slot-in { font-size: 11.5px !important; }
 </style>
@@ -5605,14 +5613,14 @@ html[data-theme="dark"] header { background: var(--card-glass); }
             <button class="theme-opt" data-theme="auto" onclick="setTheme('auto')"><span class="theme-opt-ico">📱</span><span>Auto</span></button>
           </div>
         </div>
-      <div class="cfg-card">
-        <div class="cfg-card-ico">📌</div>
+      <div class="cfg-card cfg-card-theme">
+        <div class="cfg-card-ico" style="--cc-rgb: 14,165,233;">📌</div>
         <div class="cfg-card-txt">
-          <div class="cfg-card-title">Barra di navigazione</div>
-          <div class="cfg-card-sub">On this device</div>
-          <div style="display:flex; gap:8px; margin-top:8px;">
-            <button class="theme-btn" onclick="wzSetNavMode('auto'); location.reload();">👆 Auto-hide</button>
-            <button class="theme-btn" onclick="wzSetNavMode('fixed'); location.reload();">📌 Fixed</button>
+          <div class="cfg-card-nm">Barra di navigazione</div>
+          <div class="cfg-card-ds">Always visible or auto-hide, on this device</div>
+          <div class="theme-seg">
+            <button class="theme-opt" onclick="wzSetNavMode('auto'); setTimeout(() => location.reload(), 150);"><span class="theme-opt-ico">👆</span> Auto-hide</button>
+            <button class="theme-opt" onclick="wzSetNavMode('fixed'); setTimeout(() => location.reload(), 150);"><span class="theme-opt-ico">📌</span> Fixed</button>
           </div>
         </div>
       </div>
@@ -6690,7 +6698,10 @@ function buildReportSelect() {
     const sel = document.getElementById('ed-dev-selector');
     if (!sel) return;
     const devs = cdCfgList('cd_report_devices');
-    if (!devs.length) return; // nessuna voce utente → restano le option di default
+    if (!devs.length) {
+        if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) sel.innerHTML = '<option value="">— Add entries from the wizard (Analysis Report accordion) —</option>';
+        return; // nel file personale restano le option di default
+    }
     sel.innerHTML = devs.map(d => `<option value="${d.entity}">${d.icon || '⚡'} ${d.name}</option>`).join('');
 }
 document.addEventListener('DOMContentLoaded', buildReportSelect);
@@ -7015,7 +7026,7 @@ async function edDownloadHTML() {
     }
 
     // Costruisci il nuovo blocco baked dai localStorage attuali (le personalizzazioni di questo dispositivo)
-    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
+    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
     const merged = {};
     keys.forEach(k => { merged[k] = cdCfg(k); });  // cdCfg = localStorage o baked precedente
     const bakedBlock = '/* CD_BAKED_START */\n'
@@ -7078,7 +7089,7 @@ function edImport() {
     let cfg;
     try { cfg = JSON.parse(raw); } catch(e) { alert('JSON non valido: ' + e.message); return; }
     const map = {
-        entity_overrides:'cd_entity_overrides', subloads_extra:'cd_subloads_extra', subload_groups:'cd_subload_groups', report_devices:'cd_report_devices', flow_nodes:'cd_flow_nodes',
+        entity_overrides:'cd_entity_overrides', subloads_extra:'cd_subloads_extra', subload_groups:'cd_subload_groups', report_devices:'cd_report_devices', slot_labels:'cd_slot_labels', flow_nodes:'cd_flow_nodes',
         gruppi_extra:'cd_gruppi_extra', avvisi_names_extra:'cd_avvisi_names_extra',
         text_overrides:'cd_text_overrides', hidden_elements:'cd_hidden_elements'
     };
@@ -7088,7 +7099,7 @@ function edImport() {
 }
 function edResetAll() {
     if (!confirm('Rimuovere TUTTE le personalizzazioni di questo dispositivo?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
     location.reload();
 }
 
@@ -7383,7 +7394,7 @@ function wzRender() {
 /* ═══ v270: SINCRONIZZAZIONE MULTI-DISPOSITIVO ═══
    La configurazione viene salvata anche nell'archivio utente di Home Assistant
    (frontend user_data): configuri una volta, la ritrovi su ogni dispositivo. */
-const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'];
+const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'];
 
 function cdSyncCollect() {
     const out = { _savedAt: Date.now() };
@@ -7508,6 +7519,14 @@ function wzToggleLight(id, defName) {
     if (sub) sub.textContent = Object.keys(WIZ.luci).length;
 }
 
+
+function wzRenameSlot(ref, val) {
+    const L = cdCfg('cd_slot_labels');
+    val = (val || '').trim();
+    if (val) L[ref] = val; else delete L[ref];
+    localStorage.setItem('cd_slot_labels', JSON.stringify(L));
+    try { cdMarkDirty(); } catch(e){}
+}
 
 function wzSetSlot(input) {
     if (!WIZ.entities || Array.isArray(WIZ.entities)) WIZ.entities = {};
@@ -7987,14 +8006,15 @@ function wzAddCamera() {
 }
 function wzResetAll() {
     if (!confirm('Delete ALL configuration saved on this device (token, sections, lights, entities, rooms, cameras, theme)?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
     location.reload();
 }
 function wzSetNavMode(mode) {
     localStorage.setItem('cd_navbar_mode', mode);
     try { cdMarkDirty(); } catch(e){}
     if (window.cdApplyNavMode) window.cdApplyNavMode();
-    wzRender();
+    // v297: wzRender solo se il wizard è aperto (dalla Config il wizard non c'è)
+    if (document.getElementById('wz-overlay')) { try { wzRender(); } catch(e){} }
 }
 
 function wzFinish() {
@@ -10850,6 +10870,23 @@ const ED_DEVICES = [
     { key:'boiler',       name:'Boiler Elettrico', icon:'🔥', color:'#f97316', sensor:'dm.energy_boiler_mese',    bg:'rgba(249,115,22,0.1)' },
 ];
 
+/* v297: la lista "Attività Dispositivi" del Report segue le voci dell'utente.
+   Con voci configurate → solo quelle; senza, su build pubblica → vuota (niente nomi blindati). */
+try {
+    const _repDevs = cdCfgList('cd_report_devices');
+    const _palette = ['#06b6d4','#7c3aed','#e11d48','#059669','#f59e0b','#0ea5e9','#ea580c','#8b5cf6','#f97316','#1e40af','#a16207'];
+    if (_repDevs.length) {
+        ED_DEVICES.length = 0;
+        _repDevs.forEach((d, i) => ED_DEVICES.push({
+            key: 'rep_' + i, name: d.name, icon: d.icon || '⚡',
+            color: _palette[i % _palette.length], sensor: d.entity,
+            bg: 'rgba(14,165,233,0.1)'
+        }));
+    } else if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
+        ED_DEVICES.length = 0;
+    }
+} catch(e) {}
+
 const COSTO_KWH  = 0.25;
 const VALORE_CO2 = 0.4;
 let edDailyChart  = null;
@@ -12490,7 +12527,7 @@ async function edCaricaDettaglio() {
     const AUTO_HIDE_MS = 4000; // Auto-nascondi dopo 4 secondi di inattività
 
     /* v294: modalità barra fissa (richiesta utenti) — sempre visibile, niente auto-hide */
-    const cdNavFixed = () => (localStorage.getItem('cd_navbar_mode') || cdCfg('cd_navbar_mode') || 'auto') === 'fixed';
+    const cdNavFixed = () => { const v = localStorage.getItem('cd_navbar_mode'); return (typeof v === 'string' ? v : 'auto') === 'fixed'; };
     window.cdApplyNavMode = function() {
         if (cdNavFixed()) { nav.classList.add('visible'); document.body.classList.add('nav-visible'); clearTimeout(autoHideTimer); }
         else { nav.classList.remove('visible'); document.body.classList.remove('nav-visible'); }

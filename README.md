@@ -153,6 +153,8 @@ La pagina **⚙️ Config** (solo per gli admin che scegli) dà accesso a tutto:
 | 🧩 **Configura Entità** | 7 schede: Sezioni · Sostituzioni · Carichi · Avvisi · Testi · Nascondi · Esporta |
 | 🎨 **Tema** | Chiaro / Scuro / Auto |
 
+https://github.com/user-attachments/assets/52371288-9070-4111-81ba-69f13ce1dd3f
+
 Ogni etichetta è rinominabile, ogni card nascondibile, ogni entità rimappabile. **Semplice per iniziare, senza limiti per personalizzare.**
 
 <details>
@@ -203,7 +205,7 @@ Se ti è utile e vuoi supportare lo sviluppo di nuove funzionalità:
 Ogni contributo, anche piccolo, è molto apprezzato! 🙏
 E se ti piace, lascia una ⭐ al repo — aiuta il progetto a crescere!
 
-https://github.com/user-attachments/assets/52371288-9070-4111-81ba-69f13ce1dd3f
+
 
 
 

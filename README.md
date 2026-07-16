@@ -52,6 +52,15 @@ Update da HACS → la dashboard rileva la nuova versione e **si ricarica automat
 ### 🎨 Bella ovunque
 Design "sculpted" moderno, tema **chiaro/scuro/auto**, mobile-first con bottom-nav, grafici storici a popup, animazioni fluide. In **italiano e inglese**.
 
+---
+
+## 🎬 Video tutorial
+
+Dall'installazione alla dashboard configurata, in meno di 2 minuti:
+
+https://github.com/user-attachments/assets/52371288-9070-4111-81ba-69f13ce1dd3f
+
+---
 </td>
 </tr>
 </table>
@@ -153,7 +162,7 @@ La pagina **⚙️ Config** (solo per gli admin che scegli) dà accesso a tutto:
 | 🧩 **Configura Entità** | 7 schede: Sezioni · Sostituzioni · Carichi · Avvisi · Testi · Nascondi · Esporta |
 | 🎨 **Tema** | Chiaro / Scuro / Auto |
 
-https://github.com/user-attachments/assets/52371288-9070-4111-81ba-69f13ce1dd3f
+
 
 Ogni etichetta è rinominabile, ogni card nascondibile, ogni entità rimappabile. **Semplice per iniziare, senza limiti per personalizzare.**
 

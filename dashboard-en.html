@@ -1913,15 +1913,6 @@ nav.tabs.bottom-nav-bar .tab.active .text {
     }
     nav.tabs.bottom-nav-bar::-webkit-scrollbar { display: none !important; }
 
-/* v298: modalità BARRA FISSA — vale su desktop e mobile, vince su hover/swipe */
-body.cd-nav-fixed nav.tabs.bottom-nav-bar {
-    bottom: 18px !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    transform: translateX(-50%) scale(1) !important;
-}
-body.cd-nav-fixed .bottom-nav-handle { display: none !important; }
-body.cd-nav-fixed { padding-bottom: 96px !important; }
 
     nav.tabs.bottom-nav-bar .tab {
         flex: 0 0 auto !important;
@@ -4524,6 +4515,17 @@ html[data-theme="dark"] header { background: var(--card-glass); }
 .wz-lbl-edit:hover, .wz-lbl-edit:focus { border-bottom-color: var(--text-dim); outline: none; }
 .ed-slot-lbl { font-size: 11.5px; font-weight: 700; color: var(--text-dim); }
 .ed-slot-in { font-size: 11.5px !important; }
+
+/* v302: BARRA FISSA — regola GLOBALE (prima era finita dentro la media query mobile
+   e su PC non si applicava mai) */
+body.cd-nav-fixed nav.tabs.bottom-nav-bar {
+    bottom: 18px !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translateX(-50%) scale(1) !important;
+}
+body.cd-nav-fixed .bottom-nav-handle { display: none !important; }
+body.cd-nav-fixed { padding-bottom: 96px !important; }
 </style>
 </head>
 <body>
@@ -6006,7 +6008,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.6.6';
+const DASHBOARD_VERSION = '0.6.7';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -7375,6 +7377,7 @@ function wzRender() {
             <div style="display:flex; gap:8px; margin-bottom:8px;">
               <input id="wz-st-icon" class="wz-input" style="margin-bottom:0; flex:0 0 64px; text-align:center;" placeholder="🛋️" maxlength="4">
               <input id="wz-st-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Room name (es. Salone)">
+              <input id="wz-st-floor" class="wz-input" style="margin-bottom:0; flex:0 0 34%;" placeholder="Floor (opt.)" autocomplete="off">
             </div>
             <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-st-temp" class="wz-input mono" autocomplete="off" placeholder="sensor.temperatura_salone (temperatura)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-st-temp')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
             <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-st-hum" class="wz-input mono" autocomplete="off" placeholder="sensor.umidita_salone (optional)" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-st-hum')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
@@ -7676,7 +7679,11 @@ function wzAddQA() {
 /* ═══ v282: PICKER ENTITÀ — lista completa di HA con ricerca, selezione a tap.
    Alternativa mobile-friendly all'autocomplete per lo step "Collega le tue entità". ═══ */
 function wzPickEntity(ref) {
-    const M = (WIZ.allMeta && WIZ.allMeta.length) ? WIZ.allMeta : (WIZ.allEntities || []).map(id => ({ id, name: id }));
+    let M = (WIZ.allMeta && WIZ.allMeta.length) ? WIZ.allMeta : (WIZ.allEntities || []).map(id => ({ id, name: id }));
+    // v302: nell'editor (fuori dal wizard) le entità arrivano dagli stati live della dashboard
+    if (!M.length) {
+        try { M = Object.keys(_RAW_STATES).sort().map(id => ({ id, name: (_RAW_STATES[id].attributes && _RAW_STATES[id].attributes.friendly_name) || id })); } catch(e) {}
+    }
     if (!M.length) { alert('Wait for entities to load…'); return; }
     const ov = document.createElement('div');
     ov.id = 'cd-entpick';
@@ -7986,6 +7993,7 @@ function wzEditStanza(i) {
     document.getElementById('wz-st-icon').value = s.icon || '';
     document.getElementById('wz-st-temp').value = s.temp || '';
     document.getElementById('wz-st-hum').value = s.hum || '';
+    const flEl = document.getElementById('wz-st-floor'); if (flEl) flEl.value = s.floor || '';
     WIZ._editStanza = i;
     const btn = document.getElementById('wz-st-add-btn');
     if (btn) btn.textContent = '💾 Save changes';
@@ -8045,6 +8053,8 @@ function wzAddStanza() {
             s.temp = (document.getElementById('wz-st-temp').value || s.temp).trim();
             const h = (document.getElementById('wz-st-hum').value || '').trim();
             if (h) s.hum = h; else delete s.hum;
+            const fl2 = (document.getElementById('wz-st-floor')?.value || '').trim();
+            if (fl2) s.floor = fl2; else delete s.floor;
         }
         delete WIZ._editStanza;
         wzRender();
@@ -8280,11 +8290,15 @@ function editorRenderSezioni() {
     const sezAccordions = allSections.map(([key, sec]) => {
         const rows = sec.slots.map(sl => {
             const cur = ENTITY_OVERRIDES[sl.ref] || '';
+            const lbl = (cdCfg('cd_slot_labels')[sl.ref] || sl.lbl);
             return `<div class="ed-slot">
-              <div class="ed-slot-lbl">${sl.lbl}</div>
-              <input class="ed-input mono ed-slot-in" list="ed-entity-list" 
-                     data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_034"
-                     onchange="edSetSlot(this)">
+              <div class="ed-slot-lbl"><input class="wz-lbl-edit" value="${lbl.replace(/"/g,'&quot;')}" onchange="wzRenameSlot('${sl.ref}', this.value)" title="Tap to rename the label"></div>
+              <div style="display:flex; gap:6px;">
+                <input class="ed-input mono ed-slot-in" autocomplete="off" style="flex:1;"
+                       data-ref="${sl.ref}" value="${cur}" placeholder="es. dm.core_034"
+                       onchange="edSetSlot(this)">
+                <button type="button" onclick="wzPickEntity('${sl.ref}')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button>
+              </div>
             </div>`;
         }).join('');
         const evImgEd = key === 'ev' ? `<div class="ed-slot"><div class="ed-slot-lbl">🖼️ Car image URL (e.g. /local/my_car.png)</div>
@@ -8599,7 +8613,7 @@ function copyEditUrl() {
 /* v254: mostra le card "Editor Plancia" e "Configure Entities" solo agli admin. */
 /* ═══ v256: GESTIONE TEMA (chiaro / scuro / auto) ═══
    Salvato in localStorage 'cd_theme','cd_navbar_mode'. 'auto' segue prefers-color-scheme del dispositivo. */
-function getThemePref() { try { return localStorage.getItem('cd_theme','cd_navbar_mode') || 'auto'; } catch(e) { return 'auto'; } }
+function getThemePref() { try { return localStorage.getItem('cd_theme') || 'auto'; } catch(e) { return 'auto'; } }
 
 function applyTheme() {
     const pref = getThemePref();
@@ -8613,7 +8627,7 @@ function applyTheme() {
 
 function setTheme(pref) {
     if(navigator.vibrate) navigator.vibrate(8);
-    try { localStorage.setItem('cd_theme','cd_navbar_mode', pref); } catch(e) {}
+    try { localStorage.setItem('cd_theme', pref); } catch(e) {}
     applyTheme();
 }
 
@@ -11884,7 +11898,18 @@ function getStanze() {
 function buildTempCards() {
     const grid = document.getElementById('temp-grid');
     if (!grid) return;
-    grid.innerHTML = getStanze().map((r, i) => {
+    /* v302 (richiesta community): se le stanze hanno un "piano", il layout le raggruppa
+       con un'intestazione per ogni piano (ordine = ordine delle stanze nel wizard). */
+    const _rooms = getStanze();
+    const _hasFloors = _rooms.some(r => r.floor);
+    let _lastFloor = null;
+    grid.innerHTML = _rooms.map((r, i) => {
+        let _hdr = '';
+        if (_hasFloors) {
+            const f = r.floor || 'Altro';
+            if (f !== _lastFloor) { _hdr = `<div class="floor-hdr" style="grid-column:1/-1; font-weight:900; font-size:13px; letter-spacing:0.6px; text-transform:uppercase; color:var(--text-dim); margin:6px 2px 0;">🏢 ${f}</div>`; _lastFloor = f; }
+        }
+        return _hdr + (function(r, i) {
         const temp = r.temp;
         const hum = r.hum || temp.replace('_temperature', '_humidity');
         const tid = temp.replace(/\./g,'_').replace(/-/g,'_');
@@ -11906,6 +11931,7 @@ function buildTempCards() {
             </div>
           </div>
         </div>`;
+        })(r, i);
     }).join('');
 }
 document.addEventListener('DOMContentLoaded', buildTempCards);

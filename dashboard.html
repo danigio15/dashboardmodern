@@ -6006,7 +6006,7 @@ html[data-theme="dark"] header { background: var(--card-glass); }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.6.4';
+const DASHBOARD_VERSION = '0.6.5';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6748,7 +6748,7 @@ function editorRenderLoad() {
           </div>`;
     return `
           <div class="ed-sec-title">🗺️ Nodi della mappa flussi</div>
-          ${nodeForm('lav', 'Lavanderia')}${nodeForm('cuc', 'Cucina')}
+          ${nodeForm('lav', 'Lavanderia')}${nodeForm('cuc', 'Cucina')}${nodeForm('boiler', 'Boiler')}${nodeForm('wb', 'Wallbox')}${nodeForm('clima', 'Clima')}
           <button class="ed-btn" style="width:100%; margin-bottom:14px;" onclick="edSaveFlowNodes()">💾 Salva nodi mappa</button>
           <div class="ed-sec-title">➕ Nuovo gruppo di carichi</div>
           <div style="display:flex; gap:8px; margin-bottom:8px;">
@@ -6787,7 +6787,7 @@ function edAddLoad() {
 }
 function edSaveFlowNodes() {
     const fn = {};
-    ['lav','cuc'].forEach(k => {
+    ['lav','cuc','boiler','wb','clima'].forEach(k => {
         const icon = (document.getElementById('ed-fn-'+k+'-icon').value || '').trim();
         const name = (document.getElementById('ed-fn-'+k+'-name').value || '').trim();
         const group = document.getElementById('ed-fn-'+k+'-group').value;
@@ -9206,6 +9206,22 @@ function getClimaUnits() {
 /* v290: stato visivo di un nodo dei flussi energia:
    - entità non configurata → nodo e linea rimossi dalla vista
    - configurata ma ~0 W → nodo attenuato e flusso fermo */
+/* v300: personalizzazione nome/icona per i nodi con popup nativo (boiler/wallbox/clima);
+   il click passa a un gruppo carichi solo se l'utente ne sceglie uno. */
+function cdApplyFlowNodeLite(nodeId, conf, defIcon, defName) {
+    try {
+        const node = document.getElementById(nodeId);
+        if (!node) return;
+        const name = (conf && conf.name) || defName;
+        const icon = (conf && conf.icon) || defIcon;
+        const lbl = node.querySelector('.node-label');
+        const ico = node.querySelector('.node-icon');
+        if (lbl && lbl.textContent !== name) lbl.textContent = name;
+        if (ico && ico.textContent !== icon) ico.textContent = icon;
+        if (conf && conf.group) node.setAttribute('onclick', "apriSubLoads('" + conf.group + "')");
+    } catch(e) {}
+}
+
 function cdApplyFlowNode(nodeId, conf, defGroup, defIcon, defName) {
     try {
         const node = document.getElementById(nodeId);
@@ -9753,6 +9769,8 @@ function cambiaTempoStorico(hours) {
 }
 
 async function apriStorico(e, entityId, name, hours = 24) {
+    // v300: entità non configurata → nessuna azione (evita popup incoerenti)
+    { const _e = arguments[1]; const _s = STATES[_e]; if (!_s || _s.entity_id === 'dm.unmapped') return; }
   if(e) e.stopPropagation(); if(e && navigator.vibrate) navigator.vibrate(15);
   entityId = resolveEntity(entityId);  // v254: applica eventuale override
   
@@ -10038,9 +10056,13 @@ function render() {
       })();
 
       /* v290: nodi subload — nascosti se l'entità non è configurata, attenuati se a riposo */
-      cdEnergyNodeState('n-boiler', 'line-home-boiler', 'dm.boiler_potenza_resistenza_boiler');
-      cdEnergyNodeState('n-wb', 'line-home-wb', 'dm.ev_potenza_wallbox');
-      cdEnergyNodeState('n-clima', 'line-home-clima', 'dm.energy_potenza_condizionatori');
+      const _fn0 = cdCfg('cd_flow_nodes') || {};
+      cdApplyFlowNodeLite('n-boiler', _fn0.boiler, '🌞', 'Boiler');
+      cdApplyFlowNodeLite('n-wb', _fn0.wb, '🚗', 'Wallbox');
+      cdApplyFlowNodeLite('n-clima', _fn0.clima, '❄️', 'Clima');
+      cdEnergyNodeState('n-boiler', 'line-home-boiler', (_fn0.boiler && _fn0.boiler.pwr) || 'dm.boiler_potenza_resistenza_boiler');
+      cdEnergyNodeState('n-wb', 'line-home-wb', (_fn0.wb && _fn0.wb.pwr) || 'dm.ev_potenza_wallbox');
+      cdEnergyNodeState('n-clima', 'line-home-clima', (_fn0.clima && _fn0.clima.pwr) || 'dm.energy_potenza_condizionatori');
       /* v296: i due nodi sotto la casa sono personalizzabili (nome, icona, gruppo, sensore) */
       const _fn = cdCfg('cd_flow_nodes') || {};
       cdApplyFlowNode('n-lav', _fn.lav, 'lavanderia', '🧺', 'Lavanderia');
@@ -10690,8 +10712,18 @@ function renderAllarmeBanner() {
     if (!banner) return;
     const iconEl = document.getElementById('allarme-banner-icon');
     const textEl = document.getElementById('allarme-banner-text');
-    const stato  = STATES['dm.security_centrale_allarme']?.state;
-    const triggerOn = STATES['dm.home_interruttore_antifurto']?.state === 'on';
+    const _alarmObj = cdFirstMapped('dm.security_centrale_allarme');
+    const _trigObj  = cdFirstMapped('dm.home_interruttore_antifurto');
+    const stato  = _alarmObj?.state;
+    const triggerOn = _trigObj?.state === 'on';
+
+    // v300 (segnalazione Dima): antifurto NON configurato → banner rimosso.
+    // Il vecchio check confrontava con undefined, ma il ghost restituisce 'unavailable':
+    // il banner restava visibile (e con stati anomali mostrava perfino "Allarme!").
+    if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING && !_alarmObj && !_trigObj) {
+        banner.remove();
+        return;
+    }
 
     // v269 (issue #2): antifurto non configurato → il banner viene rimosso dalla Home
     if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING && stato === undefined && !triggerOn) {

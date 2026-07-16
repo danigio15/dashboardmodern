@@ -6,6 +6,15 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.6.5] — 2026-07-16
+
+### ✨ Aggiunto
+- **🗺️ TUTTI i nodi sotto la casa personalizzabili** — anche Boiler, Wallbox e Clima si rinominano (nome, icona, sensore, gruppo) da ⚙️ → Carichi → Nodi della mappa, come Lavanderia e Cucina.
+
+### 🐛 Corretto
+- **Badge "Allarme!" senza antifurto configurato** *(segnalazione Dima)* — il controllo di rimozione non riconosceva le installazioni senza antifurto: ora il banner sparisce davvero.
+- **Nodo Casa che apriva popup incoerenti** *(segnalazione Tinux)* — click su nodi con entità non configurata: ora nessuna azione invece di finestre sbagliate.
+
 ## [0.6.4] — 2026-07-16
 
 ### ✨ Aggiunto
@@ -17,6 +26,7 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 - **Tema che non rispondeva** — la card della barra aveva rotto la struttura della pagina Config: riparata.
 - **Avvisi persi al refresh** *(issue #5, definitivo)* — le modifiche non ancora sincronizzate sono ora protette e vengono inviate subito.
 - **Confronto settimanale a zero** *(issue #6)* — ora usa le entità configurate dall'utente (produzione o consumo giornaliero) invece di un sensore fisso; se non configurate mostra "—".
+
 
 ## [0.6.2] — 2026-07-16
 
@@ -241,6 +251,15 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
 
+## [0.6.5] — 2026-07-16
+
+### ✨ Added
+- **🗺️ ALL nodes under the house are customizable** — Boiler, Wallbox and Climate can be renamed too (name, icon, sensor, group) via ⚙️ → Loads → Map nodes, like Laundry and Kitchen.
+
+### 🐛 Fixed
+- **"Alarm!" badge without a configured alarm** *(reported by Dima)* — the removal check missed unconfigured installs: the banner now truly disappears.
+- **Home node opening wrong popups** *(reported by Tinux)* — clicking nodes with unconfigured entities now does nothing instead of showing mismatched windows.
+
 ## [0.6.4] — 2026-07-16
 
 ### ✨ Added
@@ -252,6 +271,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](h
 - **Unresponsive theme** — the nav card had broken the Config page structure: repaired.
 - **Alerts lost on refresh** *(issue #5, final)* — unsynced local changes are now protected and pushed immediately.
 - **Weekly comparison at zero** *(issue #6)* — now uses the user's configured entities (daily production or consumption) instead of a fixed sensor; shows "—" if unconfigured.
+
 
 ## [0.6.2] — 2026-07-16
 

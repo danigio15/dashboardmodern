@@ -6011,7 +6011,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.7.0';
+const DASHBOARD_VERSION = '0.7.1';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6749,7 +6749,7 @@ function editorRenderLoad() {
         cdCfgList('cd_subload_groups').map(g => `<option value="${g.id}" ${sel === g.id ? 'selected' : ''}>${g.icon || '🔌'} ${g.name}</option>`).join('');
     const nodeForm = (key, defName) => `
           <div style="background:rgba(148,163,184,0.07); border-radius:12px; padding:10px; margin-bottom:8px;">
-            <div style="font-weight:800; font-size:12px; margin-bottom:6px;">Nodo "${(fn[key] && fn[key].name) || defName}" nella mappa flussi</div>
+            <div style="font-weight:800; font-size:12px; margin-bottom:6px;">🗺️ Nodo mappa ${['lav','cuc','boiler','wb','clima'].indexOf(key)+1} <span style="font-weight:600; color:var(--text-dim);">— nome attuale: ${(fn[key] && fn[key].name) || defName + ' (predefinito)'}</span></div>
             <div style="display:flex; gap:6px; margin-bottom:6px;">
               <input id="ed-fn-${key}-icon" class="ed-input" style="flex:0 0 56px;" placeholder="🧺" maxlength="4" value="${(fn[key] && fn[key].icon) || ''}">
               <input id="ed-fn-${key}-name" class="ed-input" style="flex:1;" placeholder="${defName}" value="${(fn[key] && fn[key].name) || ''}">
@@ -6846,7 +6846,63 @@ function edDelLuce(id) {
     edToast('Luce rimossa');
 }
 
+function edMoveStanza(i, dir) {
+    const rooms = cdCfgList('cd_stanze');
+    const j = i + dir;
+    if (j < 0 || j >= rooms.length) return;
+    [rooms[i], rooms[j]] = [rooms[j], rooms[i]];
+    localStorage.setItem('cd_stanze', JSON.stringify(rooms));
+    try { cdMarkDirty(); } catch(e){}
+    buildTempCards();
+    editorSwitch('sezioni');
+}
+
+function edEditStanza2(i) {
+    const r = cdCfgList('cd_stanze')[i];
+    if (!r) return;
+    document.getElementById('ed-st2-name').value = r.name || '';
+    document.getElementById('ed-st2-icon').value = r.icon || '';
+    document.getElementById('ed-st2-floor').value = r.floor || '';
+    document.getElementById('ed-st2-temp').value = r.temp || '';
+    document.getElementById('ed-st2-hum').value = r.hum || '';
+    window._edEditStanzaIdx = i;
+    const btn = document.querySelector('[onclick="edAddStanza2()"]');
+    if (btn) btn.textContent = '💾 Salva modifica';
+    document.getElementById('ed-st2-name')?.scrollIntoView({ block: 'center' });
+    document.getElementById('ed-st2-name')?.focus();
+}
+
+function edDelStanza2(i) {
+    const rooms = cdCfgList('cd_stanze');
+    rooms.splice(i, 1);
+    localStorage.setItem('cd_stanze', JSON.stringify(rooms));
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    buildTempCards();
+    editorSwitch('sezioni');
+    edToast('Stanza rimossa');
+}
+
 function edAddStanza2() {
+    if (typeof window._edEditStanzaIdx === 'number') {
+        const rooms = cdCfgList('cd_stanze');
+        const r = rooms[window._edEditStanzaIdx];
+        if (r) {
+            r.name = (document.getElementById('ed-st2-name').value || r.name).trim();
+            r.icon = (document.getElementById('ed-st2-icon').value || r.icon).trim();
+            r.temp = (document.getElementById('ed-st2-temp').value || r.temp).trim();
+            const h = (document.getElementById('ed-st2-hum').value || '').trim();
+            if (h) r.hum = h; else delete r.hum;
+            const fl = (document.getElementById('ed-st2-floor').value || '').trim();
+            if (fl) r.floor = fl; else delete r.floor;
+            localStorage.setItem('cd_stanze', JSON.stringify(rooms));
+        }
+        delete window._edEditStanzaIdx;
+        try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+        buildTempCards();
+        editorSwitch('sezioni');
+        edToast('Stanza aggiornata');
+        return;
+    }
     const name = (document.getElementById('ed-st2-name').value || '').trim();
     const icon = (document.getElementById('ed-st2-icon').value || '🌡️').trim();
     const temp = (document.getElementById('ed-st2-temp').value || '').trim();
@@ -8449,11 +8505,16 @@ function editorRenderSezioni() {
     const stanze = getStanze();
     const stanzeRows = stanze.map((r, i) => `
         <div class="ed-row">
-          <div style="font-size:17px; flex-shrink:0;">${r.icon||'🏠'}</div>
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <div class="ed-del" style="width:24px; height:20px; font-size:10px; ${i===0?'opacity:0.25; pointer-events:none;':''}" onclick="edMoveStanza(${i},-1)">▲</div>
+            <div class="ed-del" style="width:24px; height:20px; font-size:10px; ${i===stanze.length-1?'opacity:0.25; pointer-events:none;':''}" onclick="edMoveStanza(${i},1)">▼</div>
+          </div>
+          <div style="font-size:17px; flex-shrink:0;">${r.icon||'🌡️'}</div>
           <div class="ed-row-main">
-            <div class="ed-row-new">${r.name}</div>
+            <div class="ed-row-new">${r.name}${r.floor ? ' <span style="font-size:10px; color:var(--text-dim); font-weight:800;">· 🏢 ' + r.floor + '</span>' : ''}</div>
             <div class="ed-row-old mono">${r.temp}</div>
           </div>
+          <div class="ed-del" style="background:rgba(14,165,233,0.12);" onclick="edEditStanza2(${i})">✏️</div>
           <div class="ed-del" onclick="edDelStanza(${i})">🗑️</div>
         </div>`).join('');
 
@@ -8821,7 +8882,8 @@ function applyTheme() {
     else if (pref === 'auto') dark = window.matchMedia && (window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : { matches: false, addEventListener: function(){} }).matches;
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
     // Aggiorna il selettore se visibile
-    document.querySelectorAll('.theme-opt').forEach(b => b.classList.toggle('active', b.dataset.theme === pref));
+    // v304: tocca SOLO i bottoni del tema (quelli della barra di navigazione hanno la loro logica)
+    document.querySelectorAll('.theme-opt[data-theme]').forEach(b => b.classList.toggle('active', b.dataset.theme === pref));
 }
 
 function setTheme(pref) {
@@ -11853,9 +11915,29 @@ async function renderEdDeviceList(selMonth, selYear, isCurrentMonth, cons = 0, p
 
     if (isCurrentMonth) {
         // Lettura diretta da STATES
-        ED_DEVICES.forEach(d => {
-            devValues[d.key] = parseFloat(getRawState(d.sensor)) || 0;
-        });
+        /* v304: il valore del mese è il DELTA dall'inizio del mese, non lo stato attuale.
+           Con entità mensili (che ripartono da ~0) il risultato è identico a prima;
+           con entità TOTALI cumulative diventa finalmente corretto. */
+        ED_DEVICES.forEach(d => { devValues[d.key] = parseFloat(getRawState(d.sensor)) || 0; });
+        try {
+            const mStart = new Date(selYear, selMonth-1, 1).toISOString();
+            const ids = ED_DEVICES.map(d => d.sensor).join(',');
+            const res = await fetch(`${HA_HTTP_URL}/api/history/period/${mStart}?filter_entity_id=${ids}&minimal_response&no_attributes`,
+                { headers: { 'Authorization': `Bearer ${LONG_LIVED_TOKEN}` } });
+            if (res.ok) {
+                const json = await res.json();
+                const baseOf = {};
+                (json || []).forEach(arr => {
+                    const first = (arr || []).find(x => x.state !== 'unknown' && x.state !== 'unavailable');
+                    if (first && arr[0]) baseOf[arr[0].entity_id] = parseFloat(first.state);
+                });
+                ED_DEVICES.forEach(d => {
+                    const base = baseOf[d.sensor];
+                    const cur = devValues[d.key];
+                    if (!isNaN(base) && base >= 0 && cur >= base) devValues[d.key] = +(cur - base).toFixed(1);
+                });
+            }
+        } catch(e) { console.warn('[Report] delta mese:', e); }
     } else {
         // Mese passato: provo Long-Term Statistics (non purgate), poi history come fallback
         const tStart = new Date(selYear, selMonth-1, 1).toISOString();
@@ -11897,8 +11979,11 @@ async function renderEdDeviceList(selMonth, selYear, isCurrentMonth, cons = 0, p
                     const json = await res.json();
                     ED_DEVICES.forEach((d, i) => {
                         const arr = json[i] || [];
-                        const last = [...arr].reverse().find(x => x.state !== 'unknown' && x.state !== 'unavailable');
-                        devValues[d.key] = last ? (parseFloat(last.state) || 0) : 0;
+                        const valid = arr.filter(x => x.state !== 'unknown' && x.state !== 'unavailable');
+                        const last = valid[valid.length - 1], first = valid[0];
+                        // v304: delta nel mese (corretto anche per entità TOTALI cumulative)
+                        const lv = last ? parseFloat(last.state) : NaN, fv = first ? parseFloat(first.state) : NaN;
+                        devValues[d.key] = !isNaN(lv) ? (!isNaN(fv) && lv >= fv ? +(lv - fv).toFixed(1) : lv) : 0;
                     });
                 }
             } catch(e) {

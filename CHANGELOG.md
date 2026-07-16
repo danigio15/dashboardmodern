@@ -6,6 +6,41 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.7.1] — 2026-07-16
+
+### 🐛 Corretto
+- **✏️ Matita e frecce ▲▼ sulle stanze anche nell'editor** — modifica (nome, icona, Piano, sensori) e riordino senza cancellare.
+- **🗺️ Nodi mappa con titoli neutri** — "Nodo mappa 1 — nome attuale: …": il nome è libero, ora si vede.
+- **📌 La card Barra di navigazione evidenzia davvero la scelta attiva** — il selettore del tema la ripuliva per errore.
+
+## [0.7.0] — 2026-07-16 · "One Editor"
+
+### 🚀 Nuova architettura di configurazione
+- **Il wizard finisce in 3 passi**: connessione → nome → sezioni, poi "🪄 Rileva tutto e apri l'editor".
+- **L'editor è l'unico luogo di configurazione** — luci (nuovo), sezioni con etichette rinominabili e lente 🔍, stanze con Piano, clima, telecamere, avvisi, azioni rapide, dispositivi, Report, gruppi carichi e nodi mappa.
+- **♾️ Giornaliero/mensile/annuale calcolati dai TOTALI** — collega le entità cumulative (le stesse del tab Energia di HA): la dashboard calcola oggi/mese/anno dalla cronologia. Niente utility_meter.
+
+## [0.6.8] — 2026-07-16
+
+### ✨ Migliorato
+- Etichette rinominabili ora visibili (tratteggio+matita) · Report anche in editor→Sezioni · Stanze aggiungibili dall'editor (con Piano) · card navbar con stato attivo · schede editor su più righe.
+
+## [0.6.7] — 2026-07-16
+
+### 🐛 Corretto
+- **Tema che non si salvava mai** (errore interno di salvataggio) · **Barra fissa mai attiva su PC** (regola nel blocco solo-telefoni) · **Gruppi carichi spariti al ricaricamento**.
+
+### ✨ Aggiunto
+- Lente 🔍 ed etichette ✏️ nell'editor · **🏢 Stanze per piano** con raggruppamento automatico.
+
+## [0.6.6] — 2026-07-16
+
+### 🐛 Corretto
+- **Wizard bloccato da "Importate N impostazioni"** (import in loop: ora solo su dispositivi nuovi) · **Tema e Navbar sovrascritti dalla sync** (ora preferenze per-dispositivo).
+
+### ✨ Aggiunto
+- Voci Report nell'editor · nodi mappa con opzione "apre lo storico".
+
 ## [0.6.5] — 2026-07-16
 
 ### 🐛 Corretto (importante)
@@ -256,6 +291,26 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.7.1] — 2026-07-16
+
+### 🐛 Fixed
+- **✏️ Pencil and ▲▼ arrows on rooms in the editor** · **🗺️ neutral map-node titles** · **📌 Navigation bar card now truly highlights the active choice** (the theme selector was clearing it).
+
+## [0.7.0] — 2026-07-16 · "One Editor"
+
+### 🚀 New configuration architecture
+- **3-step wizard** → "🪄 Detect everything and open the editor". **The editor is the single configuration place** (lights new, renamable labels, 🔍 picker, rooms with Floor, Report, load groups, map nodes).
+- **♾️ Daily/monthly/yearly computed from TOTALS** — link your cumulative entities: the dashboard computes periods from history. No utility_meter.
+
+## [0.6.8] — 2026-07-16
+- Visible renamable labels · Report in editor→Sections · rooms addable from editor · navbar active state · multi-row tabs.
+
+## [0.6.7] — 2026-07-16
+- **Fixed**: theme never saving · fixed bar never active on PC · load groups disappearing on reload. **Added**: 🔍/✏️ in the editor · 🏢 rooms by floor.
+
+## [0.6.6] — 2026-07-16
+- **Fixed**: wizard locked by sync import loop · theme/navbar overwritten by sync. **Added**: Report entries in editor · map nodes "opens history" option.
 
 ## [0.6.5] — 2026-07-16
 

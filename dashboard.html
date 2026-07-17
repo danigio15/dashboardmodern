@@ -6011,7 +6011,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.7.1';
+const DASHBOARD_VERSION = '0.7.2';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6718,7 +6718,7 @@ function buildReportSelect() {
     if (!sel) return;
     const devs = cdCfgList('cd_report_devices');
     if (!devs.length) {
-        if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) sel.innerHTML = '<option value="">— Aggiungi le voci dal wizard (accordion Report Analisi) —</option>';
+        if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) sel.innerHTML = '<option value="">— Aggiungi le voci da ⚙️ Editor → Sezioni → Report Analisi —</option>';
         return; // nel file personale restano le option di default
     }
     sel.innerHTML = devs.map(d => `<option value="${d.entity}">${d.icon || '⚡'} ${d.name}</option>`).join('');
@@ -6752,10 +6752,10 @@ function editorRenderLoad() {
             <div style="font-weight:800; font-size:12px; margin-bottom:6px;">🗺️ Nodo mappa ${['lav','cuc','boiler','wb','clima'].indexOf(key)+1} <span style="font-weight:600; color:var(--text-dim);">— nome attuale: ${(fn[key] && fn[key].name) || defName + ' (predefinito)'}</span></div>
             <div style="display:flex; gap:6px; margin-bottom:6px;">
               <input id="ed-fn-${key}-icon" class="ed-input" style="flex:0 0 56px;" placeholder="🧺" maxlength="4" value="${(fn[key] && fn[key].icon) || ''}">
-              <input id="ed-fn-${key}-name" class="ed-input" style="flex:1;" placeholder="${defName}" value="${(fn[key] && fn[key].name) || ''}">
+              <input id="ed-fn-${key}-name" class="ed-input" style="flex:1;" placeholder="${defName}" value="${(fn[key] && fn[key].name) || defName}">
               <select id="ed-fn-${key}-group" class="ed-input" style="flex:0 0 34%;">${grpOpts((fn[key] && fn[key].group) || '')}</select>
             </div>
-            <input id="ed-fn-${key}-pwr" class="ed-input mono" style="width:100%; font-family:monospace;" placeholder="Sensore potenza (W) del nodo" value="${(fn[key] && fn[key].pwr) || ''}">
+            <div style="display:flex; gap:6px;"><div style="display:flex; gap:6px;"><input id="ed-fn-${key}-pwr" class="ed-input mono" style="flex:1;" style="flex:1; width:100%; font-family:monospace;" placeholder="Sensore potenza (W) del nodo" value="${(fn[key] && fn[key].pwr) || ''}"><button type="button" onclick="wzPickEntity('#ed-fn-${key}-pwr')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div><button type="button" onclick="wzPickEntity('#ed-fn-${key}-pwr')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
           </div>`;
     return `
           <div class="ed-sec-title">🗺️ Nodi della mappa flussi</div>
@@ -6773,13 +6773,13 @@ function editorRenderLoad() {
       <div class="ed-list">${rows}</div>
       <div class="ed-form">
         <select id="ed-load-grp" class="ed-input" style="flex:0 0 38%;">
-                ${Object.entries(SUBLOADS_CONFIG).filter(([k, g]) => !k.endsWith('_day') && (g.custom || k === 'cucina' || k === 'lavanderia')).map(([k, g]) => `<option value="${k}">${g.icon} ${(g.title || '').replace(' Istantaneo','')}</option>`).join('')}
+                ${Object.entries(SUBLOADS_CONFIG).filter(([k, g]) => { const hasCustom = Object.values(SUBLOADS_CONFIG).some(x => x.custom); return !k.endsWith('_day') && (hasCustom ? g.custom : (k === 'cucina' || k === 'lavanderia')); }).map(([k, g]) => `<option value="${k}">${g.icon} ${(g.title || '').replace(' Istantaneo','')}</option>`).join('')}
               </select>
         <div class="ed-form-row">
           <input id="ed-load-name" class="ed-input" placeholder="Nome (es. Tostapane)" style="flex:1;">
           <input id="ed-load-icon" class="ed-input ed-icon-input" placeholder="🍞" maxlength="4">
         </div>
-        <input id="ed-load-pwr" list="ed-entity-list" class="ed-input mono" placeholder="sensor.tostapane_power">
+        <div style="display:flex; gap:6px;"><input id="ed-load-pwr" list="ed-entity-list" class="ed-input mono" placeholder="sensor.tostapane_power"><button type="button" onclick="wzPickEntity('#ed-load-pwr')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
         <button class="ed-btn-add" onclick="edAddLoad()">＋ Aggiungi carico</button>
       </div>
       <div class="ed-sec-title" style="margin-top:16px;">📊 Report Analisi — voci</div>
@@ -6847,7 +6847,7 @@ function edDelLuce(id) {
 }
 
 function edMoveStanza(i, dir) {
-    const rooms = cdCfgList('cd_stanze');
+    const rooms = getStanze().slice(); // v305: la lista mostrata (anche baked/sync), non solo localStorage
     const j = i + dir;
     if (j < 0 || j >= rooms.length) return;
     [rooms[i], rooms[j]] = [rooms[j], rooms[i]];
@@ -6858,22 +6858,23 @@ function edMoveStanza(i, dir) {
 }
 
 function edEditStanza2(i) {
-    const r = cdCfgList('cd_stanze')[i];
+    const r = getStanze()[i]; // v305: coerente con la lista mostrata
     if (!r) return;
+    if (!document.getElementById('ed-st2-name')) { alert('Apri l\'accordion Stanze per modificare'); return; }
     document.getElementById('ed-st2-name').value = r.name || '';
     document.getElementById('ed-st2-icon').value = r.icon || '';
     document.getElementById('ed-st2-floor').value = r.floor || '';
     document.getElementById('ed-st2-temp').value = r.temp || '';
     document.getElementById('ed-st2-hum').value = r.hum || '';
     window._edEditStanzaIdx = i;
-    const btn = document.querySelector('[onclick="edAddStanza2()"]');
+    const btn = document.getElementById('ed-st2-btn') || document.querySelector('[onclick="edAddStanza2()"]');
     if (btn) btn.textContent = '💾 Salva modifica';
-    document.getElementById('ed-st2-name')?.scrollIntoView({ block: 'center' });
-    document.getElementById('ed-st2-name')?.focus();
+    const inp = document.getElementById('ed-st2-name');
+    if (inp) { const det = inp.closest('details'); if (det) det.open = true; try { inp.scrollIntoView({ block: 'center' }); } catch(e) {} try { inp.focus(); } catch(e) {} }
 }
 
 function edDelStanza2(i) {
-    const rooms = cdCfgList('cd_stanze');
+    const rooms = getStanze().slice();
     rooms.splice(i, 1);
     localStorage.setItem('cd_stanze', JSON.stringify(rooms));
     try { cdMarkDirty(); cdSyncPush(); } catch(e){}
@@ -6884,7 +6885,7 @@ function edDelStanza2(i) {
 
 function edAddStanza2() {
     if (typeof window._edEditStanzaIdx === 'number') {
-        const rooms = cdCfgList('cd_stanze');
+        const rooms = getStanze().slice();
         const r = rooms[window._edEditStanzaIdx];
         if (r) {
             r.name = (document.getElementById('ed-st2-name').value || r.name).trim();
@@ -8545,7 +8546,21 @@ function editorRenderSezioni() {
 
       <details class="ed-acc"><summary class="ed-acc-head">🌡️ Stanze (temperature) <span class="ed-acc-n">${stanze.length} stanze</span></summary>
         <div class="ed-acc-body">
-          <div class="ed-list">${stanzeRows}</div>
+          <div class="ed-list">${stanzeRows}
+          <div style="display:flex; gap:8px; margin:10px 0 8px;">
+            <input id="ed-st2-icon" class="ed-input" style="flex:0 0 56px;" placeholder="🌡️" maxlength="4">
+            <input id="ed-st2-name" class="ed-input" style="flex:1;" placeholder="Nome stanza">
+            <input id="ed-st2-floor" class="ed-input" style="flex:0 0 30%;" placeholder="Piano (opz.)">
+          </div>
+          <div style="display:flex; gap:6px; margin-bottom:6px;">
+            <input id="ed-st2-temp" class="ed-input mono" autocomplete="off" placeholder="sensor.temperatura_x" style="flex:1; font-family:monospace;">
+            <button type="button" onclick="wzPickEntity('#ed-st2-temp')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button>
+          </div>
+          <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <input id="ed-st2-hum" class="ed-input mono" autocomplete="off" placeholder="sensor.umidita_x (facoltativo)" style="flex:1; font-family:monospace;">
+            <button type="button" onclick="wzPickEntity('#ed-st2-hum')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button>
+          </div>
+          <button class="ed-btn-add" id="ed-st2-btn" style="width:100%;" onclick="edAddStanza2()">＋ Aggiungi stanza</button></div>
           <div class="ed-form">
             <div class="ed-form-row">
               <input id="ed-st-icon" class="ed-input ed-icon-input" placeholder="🛋️" maxlength="4">
@@ -11918,6 +11933,10 @@ async function renderEdDeviceList(selMonth, selYear, isCurrentMonth, cons = 0, p
         /* v304: il valore del mese è il DELTA dall'inizio del mese, non lo stato attuale.
            Con entità mensili (che ripartono da ~0) il risultato è identico a prima;
            con entità TOTALI cumulative diventa finalmente corretto. */
+        if (!ED_DEVICES.length) {
+            list.innerHTML = '<div style="text-align:center; padding:26px; color:var(--text-dim); font-weight:800;">📊 Aggiungi i tuoi dispositivi da ⚙️ → Configura Entità → Carichi → "Report Analisi — voci"<br><span style="font-weight:600; font-size:12px;">Puoi usare entità mensili oppure TOTALI cumulative: i mesi vengono calcolati da soli.</span></div>';
+            return;
+        }
         ED_DEVICES.forEach(d => { devValues[d.key] = parseFloat(getRawState(d.sensor)) || 0; });
         try {
             const mStart = new Date(selYear, selMonth-1, 1).toISOString();

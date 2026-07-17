@@ -6,6 +6,14 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.7.2] — 2026-07-16
+
+### 🐛 Corretto
+- **✏️ Matita delle stanze che non faceva nulla** — leggeva una lista diversa da quella mostrata (config sincronizzate/integrate): ora modifica, riordino e cestino operano sempre sulla lista reale, e il form si apre e si riempie al tocco.
+- **🔍 Lente anche sui sensori dei nodi mappa** e **nome del nodo precompilato** — il nome ora appare come testo reale modificabile, non come suggerimento grigio.
+- **Select dei carichi popolato dai TUOI gruppi** — Cucina/Lavanderia compaiono solo se non hai creato gruppi personalizzati.
+- **📊 Report senza voci: guida corretta** — il messaggio ora indirizza a ⚙️ → Carichi → Report (il vecchio rimando al wizard non esisteva più) e ricorda che funzionano sia entità mensili che TOTALI.
+
 ## [0.7.1] — 2026-07-16
 
 ### 🐛 Corretto
@@ -291,6 +299,14 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
+
+## [0.7.2] — 2026-07-16
+
+### 🐛 Fixed
+- **✏️ Rooms pencil doing nothing** — it read a different list from the one shown (synced/baked configs): edit, reorder and delete now always operate on the real list, and the form opens and fills on tap.
+- **🔍 Picker on map-node sensors too** and **node name pre-filled** — the name now appears as real editable text, not a grey hint.
+- **Loads select populated by YOUR groups** — Kitchen/Laundry only appear if you have no custom groups.
+- **📊 Report with no entries: correct guidance** — the message now points to ⚙️ → Loads → Report (the old wizard reference no longer existed) and reminds that both monthly and TOTAL entities work.
 
 ## [0.7.1] — 2026-07-16
 

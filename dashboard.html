@@ -6011,7 +6011,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.7.2';
+const DASHBOARD_VERSION = '0.7.3';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6177,11 +6177,32 @@ const GRUPPI_MONITORAGGIO = {
    - cd_gruppi_extra:   { "win": ["binary_sensor.x", ...], "batt": [...], "luci": [...] }
    - cd_avvisi_names_extra: { "entity_id": "Nome Pulito" }  */
 try {
+  /* v0.7.3 fix (#4): i gruppi personalizzati entrano in SUBLOADS_CONFIG a OGNI avvio —
+     questo blocco era andato perso e il select/popup vedevano solo Cucina/Lavanderia. */
+  cdCfgList('cd_subload_groups').forEach(g => {
+    if (g && g.id && !SUBLOADS_CONFIG[g.id]) SUBLOADS_CONFIG[g.id] = { title: g.name, icon: g.icon || '🔌', items: [], custom: true };
+  });
   const extSub = cdCfg('cd_subloads_extra');
   Object.entries(extSub).forEach(([k, items]) => {
     if (SUBLOADS_CONFIG[k] && Array.isArray(items)) SUBLOADS_CONFIG[k].items.push(...items);
   });
 } catch(e) { console.warn('[Config Entità] subloads_extra malformato:', e); }
+
+/* v0.7.3 fix (#4): card dei gruppi personalizzati nella sezione Energia — la funzione
+   era richiamata ma non era mai stata definita nel file pubblicato (ReferenceError). */
+function buildCustomLoadCards() {
+    const host = document.getElementById('custom-loads-grid');
+    if (!host) return;
+    const groups = cdCfgList('cd_subload_groups');
+    host.style.display = groups.length ? '' : 'none';
+    host.innerHTML = groups.map(g => `
+      <div class="dev-card" onclick="apriSubLoads('${g.id}')" style="text-align:center;">
+        <div class="dev-ico">${g.icon || '🔌'}</div>
+        <div class="dev-name">${g.name}</div>
+        <div class="dev-state" id="cl-count-${g.id}">—</div>
+      </div>`).join('');
+}
+document.addEventListener('DOMContentLoaded', buildCustomLoadCards);
 try {
   const extGrp = cdCfg('cd_gruppi_extra');
   Object.entries(extGrp).forEach(([k, ids]) => {
@@ -6819,7 +6840,8 @@ function edAddReportDevice() {
     localStorage.setItem('cd_report_devices', JSON.stringify(devs));
     try { cdMarkDirty(); cdSyncPush(); } catch(e){}
     buildReportSelect();
-    editorSwitch('carichi');
+    try { cdRebuildReportDevices(); } catch(e){}
+    editorSwitch('load');
     edToast('Voce Report aggiunta');
 }
 
@@ -6932,6 +6954,7 @@ function edAddReportDevice2() {
     localStorage.setItem('cd_report_devices', JSON.stringify(devs));
     try { cdMarkDirty(); cdSyncPush(); } catch(e){}
     buildReportSelect();
+    try { cdRebuildReportDevices(); } catch(e){}
     editorSwitch('sezioni');
     edToast('Voce Report aggiunta');
 }
@@ -6942,7 +6965,8 @@ function edDelReportDevice(i) {
     localStorage.setItem('cd_report_devices', JSON.stringify(devs));
     try { cdMarkDirty(); cdSyncPush(); } catch(e){}
     buildReportSelect();
-    editorSwitch('carichi');
+    try { cdRebuildReportDevices(); } catch(e){}
+    editorSwitch('load');
     edToast('Voce Report rimossa');
 }
 
@@ -6970,9 +6994,9 @@ function edAddLoadGroup() {
     groups.push({ id, name, icon });
     localStorage.setItem('cd_subload_groups', JSON.stringify(groups));
     SUBLOADS_CONFIG[id] = { title: name, icon, items: [], custom: true };
-    try { cdMarkDirty(); } catch(e){}
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
     buildCustomLoadCards();
-    editorSwitch('carichi');
+    editorSwitch('load');
     edToast('Gruppo creato — ora aggiungici i carichi qui sotto');
 }
 
@@ -6987,9 +7011,9 @@ function edDelLoadGroup(i) {
     delete ext[g.id];
     localStorage.setItem('cd_subloads_extra', JSON.stringify(ext));
     delete SUBLOADS_CONFIG[g.id];
-    try { cdMarkDirty(); } catch(e){}
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
     buildCustomLoadCards();
-    editorSwitch('carichi');
+    editorSwitch('load');
     edToast('Gruppo eliminato');
 }
 
@@ -11356,21 +11380,29 @@ const ED_DEVICES = [
 ];
 
 /* v297: la lista "Attività Dispositivi" del Report segue le voci dell'utente.
-   Con voci configurate → solo quelle; senza, su build pubblica → vuota (niente nomi blindati). */
-try {
+   Con voci configurate → solo quelle; senza, su build pubblica → vuota (niente nomi blindati).
+   v0.7.3 fix (#6): ora è una funzione richiamabile — aggiungere una voce dall'editor
+   aggiorna il Report SUBITO, senza dover ricaricare la pagina. */
+const ED_DEVICES_DEFAULT = ED_DEVICES.slice();
+function cdRebuildReportDevices() {
+  try {
     const _repDevs = cdCfgList('cd_report_devices');
     const _palette = ['#06b6d4','#7c3aed','#e11d48','#059669','#f59e0b','#0ea5e9','#ea580c','#8b5cf6','#f97316','#1e40af','#a16207'];
+    ED_DEVICES.length = 0;
     if (_repDevs.length) {
-        ED_DEVICES.length = 0;
         _repDevs.forEach((d, i) => ED_DEVICES.push({
             key: 'rep_' + i, name: d.name, icon: d.icon || '⚡',
             color: _palette[i % _palette.length], sensor: d.entity,
             bg: 'rgba(14,165,233,0.1)'
         }));
     } else if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
-        ED_DEVICES.length = 0;
+        /* build pubblica senza voci: lista vuota, il Report mostra la guida */
+    } else {
+        ED_DEVICES.push(...ED_DEVICES_DEFAULT);
     }
-} catch(e) {}
+  } catch(e) {}
+}
+cdRebuildReportDevices();
 
 const COSTO_KWH  = 0.25;
 const VALORE_CO2 = 0.4;

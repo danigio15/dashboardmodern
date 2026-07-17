@@ -6,6 +6,18 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.7.3] — 2026-07-17
+
+### 🐛 Corretto
+- **🔌 Gruppi di carichi finalmente funzionanti** — tre bug si sommavano: il blocco che caricava i gruppi personalizzati all'avvio era andato perso (il menu mostrava solo Cucina/Lavanderia e i carichi aggiunti ai gruppi venivano ignorati), la funzione delle card in Energia non era mai stata inclusa nel file pubblicato (errore silenzioso alla creazione del gruppo) e l'editor si aggiornava su un tab inesistente. Ora: crei il gruppo → appare subito nel menu, nelle card Energia e si sincronizza tra dispositivi.
+- **📊 Report Analisi immediato** — le voci aggiunte in ⚙️ → Carichi → "Report Analisi — voci" ora compaiono nel Report all'istante, senza dover ricaricare la pagina; la lista nell'editor si ridisegna correttamente dopo ogni aggiunta/rimozione.
+
+## [0.7.3] — 2026-07-17 (EN)
+
+### 🐛 Fixed
+- **🔌 Custom load groups finally working** — three stacked bugs: the block loading custom groups at startup had been lost (the menu only showed Kitchen/Laundry and loads added to groups were ignored), the Energy cards function was never included in the published file (silent error on group creation) and the editor refreshed a non-existent tab. Now: create a group → it instantly appears in the menu, in the Energy cards and syncs across devices.
+- **📊 Instant Analysis Report** — entries added in ⚙️ → Loads → "Analysis Report — entries" now show up in the Report immediately, no page reload needed; the editor list redraws correctly after every add/remove.
+
 ## [0.7.2] — 2026-07-16
 
 ### 🐛 Corretto

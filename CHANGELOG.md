@@ -6,6 +6,26 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.7.5] — 2026-07-17
+
+### ✨ Aggiunto
+- **💾 Salva sezione** — in fondo a ogni sezione di ⚙️ → Sezioni c'è ora un bottone che raccoglie e salva TUTTI i campi in un colpo. Risolve le entità "sparite": su mobile l'evento di salvataggio automatico può non scattare se si chiude il popup con la tastiera aperta; ora la digitazione manuale è al sicuro (e ogni salvataggio parte subito verso la sincronizzazione).
+- **📊 Consumo totale stimato** — se l'entità del consumo mensile non è configurata, il Report la ricava dal bilancio energetico (prodotto − immesso + prelevato + batteria scaricata − caricata) e la mostra col simbolo ≈. A cascata diventano coerenti autosufficienza, "Senza FV", risparmio e la ripartizione ☀️ solare / 🔌 rete di ogni dispositivo (prima tutto risultava "100% solare" con 0€ risparmiati).
+
+### 🐛 Corretto
+- **Confronto settimanale nei mesi passati** — mostrava 0.0/0.0: la card ora compare solo nel mese corrente.
+- **Mesi senza dati principali** — se un mese non ha né produzione né consumi ma i contatori dei dispositivi riportano energia, un avviso spiega che quei valori derivano dallo storico e possono includere periodi precedenti.
+
+## [0.7.5] — 2026-07-17 (EN)
+
+### ✨ Added
+- **💾 Save section** — at the bottom of every ⚙️ → Sections accordion a button now collects and saves ALL fields at once. Fixes "vanishing" entities: on mobile the auto-save event may never fire when closing the popup with the keyboard open; manually typed entities are now safe (and every save immediately pushes to sync).
+- **📊 Estimated total consumption** — if the monthly consumption entity is not configured, the Report derives it from the energy balance (produced − exported + imported + battery discharged − charged) and shows it with ≈. Self-sufficiency, "Without PV", savings and each device's ☀️ solar / 🔌 grid split become coherent (previously everything showed "100% solar" with €0 saved).
+
+### 🐛 Fixed
+- **Weekly comparison in past months** — it showed 0.0/0.0: the card now only appears in the current month.
+- **Months without main data** — if a month has neither production nor consumption but device meters report energy, a notice explains those values come from history and may include earlier periods.
+
 ## [0.7.4] — 2026-07-17
 
 ### ✨ Aggiunto

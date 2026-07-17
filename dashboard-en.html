@@ -6011,7 +6011,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.7.4';
+const DASHBOARD_VERSION = '0.7.5';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -8584,7 +8584,7 @@ function editorRenderSezioni() {
             <input class="ed-input mono" value="${(function(){ const v = cdCfg('cd_ev_image'); return (typeof v === 'string' ? v : (v && v.url) || ''); })()}" placeholder="/local/mia_auto.png"
                    onchange="localStorage.setItem('cd_ev_image', JSON.stringify(this.value.trim())); edToast('Image saved — reload to apply');"></div>` : '';
         return `<details class="ed-acc"><summary class="ed-acc-head">${sec.label} <span class="ed-acc-n">${sec.slots.length} entities</span></summary>
-            <div class="ed-acc-body">${rows}${evImgEd}</div></details>`;
+            <div class="ed-acc-body">${rows}${evImgEd}<button type="button" class="ed-btn" style="width:100%; margin-top:10px;" onclick="edSaveSezione(this)">💾 Save section</button></div></details>`;
     }).join('');
 
     return `
@@ -8878,7 +8878,26 @@ function edSetSlot(input) {
     else if (val.includes('.')) ENTITY_OVERRIDES[ref] = val;
     else { edToast('Invalid entity'); return; }
     localStorage.setItem('cd_entity_overrides', JSON.stringify(ENTITY_OVERRIDES));
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
     edToast('Saved — reload to apply');
+}
+
+/* v0.7.5: SAVE SECTION — on mobile the change event may never fire (open keyboard,
+   popup closing): this button collects and saves ALL fields in the section. */
+function edSaveSezione(btn) {
+    const body = btn.closest('.ed-acc-body');
+    if (!body) return;
+    let n = 0, bad = 0;
+    body.querySelectorAll('.ed-slot-in').forEach(inp => {
+        const ref = inp.dataset.ref;
+        const val = (inp.value || '').trim();
+        if (!val || val === ref) { if (ENTITY_OVERRIDES[ref]) { delete ENTITY_OVERRIDES[ref]; n++; } }
+        else if (val.includes('.')) { if (ENTITY_OVERRIDES[ref] !== val) n++; ENTITY_OVERRIDES[ref] = val; }
+        else bad++;
+    });
+    localStorage.setItem('cd_entity_overrides', JSON.stringify(ENTITY_OVERRIDES));
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    edToast(bad ? ('⚠️ ' + bad + ' invalid entities skipped — the rest is saved') : (n ? '💾 Section saved (' + n + ' changes) — reload to apply' : '💾 Section saved'));
 }
 
 function edAddStanza() {
@@ -11524,7 +11543,7 @@ function edUpdateKpiOnly() {
 
     // Banner KPI verde
     edSetText('ed-kpi-prod', prod.toFixed(0) + ' <small>kWh</small>');
-    edSetText('ed-kpi-cons', cons.toFixed(0) + ' <small>kWh</small>');
+    edSetText('ed-kpi-cons', (consStimato ? '≈' : '') + cons.toFixed(0) + ' <small>kWh</small>');
     edSetText('ed-kpi-auto', auto + ' <small>%</small>');
 
     // Griglia finanziaria — logica narrativa: senza FV → costo reale → risparmio → venduto → CO₂
@@ -11706,6 +11725,11 @@ async function edAggiornaCipYoY(selMonth, selYear, prodCorrente, consCorrente, p
 }
 
 async function edCalcolaSettimanale(selMonth, selYear, isCurrentMonth) {
+    /* v0.7.5: "this week / last week" only makes sense in the current month —
+       for past months the card showed 0.0/0.0: it is now hidden. */
+    const wkCard = document.querySelector('.ed-weekly-card');
+    if (wkCard) wkCard.style.display = isCurrentMonth ? '' : 'none';
+    if (!isCurrentMonth) return;
     // Imposta label caricamento
     edSetText('ed-w-prev-val', '...');
     edSetText('ed-w-curr-val', '...');
@@ -11948,6 +11972,17 @@ async function renderEnergyDashboard() {
         }
     }
 
+    /* v0.7.5 (#6): DATA COHERENCE — if total consumption is unavailable but the rest is,
+       derive it from the energy balance:
+       consumption = produced − exported + imported + battery discharged − battery charged.
+       This makes self-sufficiency, "Without PV", savings and the ☀️/🔌 device split
+       coherent instead of staying at zero. */
+    let consStimato = false;
+    if (cons <= 0 && (prod > 0 || prelevato > 0)) {
+        const stima = prod - immesso + prelevato + batScar - batCar;
+        if (stima > 0.5) { cons = Math.round(stima * 10) / 10; consStimato = true; }
+    }
+
     // ── Calcoli derivati ─────────────────────────────────────────
     const autosufficienza = cons > 0 ? Math.min(100, Math.round(((cons - prelevato) / cons) * 100)) : 0;
     const autoconsumo     = Math.max(0, prod - immesso);     // kWh solari usati in casa
@@ -11959,7 +11994,7 @@ async function renderEnergyDashboard() {
 
     // Banner KPI verde
     edSetText('ed-kpi-prod', prod.toFixed(0) + ' <small>kWh</small>');
-    edSetText('ed-kpi-cons', cons.toFixed(0) + ' <small>kWh</small>');
+    edSetText('ed-kpi-cons', (consStimato ? '≈' : '') + cons.toFixed(0) + ' <small>kWh</small>');
     edSetText('ed-kpi-auto', autosufficienza  + ' <small>%</small>');
 
     // Griglia finanziaria — ordine narrativo: senza FV → costo reale → risparmio → venduto → CO₂
@@ -12015,7 +12050,7 @@ async function renderEnergyDashboard() {
     edCalcolaSettimanale(selMonth, selYear, isCurrentMonth);
 
     // ── Lista dispositivi ────────────────────────────────────────
-    await renderEdDeviceList(selMonth, selYear, isCurrentMonth, cons, prelevato);
+    await renderEdDeviceList(selMonth, selYear, isCurrentMonth, cons, prelevato, prod);
 
     // ── Grafico giornaliero ──────────────────────────────────────
     await renderEdDailyChart(daysInMonth, selMonth, selYear, isCurrentMonth, prod, cons);
@@ -12028,7 +12063,7 @@ async function renderEnergyDashboard() {
     }
 }
 
-async function renderEdDeviceList(selMonth, selYear, isCurrentMonth, cons = 0, prelevato = 0) {
+async function renderEdDeviceList(selMonth, selYear, isCurrentMonth, cons = 0, prelevato = 0, prodM = 0) {
     const list = document.getElementById('ed-device-list');
     if (!list) return;
 
@@ -12139,7 +12174,12 @@ async function renderEdDeviceList(selMonth, selYear, isCurrentMonth, cons = 0, p
     const totalEur    = devData.reduce((s, d) => s + d.cost, 0);
     edSetText('ed-dev-total', totalKwh.toFixed(1) + ' kWh &nbsp;|&nbsp; € ' + totalEur.toFixed(2));
 
-    list.innerHTML = devData.map(d => {
+    /* v0.7.5: if the selected month has neither production nor main consumption but device
+       meters report energy, flag it: those deltas may include earlier periods. */
+    const _warn = (!isCurrentMonth && cons <= 0 && prodM <= 0 && totalKwh > 0)
+        ? '<div style="padding:10px 14px; margin-bottom:8px; border-radius:14px; background:rgba(245,158,11,0.12); color:#b45309; font-size:11.5px; font-weight:700;">⚠️ Main production and consumption unavailable for this month: the values below come from meter history and may include earlier periods.</div>'
+        : '';
+    list.innerHTML = _warn + devData.map(d => {
         const pct = maxVal > 0 ? (d.val / maxVal * 100).toFixed(1) : 0;
         return `
         <div class="ed-device-row" onclick="apriStorico(event,'${d.sensor}','${d.name}')">

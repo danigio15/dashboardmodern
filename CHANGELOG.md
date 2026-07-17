@@ -6,6 +6,38 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.8.0] — 2026-07-17 · ⭐ Major release
+
+### ✨ Aggiunto
+- **🧠 Motore periodi (sensori TOTALI)** — nei campi "oggi" e "mese" ora puoi mappare qualsiasi contatore, anche TOTALE cumulativo: i valori di giornaliera, mensile e Report vengono ricostruiti come delta del periodo tramite le Long-Term Statistics di HA (aggiornati all'avvio e ogni 5 minuti). Sparisce per sempre il nodo CASA con il totale lifetime al posto del mese. Con entità che si azzerano da sole il comportamento è identico: il motore è universale, anche per il Report del mese corrente.
+- **🔍 Rilevamento automatico ancora più potente** — il dizionario ora riconosce decine di brand e integrazioni: Solarman, Fronius, Growatt, SolarEdge, Huawei, GoodWe, Sungrow, Victron, Enphase, SMA, Pylontech, Powerwall, evcc, Keba, Easee, Zappi, Daikin, Mitsubishi, MELCloud, Sensibo, Reolink, Tapo, Hikvision, Frigate, Shelly, Hue e molti altri.
+- **🎨 Bottoni Salva coerenti** — nuovo stile dedicato (gradiente verde, ombra, feedback al tocco) per "Salva sezione", "Salva nodi mappa" e "Salva costi".
+
+### 🐛 Corretto
+- **Meteo: previsioni 7 giorni** — il popup ora usa la stessa catena di fallback dell'hero (entità mappata → weather.home → meteo interno): se l'hero funziona, funzionano anche le previsioni.
+- **Meteo in tema scuro** — l'hero non è più un rettangolo bianco: sfondo notturno dedicato e testi leggibili.
+- **Card che non ricompaiono** — dopo un salvataggio o la chiusura dell'editor le card delle entità appena mappate (es. CPU del MiniPC) riappaiono senza ricaricare la pagina.
+
+### 📝 Note
+- Le tab Sostituzioni, Testi ed Esporta non esistono più: tutto si gestisce da Sezioni/Carichi; il download della dashboard con token e configurazione integrati è l'icona 💾 nell'header dell'editor (risolve il token da reinserire su ogni dispositivo).
+- README completamente riscritto.
+
+## [0.8.0] — 2026-07-17 · ⭐ Major release (EN)
+
+### ✨ Added
+- **🧠 Period engine (TOTAL sensors)** — you can now map any counter, even cumulative TOTALS, into the "today"/"month" fields: daily, monthly and Report values are rebuilt as period deltas via HA Long-Term Statistics (refreshed at startup and every 5 minutes). The HOME node showing a lifetime total instead of the month is gone for good. Self-resetting entities behave identically: the engine is universal, including the current-month Report.
+- **🔍 Even stronger auto-detection** — the dictionary now recognizes dozens of brands and integrations: Solarman, Fronius, Growatt, SolarEdge, Huawei, GoodWe, Sungrow, Victron, Enphase, SMA, Pylontech, Powerwall, evcc, Keba, Easee, Zappi, Daikin, Mitsubishi, MELCloud, Sensibo, Reolink, Tapo, Hikvision, Frigate, Shelly, Hue and many more.
+- **🎨 Coherent Save buttons** — new dedicated style (green gradient, shadow, touch feedback) for "Save section", "Save map nodes" and "Save tariffs".
+
+### 🐛 Fixed
+- **Weather: 7-day forecast** — the popup now uses the same fallback chain as the hero (mapped entity → weather.home → internal weather): if the hero works, forecasts work.
+- **Weather in dark theme** — the hero is no longer a white rectangle: dedicated night background and readable text.
+- **Cards not reappearing** — after a save or closing the editor, cards for newly mapped entities (e.g. MiniPC CPU) reappear without reloading.
+
+### 📝 Notes
+- The Substitutions, Texts and Export tabs are gone: everything lives in Sections/Loads; downloading the dashboard with token and configuration baked in is the 💾 icon in the editor header (fixes re-entering the token on every device).
+- README fully rewritten.
+
 ## [0.7.5] — 2026-07-17
 
 ### ✨ Aggiunto

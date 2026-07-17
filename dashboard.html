@@ -4304,6 +4304,12 @@ nav.tabs.bottom-nav-bar .tab.active .text {
 .ed-input:focus { outline: none; border-color: #7dd3fc; box-shadow: 0 0 0 3px rgba(14,165,233,0.12); }
 .ed-icon-input { width: 72px; flex-shrink: 0; text-align: center; font-size: 16px; }
 .ed-btn-add { padding: 12px; border: none; border-radius: 12px; background: linear-gradient(135deg,#e0f2fe,#bae6fd); color: #0369a1; font-weight: 800; font-size: 12.5px; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; }
+.ed-btn { padding: 12px 16px; border: none; border-radius: 12px; background: linear-gradient(135deg,#0ea5e9,#0369a1); color: #fff; font-weight: 800; font-size: 12.5px; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; box-shadow: 0 3px 10px rgba(2,132,199,0.28); }
+.ed-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.ed-save-btn { width:100%; margin-top:12px; padding:13px 16px; border:none; border-radius:14px; background:linear-gradient(135deg,#10b981,#059669); color:#fff; font-weight:900; font-size:12.5px; letter-spacing:0.6px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif; box-shadow:0 4px 14px rgba(5,150,105,0.35); transition:0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.ed-save-btn:hover { filter:brightness(1.07); transform:translateY(-1px); }
+.ed-save-btn:active { transform:scale(0.98); }
+.ed-btn:active { transform: translateY(0); }
 .ed-btn-add:hover { filter: brightness(0.97); transform: translateY(-1px); }
 .ed-btn-reset { padding: 12px 16px; border: none; border-radius: 12px; background: rgba(239,68,68,0.08); color: #b91c1c; font-weight: 800; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; flex-shrink: 0; }
 
@@ -4472,9 +4478,13 @@ html[data-theme="dark"] {
 }
 /* Blob di sfondo più scuri e discreti */
 html[data-theme="dark"] .animated-mesh-bg::before { background: #0e2a1c; opacity: 0.35; }
+html[data-theme="dark"] .weather-widget { background: linear-gradient(135deg, #101c30 0%, #0b2740 100%); border-color: rgba(148,163,184,0.18); }
+html[data-theme="dark"] .weather-widget .weather-temp, html[data-theme="dark"] .weather-widget .weather-cond { color: #e2e8f0; }
 html[data-theme="dark"] .animated-mesh-bg::after  { background: #0b2740; opacity: 0.35; }
 /* Overlay dei modal */
 html[data-theme="dark"] .modal-wrapper { background: rgba(8, 12, 22, 0.82); }
+html[data-theme="dark"] .weather-widget { background: linear-gradient(135deg, #0d1b2e 0%, #0c2536 100%); border-color: rgba(148,163,184,0.16); }
+html[data-theme="dark"] .weather-widget::before { opacity: 0.35; }
 html[data-theme="dark"] #setup-wizard { background: rgba(8, 12, 22, 0.88); }
 /* Gradient celestini attivi: versione dark leggibile */
 html[data-theme="dark"] .sub-tab-btn.active,
@@ -6011,7 +6021,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.7.5';
+const DASHBOARD_VERSION = '0.8.0';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6641,7 +6651,7 @@ function mostraModalEditPlancia() {
    rendere permanente nell'HTML tramite Claude.
    ═══════════════════════════════════════════════════════════════════ */
 
-let EDITOR_TAB = 'sost';
+let EDITOR_TAB = 'sezioni';
 
 function apriConfigEntita() {
     if(navigator.vibrate) navigator.vibrate(15);
@@ -6659,16 +6669,16 @@ function apriConfigEntita() {
       <div class="modal-card ed-shell">
         <div class="ed-head">
           <div class="ed-head-title"><span class="ed-head-icon">⚙️</span> EDITOR DASHBOARD</div>
-          <div class="ed-head-close" onclick="document.getElementById('editor-modal').remove()">✕</div>
+          <div style="display:flex; gap:8px;">
+            <div class="ed-head-close" title="Scarica la dashboard con token e configurazione integrati nel file" onclick="cdBakeDownload()">💾</div>
+            <div class="ed-head-close" onclick="document.getElementById('editor-modal').remove()">✕</div>
+          </div>
         </div>
         <div class="ed-tabs">
           <button class="ed-tab" data-tab="sezioni" onclick="editorSwitch('sezioni')">📑 Sezioni</button>
-          <button class="ed-tab" data-tab="sost"  onclick="editorSwitch('sost')">🔁 Sostituzioni</button>
           <button class="ed-tab" data-tab="load"  onclick="editorSwitch('load')">🔌 Carichi</button>
           <button class="ed-tab" data-tab="avvisi" onclick="editorSwitch('avvisi')">🔔 Avvisi</button>
-          <button class="ed-tab" data-tab="testi" onclick="editorSwitch('testi')">✏️ Testi</button>
           <button class="ed-tab" data-tab="hide"  onclick="editorSwitch('hide')">👁️ Nascondi</button>
-          <button class="ed-tab" data-tab="export" onclick="editorSwitch('export')">📤 Esporta</button>
         </div>
         <div class="ed-body" id="ed-body"></div>
       </div>`;
@@ -6715,13 +6725,13 @@ function edAddOverride() {
     if (!o.includes('.') || !n.includes('.')) { alert('Inserisci due entity_id validi (dominio.nome)'); return; }
     ENTITY_OVERRIDES[o] = n;
     localStorage.setItem('cd_entity_overrides', JSON.stringify(ENTITY_OVERRIDES));
-    editorSwitch('sost');
+    editorSwitch('sezioni');
     edToast('Sostituzione aggiunta');
 }
 function edDelOverride(o) {
     delete ENTITY_OVERRIDES[o];
     localStorage.setItem('cd_entity_overrides', JSON.stringify(ENTITY_OVERRIDES));
-    editorSwitch('sost');
+    editorSwitch('sezioni');
 }
 
 /* ─────────── TAB 2: CARICHI ─────────── */
@@ -6779,7 +6789,7 @@ function editorRenderLoad() {
     return `
           <div class="ed-sec-title">🗺️ Nodi della mappa flussi</div>
           ${nodeForm('lav', 'Lavanderia')}${nodeForm('cuc', 'Cucina')}${nodeForm('boiler', 'Boiler')}${nodeForm('wb', 'Wallbox')}${nodeForm('clima', 'Clima')}
-          <button class="ed-btn" style="width:100%; margin-bottom:14px;" onclick="edSaveFlowNodes()">💾 Salva nodi mappa</button>
+          <button class="ed-save-btn" style="margin-top:0; margin-bottom:14px;" onclick="edSaveFlowNodes()">💾 Salva nodi mappa</button>
           <div class="ed-sec-title">➕ Nuovo gruppo di carichi</div>
           <div style="display:flex; gap:8px; margin-bottom:8px;">
             <input id="ed-lg-icon" class="ed-input" style="flex:0 0 64px;" placeholder="🔌" maxlength="4"><button type="button" onclick="wzPickIcon('#ed-lg-icon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
@@ -6800,6 +6810,13 @@ function editorRenderLoad() {
         </div>
         <div style="display:flex; gap:6px;"><input id="ed-load-pwr" list="ed-entity-list" class="ed-input mono" placeholder="sensor.tostapane_power"><button type="button" onclick="wzPickEntity('#ed-load-pwr')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
         <button class="ed-btn-add" onclick="edAddLoad()">＋ Aggiungi carico</button>
+      </div>
+      <div class="ed-sec-title" style="margin-top:16px;">💶 Costo energia</div>
+      <div class="ed-hint">€/kWh <b>prelevato</b> dalla rete e €/kWh <b>immesso</b> (vendita). Usati in tutti i calcoli del Report.</div>
+      <div style="display:flex; gap:8px; margin-bottom:14px; align-items:center;">
+        <input id="ed-costo-kwh" class="ed-input" type="number" step="0.001" min="0" placeholder="0.25 €/kWh prelevato" value="${(function(){ try { const v = parseFloat(cdCfg('cd_costo_kwh')); return v > 0 ? v : ''; } catch(e){ return ''; } })()}" style="flex:1;">
+        <input id="ed-prezzo-imm" class="ed-input" type="number" step="0.001" min="0" placeholder="0.10 €/kWh immesso" value="${(function(){ try { const v = parseFloat(cdCfg('cd_prezzo_immissione')); return v > 0 ? v : ''; } catch(e){ return ''; } })()}" style="flex:1;">
+        <button type="button" class="ed-save-btn" style="width:auto; flex:0 0 auto; margin-top:0;" onclick="edSaveCosti()">💾 Salva</button>
       </div>
       <div class="ed-sec-title" style="margin-top:16px;">📊 Report Analisi — voci</div>
       <div class="ed-intro">I dispositivi del Report mensile (Energia → Analisi): nome, icona ed entità kWh-mese liberi.</div>
@@ -7120,7 +7137,7 @@ function edAddText() {
     ext[o] = n;
     localStorage.setItem('cd_text_overrides', JSON.stringify(ext));
     applyTextOverrides();
-    editorSwitch('testi');
+    editorSwitch('sezioni');
     edToast('Testo rinominato');
 }
 function edDelText(oEnc) {
@@ -7128,7 +7145,7 @@ function edDelText(oEnc) {
     const ext = edGetExtra('cd_text_overrides');
     delete ext[o];
     localStorage.setItem('cd_text_overrides', JSON.stringify(ext));
-    editorSwitch('testi');
+    editorSwitch('sezioni');
     edToast('Rimosso — ricarica per ripristinare il testo originale');
 }
 /* Applica i rename testuali camminando i nodi di testo del DOM */
@@ -7520,7 +7537,7 @@ function wzRender() {
           <div class="ed-acc-body">
             ${(WIZ.stanze||[]).map((r, i) => `<div class="ed-row"><div style="display:flex; flex-direction:column; gap:2px;"><div class="ed-del" style="width:24px; height:20px; font-size:10px; ${i===0?'opacity:0.25; pointer-events:none;':''}" onclick="wzMoveStanza(${i},-1)">▲</div><div class="ed-del" style="width:24px; height:20px; font-size:10px; ${i===WIZ.stanze.length-1?'opacity:0.25; pointer-events:none;':''}" onclick="wzMoveStanza(${i},1)">▼</div></div><div style="font-size:15px;">${r.icon||'🏠'}</div><div class="ed-row-main"><div class="ed-row-new">${r.name}</div><div class="ed-row-old mono">${r.temp}</div></div><div class="ed-del" style="background:rgba(14,165,233,0.12);" onclick="wzEditStanza(${i})">✏️</div><div class="ed-del" onclick="WIZ.stanze.splice(${i},1); wzRender();">🗑️</div></div>`).join('')}
             <div style="display:flex; gap:8px; margin-bottom:8px;">
-              <input id="wz-st-icon" class="wz-input" style="margin-bottom:0; flex:0 0 64px; text-align:center;" placeholder="🛋️" maxlength="4">
+              <input id="wz-st-icon" class="wz-input" style="margin-bottom:0; flex:0 0 64px; text-align:center;" placeholder="🛋️" maxlength="4"><button type="button" onclick="wzPickIcon('#wz-st-icon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
               <input id="wz-st-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome stanza (es. Salone)">
               <input id="wz-st-floor" class="wz-input" style="margin-bottom:0; flex:0 0 34%;" placeholder="Piano (opz.)" autocomplete="off">
             </div>
@@ -7530,7 +7547,7 @@ function wzRender() {
           </div>
         
           <div style="display:flex; gap:8px; margin:10px 0 8px;">
-            <input id="ed-st2-icon" class="ed-input" style="flex:0 0 56px;" placeholder="🌡️" maxlength="4">
+            <input id="ed-st2-icon" class="ed-input" style="flex:0 0 56px;" placeholder="🌡️" maxlength="4"><button type="button" onclick="wzPickIcon('#ed-st2-icon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
             <input id="ed-st2-name" class="ed-input" style="flex:1;" placeholder="Nome stanza">
             <input id="ed-st2-floor" class="ed-input" style="flex:0 0 32%;" placeholder="Piano (opz.)">
           </div>
@@ -8031,7 +8048,7 @@ function wzAutoDetect() {
 
     // — Luci: se non selezionate nello step precedente, proponi tutte le light.*
     if (!Object.keys(WIZ.luci || {}).length) {
-        M.filter(e => e.id.startsWith('light.')).slice(0, 40).forEach(e => {
+        M.filter(e => e.id.startsWith('light.')).slice(0, 80).forEach(e => {
             if (!WIZ.luci) WIZ.luci = {};
             const area = wzAreaOf(e.id);
             WIZ.luci[e.id] = area && !e.name.toLowerCase().includes(area.toLowerCase()) ? area + ' - ' + e.name : e.name;
@@ -8066,7 +8083,7 @@ function wzAutoDetect() {
         const byArea = {};
         temps.forEach(e => { const a = wzAreaOf(e.id); if (a && !byArea[a]) byArea[a] = e; });
         const used = new Set();
-        WIZ.stanze = Object.entries(byArea).slice(0, 14).map(([areaName, e]) => {
+        WIZ.stanze = Object.entries(byArea).slice(0, 24).map(([areaName, e]) => {
             used.add(e.id);
             const r = { name: areaName, icon: '🌡️', temp: e.id };
             const hums = M.filter(h => h.id.startsWith('sensor.') && (h.dc === 'humidity' || /umidit|humidity/i.test(h.id)) && wzAreaOf(h.id) === areaName);
@@ -8101,6 +8118,35 @@ function wzAutoDetect() {
     if (!WIZ.entities || Array.isArray(WIZ.entities)) WIZ.entities = {};
     const STOP = new Set(['casa','stato','testo','entita','interruttore','sensore','della','delle','dallo','dalla','dall','alla','sull','contatore','centrale','tutte','solo','con','per','del','dei','nel','una','the','and','for','di','al']);
     const SYN = {
+        /* v0.8.0: dizionario potenziato — molte più corrispondenze IT/EN e termini di integrazioni comuni */
+        'energia': ['energy','kwh'], 'contatore': ['meter','counter','total','totale'],
+        'totale': ['total','lifetime','cumulative','overall'], 'prelievo': ['import','imported','bought','purchased','grid_consumption','consumed_from_grid'],
+        'immissione': ['export','exported','sold','returned','feed_in','grid_export','injected'],
+        'umidita': ['humidity','hum'], 'vento': ['wind'], 'pioggia': ['rain','precipitation'],
+        'porta': ['door','contact'], 'finestra': ['window','contact'], 'movimento': ['motion','pir','occupancy','presence'],
+        'fumo': ['smoke'], 'allagamento': ['leak','flood','water'], 'serranda': ['cover','shutter','tapparella','blind'],
+        'tapparella': ['cover','shutter','blind'], 'presa': ['plug','socket','outlet'],
+        'corrente': ['current','amperage','amps'], 'tensione': ['voltage','volt'], 'frequenza': ['frequency'],
+        'velocita': ['speed'], 'segnale': ['signal','rssi','wifi','linkquality'], 'stampante': ['printer','ink','toner'],
+        'frigorifero': ['fridge','refrigerator'], 'forno': ['oven'], 'lavastoviglie': ['dishwasher'],
+        'asciugatrice': ['dryer','tumble'], 'congelatore': ['freezer'], 'televisore': ['tv','television'],
+        'consumata': ['consumed','used'], 'giornaliera': ['daily','today'], 'resistenza': ['resistance','heater','element'],
+        'server': ['server','minipc','nas','raspberry','rpi','proxmox','synology','system','host'],
+        /* v0.8.0: brand e integrazioni comuni per il rilevamento automatico */
+        'produzione': ['production','yield','generated','pv','solar','solarman','fronius','growatt','solaredge','huawei','sofar','zcs','goodwe','sungrow','victron','enphase','sma'],
+        'batteria': ['battery','soc','storage','accumulo','pylontech','bms','powerwall','sonnen'],
+        'wallbox': ['wallbox','charger','evse','evcc','ocpp','keba','wattpilot','easee','zappi','goe','go_e'],
+        'clima': ['climate','ac','air_conditioner','hvac','daikin','mitsubishi','samsung','split','condizionatore','melcloud','sensibo'],
+        'boiler': ['boiler','water_heater','acs','dhw','scaldabagno','termoaccumulo','puffer'],
+        'consumo': ['consumption','load','house','home','used','assorbimento'],
+        'rete': ['grid','mains','net','import','export'],
+        'telecamera': ['camera','cam','ipcam','reolink','tapo','hikvision','dahua','frigate','ezviz'],
+        'luce': ['light','lamp','led','hue','shelly','dimmer','strip'],
+        'cancello': ['gate','garage','door_opener','sliding'],
+        'speedtest': ['speedtest','download','upload','ping','fastcom'],
+        'potenza': ['power','watt','watts','active_power'],
+        'uptime': ['uptime','boot'], 'stato': ['state','status'], 'connessione': ['connection','connectivity','online','reachable'],
+        'riscaldamento': ['heating','heat'], 'spazzatura': ['trash','waste','garbage'], 'irrigazione': ['irrigation','sprinkler'],
         'oggi': ['daily','today','giornalier'], 'mese': ['month','mensile'], 'anno': ['year','annual','annuale'],
         'meteo': ['weather'], 'allarme': ['alarm','antifurto'], 'antifurto': ['alarm','allarme'],
         'produzione': ['production','yield','generated','generation','fotovoltaico'],
@@ -8584,7 +8630,7 @@ function editorRenderSezioni() {
             <input class="ed-input mono" value="${(function(){ const v = cdCfg('cd_ev_image'); return (typeof v === 'string' ? v : (v && v.url) || ''); })()}" placeholder="/local/mia_auto.png"
                    onchange="localStorage.setItem('cd_ev_image', JSON.stringify(this.value.trim())); edToast('Immagine salvata — ricarica per applicare');"></div>` : '';
         return `<details class="ed-acc"><summary class="ed-acc-head">${sec.label} <span class="ed-acc-n">${sec.slots.length} entità</span></summary>
-            <div class="ed-acc-body">${rows}${evImgEd}<button type="button" class="ed-btn" style="width:100%; margin-top:10px;" onclick="edSaveSezione(this)">💾 Salva sezione</button></div></details>`;
+            <div class="ed-acc-body">${rows}${evImgEd}<button type="button" class="ed-save-btn" onclick="edSaveSezione(this)">💾 Salva sezione</button></div></details>`;
     }).join('');
 
     return `
@@ -8595,7 +8641,7 @@ function editorRenderSezioni() {
         <div class="ed-acc-body">
           <div class="ed-list">${stanzeRows}
           <div style="display:flex; gap:8px; margin:10px 0 8px;">
-            <input id="ed-st2-icon" class="ed-input" style="flex:0 0 56px;" placeholder="🌡️" maxlength="4">
+            <input id="ed-st2-icon" class="ed-input" style="flex:0 0 56px;" placeholder="🌡️" maxlength="4"><button type="button" onclick="wzPickIcon('#ed-st2-icon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
             <input id="ed-st2-name" class="ed-input" style="flex:1;" placeholder="Nome stanza">
             <input id="ed-st2-floor" class="ed-input" style="flex:0 0 30%;" placeholder="Piano (opz.)">
           </div>
@@ -8610,7 +8656,7 @@ function editorRenderSezioni() {
           <button class="ed-btn-add" id="ed-st2-btn" style="width:100%;" onclick="edAddStanza2()">＋ Aggiungi stanza</button></div>
           <div class="ed-form">
             <div class="ed-form-row">
-              <input id="ed-st-icon" class="ed-input ed-icon-input" placeholder="🛋️" maxlength="4">
+              <input id="ed-st-icon" class="ed-input ed-icon-input" placeholder="🛋️" maxlength="4"><button type="button" onclick="wzPickIcon('#ed-st-icon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
               <input id="ed-st-name" class="ed-input" placeholder="Nome stanza" style="flex:1;">
             </div>
             <input id="ed-st-temp" list="ed-entity-list" class="ed-input mono" placeholder="sensor.temperatura_x (temperatura)">
@@ -8882,6 +8928,39 @@ function edSetSlot(input) {
     edToast('Salvato — ricarica per applicare');
 }
 
+function edSaveCosti() {
+    const cEl = document.getElementById('ed-costo-kwh'), pEl = document.getElementById('ed-prezzo-imm');
+    const cv = parseFloat(cEl && cEl.value), pv = parseFloat(pEl && pEl.value);
+    if (cv > 0) localStorage.setItem('cd_costo_kwh', JSON.stringify(cv)); else localStorage.removeItem('cd_costo_kwh');
+    if (pv > 0) localStorage.setItem('cd_prezzo_immissione', JSON.stringify(pv)); else localStorage.removeItem('cd_prezzo_immissione');
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    edToast('💶 Costi salvati — ricarica per applicare');
+}
+
+/* v0.8.0: SCARICA DASHBOARD CONFIGURATA — integra token e TUTTA la configurazione nel file,
+   così ogni browser/dispositivo che apre il file da /config/www è già pronto (niente token da reinserire). */
+async function cdBakeDownload() {
+    try {
+        const res = await fetch(location.pathname, { cache: 'no-store' });
+        let html = await res.text();
+        const cfg = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.indexOf('cd_') === 0) { try { cfg[k] = JSON.parse(localStorage.getItem(k)); } catch(_) { cfg[k] = localStorage.getItem(k); } }
+        }
+        const inj = '<scr' + 'ipt>window.CD_BAKED_CONFIG = ' + JSON.stringify(cfg).replace(/</g, '\\u003c') + ';</scr' + 'ipt>';
+        html = /<!--CD_BAKED-->/.test(html)
+            ? html.replace(/<!--CD_BAKED-->[\s\S]*?<!--\/CD_BAKED-->/, '<!--CD_BAKED-->' + inj + '<!--/CD_BAKED-->')
+            : html.replace('</head>', '<!--CD_BAKED-->' + inj + '<!--/CD_BAKED--></head>');
+        const blob = new Blob([html], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = (location.pathname.split('/').pop() || 'dashboard.html');
+        a.click();
+        edToast('💾 File scaricato — caricalo in /config/www al posto dell\'attuale: token e config inclusi');
+    } catch(e) { alert('Download non riuscito: ' + e.message); }
+}
+
 /* v0.7.5: SALVA SEZIONE — su mobile l'evento change può non scattare (tastiera aperta,
    chiusura del popup): questo bottone raccoglie e salva TUTTI i campi della sezione. */
 function edSaveSezione(btn) {
@@ -8897,6 +8976,7 @@ function edSaveSezione(btn) {
     });
     localStorage.setItem('cd_entity_overrides', JSON.stringify(ENTITY_OVERRIDES));
     try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    try { cdAutoHide(); } catch(e){}
     edToast(bad ? ('⚠️ ' + bad + ' entità non valide ignorate — il resto è salvato') : (n ? '💾 Sezione salvata (' + n + ' modifiche) — ricarica per applicare' : '💾 Sezione salvata'));
 }
 
@@ -9985,13 +10065,14 @@ function cdAutoHide() {
         const refs = oc.match(/dm\.[a-z0-9_]+/g);
         if (!refs || !refs.length) return;
         const allUnmapped = refs.every(r => !ENTITY_OVERRIDES[r]);
-        if (allUnmapped) {
-            const card = el.closest(CARD_SEL) || el;
-            card.style.display = 'none';
-        }
+        /* v0.8.0: simmetrico — quando mappi un'entità la card RIAPPARE (prima restava nascosta per sempre) */
+        const card = el.closest(CARD_SEL) || el;
+        card.style.display = allUnmapped ? 'none' : '';
     });
 }
 document.addEventListener('DOMContentLoaded', () => setTimeout(cdAutoHide, 300));
+/* v0.8.0: le card ricompaiono subito dopo un salvataggio o la chiusura dell'editor, senza ricaricare */
+setInterval(() => { try { cdAutoHide(); } catch(e){} }, 60000);
 
 /* v264: se la dashboard è "vuota" (nessuna entità configurata) guida l'utente al wizard
    invece di mostrare pagine deserte. Solo build pubblica. */
@@ -10193,7 +10274,12 @@ async function apriMeteo() {
   document.getElementById('weather-modal').classList.add('show');
   const list = document.getElementById('weather-forecast-list');
   list.innerHTML = '<div style="text-align:center; padding: 30px; font-weight:800; color:var(--text-dim);">Caricamento Previsioni...</div>';
-  const entityId = 'dm.core_055'; currentWeatherEntity = entityId;
+  /* v0.8.0: l'entità va RISOLTA (dm.core_055 → weather.xxx) prima di chiedere le previsioni a HA */
+  /* v0.8.0: stessa catena dell'hero — dm.core_055 mappato, altrimenti weather.home, altrimenti dm.home_meteo */
+  let entityId = (typeof resolveEntity === 'function' ? resolveEntity('dm.core_055') : 'dm.core_055');
+  try { const _w = cdFirstMapped('dm.core_055', 'weather.home', 'dm.home_meteo'); if (_w && _w.entity_id && _w.entity_id !== 'dm.unmapped') entityId = _w.entity_id; } catch(e) {}
+  currentWeatherEntity = entityId;
+  if (entityId.indexOf('dm.') === 0) { list.innerHTML = '<div style="text-align:center; padding: 20px; color:var(--text-dim); font-weight:800;">Configura l\'entità meteo da ⚙️ → Sezioni → Meteo per vedere le previsioni</div>'; return; }
 
   if (ws && ws.readyState === WebSocket.OPEN) {
       const reqId = msgId++;
@@ -10444,6 +10530,7 @@ const updateSelectOptions = (entityId, elementId) => { const s = STATES[entityId
 
 function render() {
   if (Object.keys(STATES).length === 0) return;
+  if (!render._perKick) { render._perKick = 1; setTimeout(() => { try { cdRefreshPeriodDeltas(true); } catch(e){} }, 1500); }
   try {
       // v244: aggiorna pillola "Caldaia accesa" sotto il meteo
       renderCaldaiaBanner();
@@ -10594,12 +10681,12 @@ function render() {
       setNode('n-solar', pwrSol > 20); setNode('n-grid', Math.abs(pwrGri) > 20); setNode('n-battery', Math.abs(pwrBat) > 20); setNode('n-home', true); setNode('n-wb', pwrWb > 5); setNode('n-boiler', pwrBoiler > 5); setNode('n-clima', pwrClima > 5); setNode('n-lav', pwrLav > 5); setNode('n-cuc', pwrCuc > 5);
       setLine('line-solar-home', pwrSol > 20); setLine('line-grid-home', pwrGri > 20); setLine('line-solar-grid', pwrGri < -20); setLine('line-battery-home', pwrBat > 20); setLine('line-solar-battery', pwrBat < -20); setLine('line-home-wb', pwrWb > 5); setLine('line-home-boiler', pwrBoiler > 5); setLine('line-home-clima', pwrClima > 5); setLine('line-home-lav', pwrLav > 5); setLine('line-home-cuc', pwrCuc > 5);
 
-      const dSol = parseFloat(getRawState('dm.energy_produzione_solare_oggi')) || 0; const dHome = parseFloat(getRawState('dm.energy_consumo_casa_oggi')) || 0; const dBoiler = parseFloat(getRawState('dm.energy_boiler_oggi')) || 0; const dWb = parseFloat(getRawState('dm.ev_energia_wallbox_oggi')) || 0; const dClima = parseFloat(getRawState('dm.energy_condizionatori_oggi')) || 0; const dLav = parseFloat(getRawState('dm.energy_somma_lavanderia_oggi')) || 0; const dCuc = parseFloat(getRawState('dm.energy_somma_cucina_oggi')) || 0; const dGridB = getRawState('dm.energy_energia_prelevata_oggi'); const dGridS = getRawState('dm.energy_energia_immessa_oggi'); const dBatC = getRawState('dm.energy_batteria_caricata_oggi'); const dBatD = getRawState('dm.energy_batteria_scaricata_oggi');
-      document.getElementById('v-solar-day').textContent = getDisplay('dm.energy_produzione_solare_oggi'); document.getElementById('v-home-day').textContent = getDisplay('dm.energy_consumo_casa_oggi'); document.getElementById('v-boiler-day').textContent = getDisplay('dm.energy_boiler_oggi'); document.getElementById('v-wb-day').textContent = getDisplay('dm.ev_energia_wallbox_oggi'); document.getElementById('v-clima-day').textContent = getDisplay('dm.energy_condizionatori_oggi'); document.getElementById('v-lav-day').textContent = getDisplay('dm.energy_somma_lavanderia_oggi'); document.getElementById('v-cuc-day').textContent = getDisplay('dm.energy_somma_cucina_oggi'); document.getElementById('v-grid-day').innerHTML = `<span style="color:#e11d48">↓ ${dGridB !== '—' ? dGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${dGridS !== '—' ? dGridS : 0} kWh</span>`; document.getElementById('v-battery-day').innerHTML = `<span style="color:#10b981">↓ ${dBatC !== '—' ? dBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${dBatD !== '—' ? dBatD : 0} kWh</span>`;
+      const dSol = cdPNum('dm.energy_produzione_solare_oggi'); const dHome = cdPNum('dm.energy_consumo_casa_oggi'); const dBoiler = cdPNum('dm.energy_boiler_oggi'); const dWb = cdPNum('dm.ev_energia_wallbox_oggi'); const dClima = cdPNum('dm.energy_condizionatori_oggi'); const dLav = cdPNum('dm.energy_somma_lavanderia_oggi'); const dCuc = cdPNum('dm.energy_somma_cucina_oggi'); const dGridB = cdPRaw('dm.energy_energia_prelevata_oggi'); const dGridS = cdPRaw('dm.energy_energia_immessa_oggi'); const dBatC = cdPRaw('dm.energy_batteria_caricata_oggi'); const dBatD = cdPRaw('dm.energy_batteria_scaricata_oggi');
+      document.getElementById('v-solar-day').textContent = cdPVal('dm.energy_produzione_solare_oggi'); document.getElementById('v-home-day').textContent = cdPVal('dm.energy_consumo_casa_oggi'); document.getElementById('v-boiler-day').textContent = cdPVal('dm.energy_boiler_oggi'); document.getElementById('v-wb-day').textContent = cdPVal('dm.ev_energia_wallbox_oggi'); document.getElementById('v-clima-day').textContent = cdPVal('dm.energy_condizionatori_oggi'); document.getElementById('v-lav-day').textContent = cdPVal('dm.energy_somma_lavanderia_oggi'); document.getElementById('v-cuc-day').textContent = cdPVal('dm.energy_somma_cucina_oggi'); document.getElementById('v-grid-day').innerHTML = `<span style="color:#e11d48">↓ ${dGridB !== '—' ? dGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${dGridS !== '—' ? dGridS : 0} kWh</span>`; document.getElementById('v-battery-day').innerHTML = `<span style="color:#10b981">↓ ${dBatC !== '—' ? dBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${dBatD !== '—' ? dBatD : 0} kWh</span>`;
       setNode('n-solar-day', dSol > 0.1); setNode('n-grid-day', parseFloat(dGridB) > 0.1 || parseFloat(dGridS) > 0.1); setNode('n-battery-day', parseFloat(dBatC) > 0.1 || parseFloat(dBatD) > 0.1); setNode('n-home-day', true); setNode('n-wb-day', dWb > 0.1); setNode('n-boiler-day', dBoiler > 0.1); setNode('n-clima-day', dClima > 0.1); setNode('n-lav-day', dLav > 0.1); setNode('n-cuc-day', dCuc > 0.1); setLine('line-solar-home-day', dSol > 0.1); setLine('line-grid-home-day', parseFloat(dGridB) > 0.1); setLine('line-solar-grid-day', parseFloat(dGridS) > 0.1); setLine('line-battery-home-day', parseFloat(dBatD) > 0.1); setLine('line-solar-battery-day', parseFloat(dBatC) > 0.1); setLine('line-home-wb-day', dWb > 0.1); setLine('line-home-boiler-day', dBoiler > 0.1); setLine('line-home-clima-day', dClima > 0.1); setLine('line-home-lav-day', dLav > 0.1); setLine('line-home-cuc-day', dCuc > 0.1);
 
-      const mSol = parseFloat(getRawState('dm.energy_produzione_solare_mese')) || 0; const mHome = parseFloat(getRawState('dm.energy_consumo_casa_mese')) || 0; const mBoiler = parseFloat(getRawState('dm.energy_boiler_mese')) || 0; const mWb = parseFloat(getRawState('dm.ev_energia_wallbox_mese')) || 0; const mClima = parseFloat(getRawState('dm.energy_condizionatori_mese')) || 0; const mLav = parseFloat(getRawState('dm.energy_somma_lavanderia_mese')) || 0; const mCuc = parseFloat(getRawState('dm.energy_somma_cucina_mese')) || 0; const mGridB = getRawState('dm.energy_rete_acquistata_mese'); const mGridS = getRawState('dm.energy_rete_venduta_mese'); const mBatC = getRawState('dm.energy_batteria_caricata_mese'); const mBatD = getRawState('dm.energy_batteria_usata_mese');
-      document.getElementById('v-solar-month').textContent = getDisplay('dm.energy_produzione_solare_mese'); document.getElementById('v-home-month').textContent = getDisplay('dm.energy_consumo_casa_mese'); document.getElementById('v-boiler-month').textContent = getDisplay('dm.energy_boiler_mese'); document.getElementById('v-wb-month').textContent = getDisplay('dm.ev_energia_wallbox_mese'); document.getElementById('v-clima-month').textContent = getDisplay('dm.energy_condizionatori_mese'); document.getElementById('v-lav-month').textContent = getDisplay('dm.energy_somma_lavanderia_mese'); document.getElementById('v-cuc-month').textContent = getDisplay('dm.energy_somma_cucina_mese'); document.getElementById('v-grid-month').innerHTML = `<span style="color:#e11d48">↓ ${mGridB !== '—' ? mGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${mGridS !== '—' ? mGridS : 0} kWh</span>`; document.getElementById('v-battery-month').innerHTML = `<span style="color:#10b981">↓ ${mBatC !== '—' ? mBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${mBatD !== '—' ? mBatD : 0} kWh</span>`;
+      const mSol = cdPNum('dm.energy_produzione_solare_mese'); const mHome = cdPNum('dm.energy_consumo_casa_mese'); const mBoiler = cdPNum('dm.energy_boiler_mese'); const mWb = cdPNum('dm.ev_energia_wallbox_mese'); const mClima = cdPNum('dm.energy_condizionatori_mese'); const mLav = cdPNum('dm.energy_somma_lavanderia_mese'); const mCuc = cdPNum('dm.energy_somma_cucina_mese'); const mGridB = cdPRaw('dm.energy_rete_acquistata_mese'); const mGridS = cdPRaw('dm.energy_rete_venduta_mese'); const mBatC = cdPRaw('dm.energy_batteria_caricata_mese'); const mBatD = cdPRaw('dm.energy_batteria_usata_mese');
+      document.getElementById('v-solar-month').textContent = cdPVal('dm.energy_produzione_solare_mese'); document.getElementById('v-home-month').textContent = cdPVal('dm.energy_consumo_casa_mese'); document.getElementById('v-boiler-month').textContent = cdPVal('dm.energy_boiler_mese'); document.getElementById('v-wb-month').textContent = cdPVal('dm.ev_energia_wallbox_mese'); document.getElementById('v-clima-month').textContent = cdPVal('dm.energy_condizionatori_mese'); document.getElementById('v-lav-month').textContent = cdPVal('dm.energy_somma_lavanderia_mese'); document.getElementById('v-cuc-month').textContent = cdPVal('dm.energy_somma_cucina_mese'); document.getElementById('v-grid-month').innerHTML = `<span style="color:#e11d48">↓ ${mGridB !== '—' ? mGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${mGridS !== '—' ? mGridS : 0} kWh</span>`; document.getElementById('v-battery-month').innerHTML = `<span style="color:#10b981">↓ ${mBatC !== '—' ? mBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${mBatD !== '—' ? mBatD : 0} kWh</span>`;
       setNode('n-solar-month', mSol > 0.1); setNode('n-grid-month', parseFloat(mGridB) > 0.1 || parseFloat(mGridS) > 0.1); setNode('n-battery-month', parseFloat(mBatC) > 0.1 || parseFloat(mBatD) > 0.1); setNode('n-home-month', true); setNode('n-wb-month', mWb > 0.1); setNode('n-boiler-month', mBoiler > 0.1); setNode('n-clima-month', mClima > 0.1); setNode('n-lav-month', mLav > 0.1); setNode('n-cuc-month', mCuc > 0.1); setLine('line-solar-home-month', mSol > 0.1); setLine('line-grid-home-month', parseFloat(mGridB) > 0.1); setLine('line-solar-grid-month', parseFloat(mGridS) > 0.1); setLine('line-battery-home-month', parseFloat(mBatD) > 0.1); setLine('line-solar-battery-month', parseFloat(mBatC) > 0.1); setLine('line-home-wb-month', mWb > 0.1); setLine('line-home-boiler-month', mBoiler > 0.1); setLine('line-home-clima-month', mClima > 0.1); setLine('line-home-lav-month', mLav > 0.1); setLine('line-home-cuc-month', mCuc > 0.1);
       const statiEV = {'A':'Non Connessa','B':'🔌 Collegata','C':'⚡ In Carica','D':'⚡ In Carica','F':'⚠️ Errore'}; 
       const codeEV = getRawState('dm.ev_stato_ricarica'); 
@@ -10775,10 +10862,10 @@ function render() {
       // ── MiniPC: tutte le variabili PRIMA di usarle ──────────
       const cpuVal  = parseFloat(getRawState('dm.server_cpu'))  || 0;
       const ramVal  = parseFloat(getRawState('dm.server_ram')) || 0;
-      const ramTot  = parseFloat(STATES['dm.server_ram']?.attributes?.total) || 32768;
+      const ramTot  = parseFloat(STATES['dm.server_ram']?.attributes?.total) || 0;
       const diskVal = parseFloat(getRawState('dm.server_disco')) || 0;
       const tempVal = parseFloat(getRawState('dm.server_temperatura_cpu')) || 0;
-      const ramPct  = ramTot > 0 ? Math.min(100, (ramVal / ramTot) * 100) : 0;
+      const ramPct  = ramTot > 0 ? Math.min(100, (ramVal / ramTot) * 100) : (ramVal > 0 && ramVal <= 100 ? ramVal : 0); /* v0.8.0: sensori già in % usati diretti */
 
       // Valori testuali nei ring
       const cpuEl  = document.getElementById('v-srv-cpu');
@@ -11504,7 +11591,9 @@ function cdRebuildReportDevices() {
 }
 cdRebuildReportDevices();
 
-const COSTO_KWH  = 0.25;
+/* v0.8.0: costi configurabili da ⚙️ → Carichi → 💶 Costo energia */
+const COSTO_KWH = (() => { try { const v = parseFloat(cdCfg('cd_costo_kwh')); return v > 0 ? v : 0.25; } catch(e) { return 0.25; } })();
+const PREZZO_IMMISSIONE = (() => { try { const v = parseFloat(cdCfg('cd_prezzo_immissione')); return v > 0 ? v : 0.10; } catch(e) { return 0.10; } })();
 const VALORE_CO2 = 0.4;
 let edDailyChart  = null;
 
@@ -11552,16 +11641,16 @@ function edUpdateKpiOnly() {
     const senzaFV     = cons * COSTO_KWH;                     // quanto avresti speso senza fotovoltaico
     const costoReale  = prelevato * COSTO_KWH;                // quanto hai pagato davvero (solo dalla rete)
     const risparmio   = Math.max(0, senzaFV - costoReale);    // differenza = quanto ti ha fatto risparmiare il FV
-    const guadagnoGSE = immesso * 0.10;                        // stima 0.10€/kWh per energia immessa (GSE)
+    const guadagnoGSE = immesso * PREZZO_IMMISSIONE;                        // stima 0.10€/kWh per energia immessa (GSE)
     
     edSetText('ed-fin-pagato', senzaFV.toFixed(2) + ' €');
-    edSetText('ed-fin-pagato-sub', cons.toFixed(0) + ' kWh × 0.25€');
+    edSetText('ed-fin-pagato-sub', cons.toFixed(0) + ' kWh × ' + COSTO_KWH + '€');
     edSetText('ed-fin-costo',  costoReale.toFixed(2) + ' €');
-    edSetText('ed-fin-costo-sub', prelevato.toFixed(1) + ' kWh × 0.25€');
+    edSetText('ed-fin-costo-sub', prelevato.toFixed(1) + ' kWh × ' + COSTO_KWH + '€');
     edSetText('ed-fin-risp',   risparmio.toFixed(2) + ' €');
     edSetText('ed-fin-risp-sub', 'Grazie al fotovoltaico');
     edSetText('ed-fin-imm',    guadagnoGSE.toFixed(2) + ' €');
-    edSetText('ed-fin-imm-sub', immesso.toFixed(1) + ' kWh × 0.10€');
+    edSetText('ed-fin-imm-sub', immesso.toFixed(1) + ' kWh × ' + PREZZO_IMMISSIONE + '€');
     edSetText('ed-fin-co2',    (prod * VALORE_CO2).toFixed(0) + ' kg');
     edSetText('ed-fin-co2-sub', '≈ ' + Math.round((prod * VALORE_CO2) / 22) + ' alberi/anno');
 
@@ -11882,14 +11971,15 @@ async function renderEnergyDashboard() {
     let prod=0, cons=0, immesso=0, prelevato=0, batCar=0, batScar=0, wbOn=0;
 
     if (isCurrentMonth) {
-        // ── MESE CORRENTE: lettura diretta da STATES ──────────────
-        prod      = parseFloat(getRawState(ED_SENSORS_CURR.prod))      || 0;
-        cons      = parseFloat(getRawState(ED_SENSORS_CURR.cons))      || 0;
-        immesso   = parseFloat(getRawState(ED_SENSORS_CURR.immesso))   || 0;
-        prelevato = parseFloat(getRawState(ED_SENSORS_CURR.prelevato)) || 0;
-        batCar    = parseFloat(getRawState(ED_SENSORS_CURR.batCarico))  || 0;
-        batScar   = parseFloat(getRawState(ED_SENSORS_CURR.batScarico)) || 0;
-        wbOn      = parseFloat(getRawState(ED_SENSORS_CURR.wbOn))      || 0;
+        // ── MESE CORRENTE: motore periodi (delta dal 1° del mese) ──
+        // v0.8.0: funziona sia con entità mensili sia con contatori TOTALI cumulativi
+        prod      = cdPNum(ED_SENSORS_CURR.prod);
+        cons      = cdPNum(ED_SENSORS_CURR.cons);
+        immesso   = cdPNum(ED_SENSORS_CURR.immesso);
+        prelevato = cdPNum(ED_SENSORS_CURR.prelevato);
+        batCar    = cdPNum(ED_SENSORS_CURR.batCarico);
+        batScar   = cdPNum(ED_SENSORS_CURR.batScarico);
+        wbOn      = cdPNum(ED_SENSORS_CURR.wbOn);
     } else {
         // ── MESE PRECEDENTE: usa Long-Term Statistics (i dati persistono per anni, non purgati) ─
         const tStart = new Date(selYear, selMonth-1, 1).toISOString();
@@ -12001,13 +12091,13 @@ async function renderEnergyDashboard() {
 
     // Griglia finanziaria — ordine narrativo: senza FV → costo reale → risparmio → venduto → CO₂
     edSetText('ed-fin-pagato', senzaFV.toFixed(2) + ' €');
-    edSetText('ed-fin-pagato-sub', cons.toFixed(0) + ' kWh × 0.25€');
+    edSetText('ed-fin-pagato-sub', cons.toFixed(0) + ' kWh × ' + COSTO_KWH + '€');
     edSetText('ed-fin-costo',  costoEffettivo.toFixed(2) + ' €');
-    edSetText('ed-fin-costo-sub', prelevato.toFixed(1) + ' kWh × 0.25€');
+    edSetText('ed-fin-costo-sub', prelevato.toFixed(1) + ' kWh × ' + COSTO_KWH + '€');
     edSetText('ed-fin-risp',   risparmio.toFixed(2) + ' €');
     edSetText('ed-fin-risp-sub', 'Grazie al fotovoltaico');
-    edSetText('ed-fin-imm',    (immesso * 0.10).toFixed(2) + ' €');
-    edSetText('ed-fin-imm-sub', immesso.toFixed(1) + ' kWh × 0.10€');
+    edSetText('ed-fin-imm',    (immesso * PREZZO_IMMISSIONE).toFixed(2) + ' €');
+    edSetText('ed-fin-imm-sub', immesso.toFixed(1) + ' kWh × ' + PREZZO_IMMISSIONE + '€');
     edSetText('ed-fin-co2',    co2.toFixed(0) + ' kg');
     edSetText('ed-fin-co2-sub', '≈ ' + Math.round(co2 / 22) + ' alberi/anno');
 
@@ -12206,6 +12296,62 @@ async function renderEdDeviceList(selMonth, selYear, isCurrentMonth, cons = 0, p
             bar.style.width = bar.dataset.w + '%';
         });
     }, 80);
+}
+
+/* ═══ v0.8.0: MOTORE PERIODI ═══
+   Puoi mappare nei campi "oggi"/"mese" anche sensori TOTALI cumulativi (contatori lifetime):
+   i valori di giornaliera, mensile e Report vengono RICOSTRUITI come delta del periodo
+   tramite le Long-Term Statistics di HA. Con entità che si azzerano da sole il delta
+   coincide col valore attuale, quindi il motore è universale. */
+const CD_PERIOD = {};
+let _cdPerLast = 0;
+async function cdRefreshPeriodDeltas(force) {
+    try {
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+        if (!force && Date.now() - _cdPerLast < 240000) return;
+        _cdPerLast = Date.now();
+        const dayRefs = [], monRefs = [];
+        Object.keys(ENTITY_OVERRIDES || {}).forEach(r => {
+            if (/(_oggi|_giorno)$/.test(r)) dayRefs.push(r);
+            else if (/_mese$/.test(r)) monRefs.push(r);
+        });
+        const now = new Date();
+        const endISO = now.toISOString();
+        const run = async (refs, startISO, period) => {
+            if (!refs.length) return;
+            const ids = refs.map(r => resolveEntity(r));
+            const stats = await fetchHAStatistics(ids, startISO, endISO, period);
+            refs.forEach((r, i) => {
+                const arr = stats[ids[i]];
+                if (!Array.isArray(arr) || !arr.length) return;
+                let tot = 0, any = false;
+                arr.forEach(p => {
+                    if (p.change !== null && p.change !== undefined && !isNaN(p.change)) { tot += p.change; any = true; }
+                });
+                if (any && tot >= 0) CD_PERIOD[r] = Math.round(tot * 100) / 100;
+            });
+        };
+        await run(dayRefs, new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString(), 'day');
+        await run(monRefs, new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), 'month');
+        try { render(); } catch(e) {}
+    } catch(e) { console.warn('[Periodi] refresh fallito:', e && e.message); }
+}
+setInterval(() => cdRefreshPeriodDeltas(false), 300000);
+
+/* Valore numerico del periodo: statistica se disponibile, altrimenti stato grezzo */
+function cdPNum(ref) {
+    if (CD_PERIOD[ref] !== undefined) return CD_PERIOD[ref];
+    return parseFloat(getRawState(ref)) || 0;
+}
+/* Stato "grezzo" del periodo come stringa (per i nodi ↓↑ rete/batteria) */
+function cdPRaw(ref) {
+    if (CD_PERIOD[ref] !== undefined) { const v = CD_PERIOD[ref]; return v >= 100 ? v.toFixed(0) : v.toFixed(1); }
+    return getRawState(ref);
+}
+/* Display formattato del periodo (per i nodi delle mappe) */
+function cdPVal(ref) {
+    if (CD_PERIOD[ref] !== undefined) { const v = CD_PERIOD[ref]; return (v >= 100 ? v.toFixed(1) : v.toFixed(2)) + ' kWh'; }
+    return getDisplay(ref);
 }
 
 // Helper: legge le Long-Term Statistics tramite WebSocket

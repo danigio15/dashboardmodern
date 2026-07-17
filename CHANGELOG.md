@@ -6,6 +6,54 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.8.4] — 2026-07-17
+
+### 🐛 Corretto
+- **💾 Download configurato non più corrotto (#10)** — la funzione di download colpiva il proprio codice sorgente (le stringhe `</head>` e i marker nel codice facevano da bersaglio della sostituzione): ora marker e chiusura head sono spezzati nel sorgente, impossibile auto-corrompersi. Chi ha un file scaricato rotto deve ripartire dal file pulito della release e rifare il download.
+- **⚡ Ora in corso inclusa nei periodi** — le Long-Term Statistics escludono l'ora parziale: il motore ora aggiunge il delta dall'ultimo punto orario allo stato attuale del contatore. Il nodo CASA (e tutti i valori giorno/mese) combaciano col pannello Energia di HA.
+- **🪄 Rilevamento su impianti già configurati** — "0 novità" non sembra più un errore: il riepilogo mostra "✅ Tutto già configurato (N elementi attivi)". Il rilevamento propone solo ciò che manca.
+- **🎨 Card stanze** — nome su due righe senza troncamenti, °C ben allineato. I tab dei piani usano lo stesso stile pillola degli altri tab.
+
+### ✨ Aggiunto
+- **🏠 Logo del progetto** — `logo.png` e `icon.png` nel repo (usati da README e HACS).
+
+## [0.8.4] — 2026-07-17 (EN)
+
+### 🐛 Fixed
+- **💾 Baked download no longer corrupted (#10)** — the download function was hitting its own source code (the literal `</head>` and markers acted as replacement targets): markers are now split in the source, self-corruption impossible. Broken downloads must be redone from a clean release file.
+- **⚡ In-progress hour included in periods** — LTS exclude the partial hour: the engine now adds the delta from the last hourly point to the counter's current state. The HOME node (and all day/month values) match HA's Energy panel.
+- **🪄 Detection on configured systems** — "0 new" no longer looks like an error: the summary shows "✅ Everything already configured (N active items)". Detection only proposes what's missing.
+- **🎨 Room cards** — two-line names without truncation, aligned °C. Floor tabs use the same pill style as other tabs.
+
+### ✨ Added
+- **🏠 Project logo** — `logo.png` and `icon.png` in the repo (used by README and HACS).
+
+## [0.8.4] — 2026-07-17
+
+### 🐛 Corretto
+- **💾 File scaricato corrotto (#10)** — il download con token integrato produceva un file con JavaScript rotto ("Invalid regular expression"): la regex che cercava il segnaposto matchava sé stessa nel codice sorgente e la configurazione veniva iniettata dentro il codice. Ora i marker sono costruiti a runtime e la sostituzione avviene per posizione: il file scaricato è valido e ri-scaricabile all'infinito senza duplicare nulla. La funzione (col bottone 💾) è stata portata anche nel file inglese, dove mancava del tutto.
+- **🏠 Nodo CASA coerente con Home Assistant (#6)** — nelle mappe Giornaliera e Mensile il valore di CASA è ora calcolato col bilancio dei flussi mostrati (solare − immessa + prelevata + batteria scaricata − caricata), esattamente come fa la dashboard Energia di HA: la mappa torna sempre nei conti. L'entità mappata resta il fallback.
+- **📊 Report a zero (#6)** — quando tutte le voci dell'Analisi risultano a 0, una nota spiega la fonte dati: il Report legge le Long-Term Statistics e le entità devono avere state_class total_increasing (o total).
+
+### ✨ Migliorato
+- **🏢 Tab dei piani omogenei** — i tab delle Temperature ora usano lo stesso stile a pillola delle altre sezioni (Report/Istantanea/…), con icona del piano e media in evidenza.
+- **🌡️ Card stanze rifinite** — il nome non si tronca più ("Camer…"): va su due righe; °C più leggibile.
+- **🪄 Riepilogo rilevamento onesto** — su un impianto già configurato il pannello dice "✅ Tutto già configurato" con il dettaglio dell'esistente, invece del fuorviante "nessuna entità riconosciuta" (il rilevamento non crea doppioni: aggiunge solo ciò che manca).
+- **🎨 Logo ufficiale** — nuovo logo del progetto (logo.svg / logo.png / icon.png) per repo, README e HACS.
+
+## [0.8.4] — 2026-07-17 (EN)
+
+### 🐛 Fixed
+- **💾 Corrupted downloaded file (#10)** — the token-baked download produced a file with broken JavaScript: the placeholder regex matched itself in the source and the config was injected into the code. Markers are now built at runtime and replaced by position: the downloaded file is valid and re-downloadable forever with no duplication. The feature (with the 💾 button) was also ported to the English file, where it was missing entirely.
+- **🏠 HOME node coherent with Home Assistant (#6)** — in the Daily and Monthly maps the HOME value is now computed from the displayed flow balance (solar − exported + imported + battery discharged − charged), exactly like HA's Energy dashboard: the map always adds up. The mapped entity remains the fallback.
+- **📊 Report at zero (#6)** — when all Analysis entries are 0, a note explains the data source: the Report reads Long-Term Statistics and entities need state_class total_increasing (or total).
+
+### ✨ Improved
+- **🏢 Uniform floor tabs** — Temperature floor tabs now use the same pill style as the other sections, with floor icon and average highlighted.
+- **🌡️ Refined room cards** — names no longer truncate: two-line wrap; clearer °C.
+- **🪄 Honest detection summary** — on an already-configured system the panel says "✅ Everything already configured" with details, instead of the misleading "no entities recognized" (detection never duplicates: it only adds what's missing).
+- **🎨 Official logo** — new project logo (logo.svg / logo.png / icon.png) for the repo, README and HACS.
+
 ## [0.8.3] — 2026-07-17
 
 ### ✨ Aggiunto

@@ -6011,7 +6011,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.7.3';
+const DASHBOARD_VERSION = '0.7.4';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6191,16 +6191,9 @@ try {
 /* v0.7.3 fix (#4): card dei gruppi personalizzati nella sezione Energia — la funzione
    era richiamata ma non era mai stata definita nel file pubblicato (ReferenceError). */
 function buildCustomLoadCards() {
+    /* v0.7.4: le card sotto la mappa sono state rimosse — i gruppi si aprono dai nodi della mappa flussi */
     const host = document.getElementById('custom-loads-grid');
-    if (!host) return;
-    const groups = cdCfgList('cd_subload_groups');
-    host.style.display = groups.length ? '' : 'none';
-    host.innerHTML = groups.map(g => `
-      <div class="dev-card" onclick="apriSubLoads('${g.id}')" style="text-align:center;">
-        <div class="dev-ico">${g.icon || '🔌'}</div>
-        <div class="dev-name">${g.name}</div>
-        <div class="dev-state" id="cl-count-${g.id}">—</div>
-      </div>`).join('');
+    if (host) { host.style.display = 'none'; host.innerHTML = ''; }
 }
 document.addEventListener('DOMContentLoaded', buildCustomLoadCards);
 try {
@@ -6739,7 +6732,12 @@ function buildReportSelect() {
     if (!sel) return;
     const devs = cdCfgList('cd_report_devices');
     if (!devs.length) {
-        if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) sel.innerHTML = '<option value="">— Aggiungi le voci da ⚙️ Editor → Sezioni → Report Analisi —</option>';
+        /* v0.7.4: se il Report è auto-popolato dai nodi mensili, il select usa quelle voci */
+        if (typeof ED_DEVICES !== 'undefined' && ED_DEVICES.length) {
+            sel.innerHTML = ED_DEVICES.map(d => `<option value="${d.sensor}">${d.icon || '⚡'} ${d.name}</option>`).join('');
+            return;
+        }
+        if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) sel.innerHTML = '<option value="">— Aggiungi le voci da ⚙️ Editor → Carichi → Report Analisi —</option>';
         return; // nel file personale restano le option di default
     }
     sel.innerHTML = devs.map(d => `<option value="${d.entity}">${d.icon || '⚡'} ${d.name}</option>`).join('');
@@ -6772,11 +6770,11 @@ function editorRenderLoad() {
           <div style="background:rgba(148,163,184,0.07); border-radius:12px; padding:10px; margin-bottom:8px;">
             <div style="font-weight:800; font-size:12px; margin-bottom:6px;">🗺️ Nodo mappa ${['lav','cuc','boiler','wb','clima'].indexOf(key)+1} <span style="font-weight:600; color:var(--text-dim);">— nome attuale: ${(fn[key] && fn[key].name) || defName + ' (predefinito)'}</span></div>
             <div style="display:flex; gap:6px; margin-bottom:6px;">
-              <input id="ed-fn-${key}-icon" class="ed-input" style="flex:0 0 56px;" placeholder="🧺" maxlength="4" value="${(fn[key] && fn[key].icon) || ''}">
+              <input id="ed-fn-${key}-icon" class="ed-input" style="flex:0 0 56px;" placeholder="🧺" maxlength="4" value="${(fn[key] && fn[key].icon) || ''}"><button type="button" onclick="wzPickIcon('#ed-fn-${key}-icon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
               <input id="ed-fn-${key}-name" class="ed-input" style="flex:1;" placeholder="${defName}" value="${(fn[key] && fn[key].name) || defName}">
               <select id="ed-fn-${key}-group" class="ed-input" style="flex:0 0 34%;">${grpOpts((fn[key] && fn[key].group) || '')}</select>
             </div>
-            <div style="display:flex; gap:6px;"><div style="display:flex; gap:6px;"><input id="ed-fn-${key}-pwr" class="ed-input mono" style="flex:1;" style="flex:1; width:100%; font-family:monospace;" placeholder="Sensore potenza (W) del nodo" value="${(fn[key] && fn[key].pwr) || ''}"><button type="button" onclick="wzPickEntity('#ed-fn-${key}-pwr')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div><button type="button" onclick="wzPickEntity('#ed-fn-${key}-pwr')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
+            <div style="display:flex; gap:6px;"><input id="ed-fn-${key}-pwr" class="ed-input mono" style="flex:1; font-family:monospace;" placeholder="Sensore potenza (W) del nodo" value="${(fn[key] && fn[key].pwr) || ''}"><button type="button" onclick="wzPickEntity('#ed-fn-${key}-pwr')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
           </div>`;
     return `
           <div class="ed-sec-title">🗺️ Nodi della mappa flussi</div>
@@ -6784,7 +6782,7 @@ function editorRenderLoad() {
           <button class="ed-btn" style="width:100%; margin-bottom:14px;" onclick="edSaveFlowNodes()">💾 Salva nodi mappa</button>
           <div class="ed-sec-title">➕ Nuovo gruppo di carichi</div>
           <div style="display:flex; gap:8px; margin-bottom:8px;">
-            <input id="ed-lg-icon" class="ed-input" style="flex:0 0 64px;" placeholder="🔌" maxlength="4">
+            <input id="ed-lg-icon" class="ed-input" style="flex:0 0 64px;" placeholder="🔌" maxlength="4"><button type="button" onclick="wzPickIcon('#ed-lg-icon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
             <input id="ed-lg-name" class="ed-input" style="flex:1;" placeholder="Nome gruppo (es. Garage, Piano Terra…)">
             <button class="ed-btn" onclick="edAddLoadGroup()">Crea</button>
           </div>
@@ -6798,7 +6796,7 @@ function editorRenderLoad() {
               </select>
         <div class="ed-form-row">
           <input id="ed-load-name" class="ed-input" placeholder="Nome (es. Tostapane)" style="flex:1;">
-          <input id="ed-load-icon" class="ed-input ed-icon-input" placeholder="🍞" maxlength="4">
+          <input id="ed-load-icon" class="ed-input ed-icon-input" placeholder="🍞" maxlength="4"><button type="button" onclick="wzPickIcon('#ed-load-icon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
         </div>
         <div style="display:flex; gap:6px;"><input id="ed-load-pwr" list="ed-entity-list" class="ed-input mono" placeholder="sensor.tostapane_power"><button type="button" onclick="wzPickEntity('#ed-load-pwr')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:14px; cursor:pointer;">🔍</button></div>
         <button class="ed-btn-add" onclick="edAddLoad()">＋ Aggiungi carico</button>
@@ -6807,7 +6805,7 @@ function editorRenderLoad() {
       <div class="ed-intro">I dispositivi del Report mensile (Energia → Analisi): nome, icona ed entità kWh-mese liberi.</div>
       <div class="ed-list">${cdCfgList('cd_report_devices').map((d, i2) => `<div class="ed-row"><div style="font-size:15px;">${d.icon||'⚡'}</div><div class="ed-row-main"><div class="ed-row-new">${d.name}</div><div class="ed-row-old mono">${d.entity}</div></div><div class="ed-del" onclick="edDelReportDevice(${i2})">🗑️</div></div>`).join('') || '<div class="ed-empty">Nessuna voce — aggiungile qui sotto</div>'}</div>
       <div style="display:flex; gap:8px; margin-bottom:8px;">
-        <input id="ed-rep-icon" class="ed-input" style="flex:0 0 60px;" placeholder="⚡" maxlength="4">
+        <input id="ed-rep-icon" class="ed-input" style="flex:0 0 60px;" placeholder="⚡" maxlength="4"><button type="button" onclick="wzPickIcon('#ed-rep-icon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
         <input id="ed-rep-name" class="ed-input" style="flex:1;" placeholder="Nome (es. Piscina)">
       </div>
       <div style="display:flex; gap:6px; margin-bottom:8px;">
@@ -7909,6 +7907,31 @@ function wzAddQA() {
 
 /* ═══ v282: PICKER ENTITÀ — lista completa di HA con ricerca, selezione a tap.
    Alternativa mobile-friendly all'autocomplete per lo step "Collega le tue entità". ═══ */
+/* ═══ v0.7.4: PICKER ICONE — griglia emoji per i campi icona (niente più tastiera) ═══ */
+const CD_EMOJI_SET = ['🔌','⚡','💡','🔦','🔋','🪫','☀️','🌞','🌡️','❄️','🔥','💧','🌊','💨','🌀','🍳','🍞','☕','🫖','🍽️','🥘','🧊','🍟','🍕','🥩','🍷','🧃','🧺','🧼','🧽','🧹','🪣','🚿','🛁','🚽','🪥','🛋️','🛏️','🪑','🚪','🪟','🖼️','🪞','🧯','🛠️','🔧','🔨','⚙️','🪛','🧰','📺','💻','🖥️','🖨️','📱','📡','🎮','🕹️','🎵','🔊','🎧','📷','🎥','🌴','🌳','🌵','🌻','🪴','🌱','🍀','🏊','⛱️','🏖️','🏠','🏡','🏢','🚗','🚙','🏍️','🛵','🚲','🛴','🛻','🚜','⛽','🅿️','🐕','🐈','🐟','🐦','🏋️','🧘','⚽','🏀','🎾','🛎️','🔔','⏰','🕰️','💤','🌙','⭐','✨','🎄','🎁','🧸','👕','👖','🧦','👟','🧥','💼','📦','🗄️','🗑️','📚','✏️','🖊️','📌','🔒','🔓','🔑','🗝️','🚨','📣','🧲','💶','💰','🪙','📈','📉','📊'];
+function wzPickIcon(sel) {
+    let ov = document.getElementById('cd-icon-picker');
+    if (ov) ov.remove();
+    ov = document.createElement('div');
+    ov.id = 'cd-icon-picker';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    ov.innerHTML = `<div style="background:var(--card-bg,#fff);border-radius:18px;max-width:440px;width:100%;max-height:70vh;overflow:auto;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-weight:900;font-size:15px;">😀 Scegli un'icona</div>
+        <button type="button" onclick="document.getElementById('cd-icon-picker').remove()" style="border:none;background:rgba(148,163,184,0.15);border-radius:50%;width:32px;height:32px;font-size:15px;cursor:pointer;">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:4px;">
+      ${CD_EMOJI_SET.map(e => `<button type="button" style="font-size:23px;padding:8px 0;border:none;background:transparent;border-radius:10px;cursor:pointer;" onclick="cdSetIcon('${sel}','${e}')">${e}</button>`).join('')}
+      </div></div>`;
+    ov.addEventListener('click', ev => { if (ev.target === ov) ov.remove(); });
+    document.body.appendChild(ov);
+}
+function cdSetIcon(sel, e) {
+    const el = document.querySelector(sel);
+    if (el) { el.value = e; try { el.dispatchEvent(new Event('change')); } catch(_) {} }
+    const ov = document.getElementById('cd-icon-picker'); if (ov) ov.remove();
+}
+
 function wzPickEntity(ref) {
     let M = (WIZ.allMeta && WIZ.allMeta.length) ? WIZ.allMeta : (WIZ.allEntities || []).map(id => ({ id, name: id }));
     // v302: nell'editor (fuori dal wizard) le entità arrivano dagli stati live della dashboard
@@ -8697,7 +8720,7 @@ function editorRenderSezioni() {
           <div class="ed-slot-lbl" style="margin-bottom:6px;">Le voci del Report mensile (Energia → Analisi): nome, icona ed entità liberi.</div>
           ${cdCfgList('cd_report_devices').map((d, ri) => `<div class="ed-row"><div style="font-size:15px;">${d.icon||'⚡'}</div><div class="ed-row-main"><div class="ed-row-new">${d.name}</div><div class="ed-row-old mono">${d.entity}</div></div><div class="ed-del" onclick="edDelReportDevice(${ri})">🗑️</div></div>`).join('') || '<div class="ed-empty">Nessuna voce</div>'}
           <div style="display:flex; gap:8px; margin-bottom:8px;">
-            <input id="ed-rep2-icon" class="ed-input" style="flex:0 0 60px;" placeholder="⚡" maxlength="4">
+            <input id="ed-rep2-icon" class="ed-input" style="flex:0 0 60px;" placeholder="⚡" maxlength="4"><button type="button" onclick="wzPickIcon('#ed-rep2-icon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
             <input id="ed-rep2-name" class="ed-input" style="flex:1;" placeholder="Nome (es. Piscina)">
           </div>
           <div style="display:flex; gap:6px; margin-bottom:8px;">
@@ -9637,6 +9660,50 @@ function cdEnergyNodeState(nodeId, lineId, ref) {
     } catch(e) {}
 }
 
+/* ═══ v0.7.4: potenza live di un nodo carico ═══
+   Priorità: 1) sensore impostato dall'utente sul nodo → quello;
+             2) nessun sensore ma gruppo con sottocarichi → SOMMA automatica delle loro potenze;
+             3) altrimenti l'entità predefinita del nodo. */
+function cdNodeLive(key, defEntity) {
+    const n = (cdCfg('cd_flow_nodes') || {})[key] || {};
+    if (n.pwr) {
+        const s = STATES[n.pwr];
+        const ghost = !s || s.entity_id === 'dm.unmapped';
+        return { disp: getDisplay(n.pwr), w: Math.abs(getPowerInWatts(n.pwr)), mapped: !ghost };
+    }
+    if (n.group && SUBLOADS_CONFIG[n.group] && (SUBLOADS_CONFIG[n.group].items || []).length) {
+        let tot = 0, any = false;
+        SUBLOADS_CONFIG[n.group].items.forEach(it => {
+            const id = it.pwrLive || it.pwr;
+            const s = STATES[id];
+            let w = parseFloat(s && s.state);
+            if (!isNaN(w)) {
+                if (s.attributes && (s.attributes.unit_of_measurement || '').toLowerCase() === 'kw') w *= 1000;
+                tot += w; any = true;
+            }
+        });
+        return { disp: any ? Math.round(Math.abs(tot)) + ' W' : '—', w: any ? Math.abs(tot) : 0, mapped: true };
+    }
+    const s = STATES[defEntity];
+    const ghost = !s || s.entity_id === 'dm.unmapped';
+    const unmapped = (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) && ghost;
+    return { disp: getDisplay(defEntity), w: Math.abs(getPowerInWatts(defEntity)), mapped: !unmapped };
+}
+function cdUpdateLoadNode(nodeId, lineId, valId, key, defEntity) {
+    const node = document.getElementById(nodeId);
+    if (!node) return { w: 0, mapped: false };
+    const line = document.getElementById(lineId);
+    const live = cdNodeLive(key, defEntity);
+    if (!live.mapped) { node.style.display = 'none'; if (line) line.style.display = 'none'; return live; }
+    node.style.display = ''; if (line) line.style.display = '';
+    const valEl = document.getElementById(valId);
+    if (valEl) valEl.textContent = live.disp;
+    const idle = live.w < 3;
+    node.style.opacity = idle ? '0.42' : '1';
+    if (line) { line.style.opacity = idle ? '0.15' : '1'; line.style.animationPlayState = idle ? 'paused' : 'running'; }
+    return live;
+}
+
 /* v292: primo stato REALMENTE mappato di una lista di riferimenti — i "ghost"
    (ref non configurati) non devono cortocircuitare i fallback. */
 function cdFirstMapped() {
@@ -10481,15 +10548,15 @@ function render() {
       cdApplyFlowNodeLite('n-boiler', _fn0.boiler, '🌞', 'Boiler');
       cdApplyFlowNodeLite('n-wb', _fn0.wb, '🚗', 'Wallbox');
       cdApplyFlowNodeLite('n-clima', _fn0.clima, '❄️', 'Clima');
-      cdEnergyNodeState('n-boiler', 'line-home-boiler', (_fn0.boiler && _fn0.boiler.pwr) || 'dm.boiler_potenza_resistenza_boiler');
-      cdEnergyNodeState('n-wb', 'line-home-wb', (_fn0.wb && _fn0.wb.pwr) || 'dm.ev_potenza_wallbox');
-      cdEnergyNodeState('n-clima', 'line-home-clima', (_fn0.clima && _fn0.clima.pwr) || 'dm.energy_potenza_condizionatori');
+      const _nBoiler = cdUpdateLoadNode('n-boiler', 'line-home-boiler', 'v-boiler-p', 'boiler', 'dm.boiler_potenza_resistenza_boiler');
+      const _nWb = cdUpdateLoadNode('n-wb', 'line-home-wb', 'v-wb-p', 'wb', 'dm.ev_potenza_wallbox');
+      const _nClima = cdUpdateLoadNode('n-clima', 'line-home-clima', 'v-clima-p', 'clima', 'dm.energy_potenza_condizionatori');
       /* v296: i due nodi sotto la casa sono personalizzabili (nome, icona, gruppo, sensore) */
       const _fn = cdCfg('cd_flow_nodes') || {};
       cdApplyFlowNode('n-lav', _fn.lav, 'lavanderia', '🧺', 'Lavanderia');
       cdApplyFlowNode('n-cuc', _fn.cuc, 'cucina', '🍳', 'Cucina');
-      cdEnergyNodeState('n-lav', 'line-home-lav', (_fn.lav && _fn.lav.pwr) || 'dm.energy_potenza_carichi_nodo_1_lavanderia');
-      cdEnergyNodeState('n-cuc', 'line-home-cuc', (_fn.cuc && _fn.cuc.pwr) || 'dm.energy_potenza_carichi_nodo_2_cucina');
+      const _nLav = cdUpdateLoadNode('n-lav', 'line-home-lav', 'v-lav-p', 'lav', 'dm.energy_potenza_carichi_nodo_1_lavanderia');
+      const _nCuc = cdUpdateLoadNode('n-cuc', 'line-home-cuc', 'v-cuc-p', 'cuc', 'dm.energy_potenza_carichi_nodo_2_cucina');
       /* v293: contatore attivi sulle card dei gruppi carico personalizzati */
       (cdCfgList('cd_subload_groups')).forEach(g => {
           const el = document.getElementById('cl-count-' + g.id);
@@ -10503,8 +10570,8 @@ function render() {
           });
           el.textContent = items.length ? (on + ' attivi / ' + items.length) : 'vuoto — aggiungi carichi';
       });
-      document.getElementById('v-solar').textContent = getDisplay('dm.energy_potenza_fotovoltaico'); document.getElementById('v-grid').textContent = getDisplay('dm.energy_potenza_scambio_rete'); document.getElementById('v-battery').textContent = getDisplay('dm.energy_potenza_batteria'); document.getElementById('v-battery-soc').textContent = getDisplay('dm.energy_stato_carica_batteria'); document.getElementById('v-home').textContent = getDisplay('dm.energy_potenza_consumo_casa'); document.getElementById('v-boiler-p').textContent = getDisplay('dm.boiler_potenza_resistenza_boiler'); document.getElementById('v-wb-p').textContent = getDisplay('dm.ev_potenza_wallbox'); document.getElementById('v-clima-p').textContent = getDisplay('dm.energy_potenza_condizionatori'); document.getElementById('v-lav-p').textContent = getDisplay('dm.energy_potenza_carichi_nodo_1_lavanderia'); document.getElementById('v-cuc-p').textContent = getDisplay('dm.energy_potenza_carichi_nodo_2_cucina');
-      const pwrSol = getPowerInWatts('dm.energy_potenza_fotovoltaico'); const pwrGri = getPowerInWatts('dm.energy_potenza_scambio_rete'); const pwrBat = getPowerInWatts('dm.energy_potenza_batteria'); const pwrWb = Math.abs(getPowerInWatts('dm.ev_potenza_wallbox')); const pwrBoiler = Math.abs(getPowerInWatts('dm.boiler_potenza_resistenza_boiler')); const pwrClima = Math.abs(getPowerInWatts('dm.energy_potenza_condizionatori')); const pwrLav = Math.abs(getPowerInWatts('dm.energy_potenza_carichi_nodo_1_lavanderia')); const pwrCuc = Math.abs(getPowerInWatts('dm.energy_potenza_carichi_nodo_2_cucina'));
+      document.getElementById('v-solar').textContent = getDisplay('dm.energy_potenza_fotovoltaico'); document.getElementById('v-grid').textContent = getDisplay('dm.energy_potenza_scambio_rete'); document.getElementById('v-battery').textContent = getDisplay('dm.energy_potenza_batteria'); document.getElementById('v-battery-soc').textContent = getDisplay('dm.energy_stato_carica_batteria'); document.getElementById('v-home').textContent = getDisplay('dm.energy_potenza_consumo_casa'); 
+      const pwrSol = getPowerInWatts('dm.energy_potenza_fotovoltaico'); const pwrGri = getPowerInWatts('dm.energy_potenza_scambio_rete'); const pwrBat = getPowerInWatts('dm.energy_potenza_batteria'); const pwrWb = _nWb.w; const pwrBoiler = _nBoiler.w; const pwrClima = _nClima.w; const pwrLav = _nLav.w; const pwrCuc = _nCuc.w;
       setNode('n-solar', pwrSol > 20); setNode('n-grid', Math.abs(pwrGri) > 20); setNode('n-battery', Math.abs(pwrBat) > 20); setNode('n-home', true); setNode('n-wb', pwrWb > 5); setNode('n-boiler', pwrBoiler > 5); setNode('n-clima', pwrClima > 5); setNode('n-lav', pwrLav > 5); setNode('n-cuc', pwrCuc > 5);
       setLine('line-solar-home', pwrSol > 20); setLine('line-grid-home', pwrGri > 20); setLine('line-solar-grid', pwrGri < -20); setLine('line-battery-home', pwrBat > 20); setLine('line-solar-battery', pwrBat < -20); setLine('line-home-wb', pwrWb > 5); setLine('line-home-boiler', pwrBoiler > 5); setLine('line-home-clima', pwrClima > 5); setLine('line-home-lav', pwrLav > 5); setLine('line-home-cuc', pwrCuc > 5);
 
@@ -11396,7 +11463,21 @@ function cdRebuildReportDevices() {
             bg: 'rgba(14,165,233,0.1)'
         }));
     } else if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
-        /* build pubblica senza voci: lista vuota, il Report mostra la guida */
+        /* v0.7.4 (#6): senza voci configurate il Report si popola DA SOLO con i consumi
+           mensili della mappa flussi già mappati dall'utente (Wallbox, Clima, Boiler, nodi 1-2). */
+        const _fnR = cdCfg('cd_flow_nodes') || {};
+        const _auto = [
+            { name: (_fnR.wb && _fnR.wb.name) || 'Wallbox', icon: (_fnR.wb && _fnR.wb.icon) || '🚗', ent: 'dm.ev_energia_wallbox_mese' },
+            { name: (_fnR.clima && _fnR.clima.name) || 'Clima', icon: (_fnR.clima && _fnR.clima.icon) || '❄️', ent: 'dm.energy_condizionatori_mese' },
+            { name: (_fnR.boiler && _fnR.boiler.name) || 'Boiler', icon: (_fnR.boiler && _fnR.boiler.icon) || '🔥', ent: 'dm.energy_boiler_mese' },
+            { name: (_fnR.lav && _fnR.lav.name) || 'Lavanderia', icon: (_fnR.lav && _fnR.lav.icon) || '🧺', ent: 'dm.energy_somma_lavanderia_mese' },
+            { name: (_fnR.cuc && _fnR.cuc.name) || 'Cucina', icon: (_fnR.cuc && _fnR.cuc.icon) || '🍳', ent: 'dm.energy_somma_cucina_mese' },
+        ].filter(a => resolveEntity(a.ent) !== a.ent);
+        _auto.forEach((a, i) => ED_DEVICES.push({
+            key: 'auto_' + i, name: a.name, icon: a.icon,
+            color: _palette[i % _palette.length], sensor: resolveEntity(a.ent),
+            bg: 'rgba(14,165,233,0.1)'
+        }));
     } else {
         ED_DEVICES.push(...ED_DEVICES_DEFAULT);
     }
@@ -12294,21 +12375,30 @@ function getStanze() {
     return CD_STANZE_DEFAULT;
 }
 
+let CD_TEMP_FLOOR = null;
 function buildTempCards() {
     const grid = document.getElementById('temp-grid');
     if (!grid) return;
-    /* v302 (richiesta community): se le stanze hanno un "piano", il layout le raggruppa
-       con un'intestazione per ogni piano (ordine = ordine delle stanze nel wizard). */
+    /* v0.7.4: i piani sono TAB in alto (con temperatura media); si vede un piano alla volta */
     const _rooms = getStanze();
     const _hasFloors = _rooms.some(r => r.floor);
-    let _lastFloor = null;
-    grid.innerHTML = _rooms.map((r, i) => {
-        let _hdr = '';
-        if (_hasFloors) {
-            const f = r.floor || 'Altro';
-            if (f !== _lastFloor) { _hdr = `<div class="floor-hdr" style="grid-column:1/-1; font-weight:900; font-size:13px; letter-spacing:0.6px; text-transform:uppercase; color:var(--text-dim); margin:6px 2px 0;">🏢 ${f}</div>`; _lastFloor = f; }
-        }
-        return _hdr + (function(r, i) {
+    let tabs = '';
+    let visible = _rooms;
+    if (_hasFloors) {
+        const floors = [];
+        _rooms.forEach(r => { const f = r.floor || 'Altro'; if (!floors.includes(f)) floors.push(f); });
+        if (!CD_TEMP_FLOOR || !floors.includes(CD_TEMP_FLOOR)) CD_TEMP_FLOOR = floors[0];
+        tabs = '<div style="grid-column:1/-1; display:flex; gap:8px; overflow-x:auto; padding:2px 2px 6px; -webkit-overflow-scrolling:touch;">' + floors.map((f, fi) => {
+            const act = f === CD_TEMP_FLOOR;
+            const fEsc = f.replace(/"/g, '&quot;');
+            return `<button type="button" data-floor="${fEsc}" onclick="cdSetTempFloor(this.dataset.floor)" style="flex:0 0 auto; border:none; cursor:pointer; border-radius:16px; padding:10px 18px; font-weight:900; font-size:12px; letter-spacing:0.5px; text-transform:uppercase; display:flex; flex-direction:column; align-items:center; gap:2px; font-family:inherit; ${act ? 'background:linear-gradient(135deg,#bae6fd,#e0f2fe); color:#075985; box-shadow:0 3px 10px rgba(2,132,199,0.25);' : 'background:rgba(148,163,184,0.13); color:var(--text-dim);'}">
+              <span>🏢 ${f}</span><span class="tfl-avg" data-floor="${fEsc}" style="font-size:16px; font-family:'Oswald',sans-serif;">—°</span>
+            </button>`;
+        }).join('') + '</div>';
+        visible = _rooms.filter(r => (r.floor || 'Altro') === CD_TEMP_FLOOR);
+    }
+    grid.innerHTML = tabs + visible.map(r => {
+        const i = _rooms.indexOf(r);
         const temp = r.temp;
         const hum = r.hum || temp.replace('_temperature', '_humidity');
         const tid = temp.replace(/\./g,'_').replace(/-/g,'_');
@@ -12330,8 +12420,13 @@ function buildTempCards() {
             </div>
           </div>
         </div>`;
-        })(r, i);
     }).join('');
+}
+function cdSetTempFloor(f) {
+    CD_TEMP_FLOOR = f;
+    if (navigator.vibrate) navigator.vibrate(8);
+    buildTempCards();
+    try { renderTemperature(); } catch(e) {}
 }
 document.addEventListener('DOMContentLoaded', buildTempCards);
 document.addEventListener('DOMContentLoaded', () => { const v = document.getElementById('cfg-ver'); if (v) v.textContent = 'v' + DASHBOARD_VERSION; });
@@ -12366,6 +12461,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function renderTemperature() {
     const ROOMS = getStanze().map(r => [r.temp, r.name, r.hum]);
+
+    /* v0.7.4: media temperatura di ogni piano nei tab */
+    try {
+        document.querySelectorAll('.tfl-avg').forEach(el => {
+            const f = el.dataset.floor;
+            const ts = getStanze().filter(r => (r.floor || 'Altro') === f)
+                .map(r => parseFloat(getRawState(r.temp))).filter(v => !isNaN(v));
+            el.textContent = ts.length ? (ts.reduce((a,b) => a+b, 0) / ts.length).toFixed(1) + '°' : '—°';
+        });
+    } catch(e) {}
 
     const now = new Date().toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
     const upd = document.getElementById('temp-last-update');

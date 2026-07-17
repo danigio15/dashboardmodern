@@ -6,6 +6,30 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.7.4] — 2026-07-17
+
+### ✨ Aggiunto
+- **🗺️ Somma automatica dei sottocarichi sul nodo** — se un nodo della mappa ha un gruppo di carichi assegnato e nessun sensore, il valore mostrato è la somma live delle potenze dei suoi sottocarichi. Con un sensore impostato, il nodo mostra quel valore (prima l'entità del nodo veniva ignorata).
+- **📊 Report Analisi automatico** — senza voci configurate, il Report si popola da solo con i consumi mensili dei nodi della mappa già mappati (Wallbox, Clima, Boiler, nodi 1-2), con i nomi e le icone personalizzati dei nodi. Le voci manuali, se presenti, hanno la precedenza.
+- **😀 Picker delle icone** — accanto a ogni campo icona (nodi, gruppi, carichi, voci Report) c'è ora un bottone che apre una griglia di emoji: basta toccare quella desiderata.
+- **🏢 Piani come tab nelle Temperature** — i piani creati nelle stanze diventano tab in alto con la temperatura media del piano in evidenza; toccando un tab si vedono le stanze di quel piano.
+
+### 🐛 Corretto
+- **Card dei gruppi rimosse dalla sezione Energia** — i gruppi si aprono dai nodi della mappa flussi, le card duplicate sotto la mappa non compaiono più.
+- **Doppia lente 🔍 sul campo sensore dei nodi** — rimosso il bottone duplicato.
+
+## [0.7.4] — 2026-07-17 (EN)
+
+### ✨ Added
+- **🗺️ Automatic subload sum on nodes** — if a map node has a load group assigned and no sensor, the value shown is the live sum of its subloads' power. With a sensor set, the node shows that value (previously the node entity was ignored).
+- **📊 Automatic Analysis Report** — with no entries configured, the Report auto-populates with the monthly consumption of the mapped flow-map nodes (Wallbox, Climate, Boiler, nodes 1-2), using the nodes' custom names and icons. Manual entries take precedence.
+- **😀 Icon picker** — next to every icon field (nodes, groups, loads, Report entries) a button opens an emoji grid: just tap the one you want.
+- **🏢 Floors as tabs in Temperatures** — floors created in rooms become tabs at the top showing the floor's average temperature; tapping a tab shows that floor's rooms.
+
+### 🐛 Fixed
+- **Group cards removed from the Energy section** — groups open from the flow-map nodes; the duplicate cards under the map are gone.
+- **Double 🔍 picker on node sensor fields** — duplicate button removed.
+
 ## [0.7.3] — 2026-07-17
 
 ### 🐛 Corretto

@@ -4542,6 +4542,22 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
 
 /* v0.8.2: STANZE — icona grande in badge colorato (in coda per vincere sulle regole base) */
 .temp-room-icon { font-size: 30px !important; width: 54px !important; height: 54px !important; display: flex !important; align-items: center !important; justify-content: center !important; border-radius: 16px !important; background: linear-gradient(135deg, rgba(var(--tc-rgb),0.22), rgba(var(--tc-rgb),0.07)) !important; box-shadow: inset 0 0 0 1.5px rgba(var(--tc-rgb),0.30) !important; flex-shrink: 0 !important; line-height: 1 !important; }
+/* ═══ v0.8.3: CARD STANZE PREMIUM (tc2) ═══ */
+.tc2 { position:relative; overflow:hidden; display:flex !important; flex-direction:column; gap:0; padding:18px 18px 16px !important; border-radius:24px !important; cursor:pointer; transition: transform .25s, box-shadow .25s; box-shadow: 0 10px 28px rgba(var(--tc-rgb),0.10), 0 2px 8px rgba(15,23,42,0.05); }
+.tc2::before { content:''; position:absolute; top:0; left:0; right:0; height:5px; background: linear-gradient(90deg, rgb(var(--tc-rgb)), rgba(var(--tc-rgb),0.25)); }
+.tc2:hover { transform: translateY(-3px); box-shadow: 0 16px 38px rgba(var(--tc-rgb),0.20); }
+.tc2-badge { position:absolute; top:14px; right:14px; }
+.tc2-head { display:flex; align-items:center; gap:13px; margin-bottom:14px; padding-right:36px; }
+.tc2-ico { width:58px; height:58px; flex:0 0 58px; display:flex; align-items:center; justify-content:center; font-size:31px; line-height:1; border-radius:18px; background: linear-gradient(135deg, rgba(var(--tc-rgb),0.22), rgba(var(--tc-rgb),0.06)); box-shadow: inset 0 0 0 1.5px rgba(var(--tc-rgb),0.30); }
+.tc2-name { font-size:16px; font-weight:900; letter-spacing:0.2px; color:var(--text,#0f172a); min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.tc2-body { display:flex; align-items:flex-end; justify-content:space-between; gap:10px; }
+.tc2-temp { display:flex; align-items:baseline; gap:3px; font-family:'Oswald',sans-serif; }
+.tc2 .temp-value { font-size:44px !important; font-weight:700 !important; line-height:1 !important; background: linear-gradient(135deg, rgb(var(--tc-rgb)), rgba(var(--tc-rgb),0.55)); -webkit-background-clip:text; background-clip:text; color:transparent !important; }
+.tc2-deg { font-size:17px; font-weight:800; color:var(--text-dim,#64748b); }
+.tc2-hum { display:flex; align-items:center; gap:6px; padding:8px 12px; border-radius:14px; background: rgba(14,165,233,0.10); font-weight:900; font-size:13px; color:#0369a1; white-space:nowrap; }
+.tc2-hum .temp-hum-val { font-size:14px !important; font-weight:900 !important; color:inherit !important; }
+html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd3fc; }
+@media (max-width: 640px) { .tc2-ico { width:50px; height:50px; flex-basis:50px; font-size:27px; border-radius:15px; } .tc2 .temp-value { font-size:38px !important; } }
 .temp-room-name { font-size: 15.5px !important; font-weight: 900 !important; letter-spacing: 0.2px !important; }
 .temp-room-icon-wrap { gap: 12px !important; align-items: center !important; }
 .temp-card { padding-top: 18px !important; }
@@ -6027,7 +6043,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.8.2';
+const DASHBOARD_VERSION = '0.8.3';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -8126,6 +8142,19 @@ function wzAutoDetect() {
         const batts = M.filter(e => e.id.startsWith('sensor.') && e.dc === 'battery' && e.unit === '%').slice(0, 20);
         if (batts.length) { extG['batt'] = batts.map(e => e.id); batts.forEach(e => GRUPPI_MONITORAGGIO['batt'].push(e.id)); nAvvisi += batts.length; extGChanged = true; }
     }
+    /* v0.8.3: rilevamento per dominio/classe anche per luci, clima e riscaldamento */
+    if (!(GRUPPI_MONITORAGGIO['luci'] || []).length) {
+        const ls = M.filter(e => e.id.startsWith('light.')).slice(0, 40);
+        if (ls.length) { GRUPPI_MONITORAGGIO['luci'] = GRUPPI_MONITORAGGIO['luci'] || []; extG['luci'] = ls.map(e => e.id); ls.forEach(e => GRUPPI_MONITORAGGIO['luci'].push(e.id)); nAvvisi += ls.length; extGChanged = true; }
+    }
+    if (!(GRUPPI_MONITORAGGIO['clima'] || []).length) {
+        const cl = M.filter(e => e.id.startsWith('climate.') && !/termo|radiat|trv|valve/i.test(e.id + ' ' + e.name)).slice(0, 20);
+        if (cl.length) { GRUPPI_MONITORAGGIO['clima'] = GRUPPI_MONITORAGGIO['clima'] || []; extG['clima'] = cl.map(e => e.id); cl.forEach(e => GRUPPI_MONITORAGGIO['clima'].push(e.id)); nAvvisi += cl.length; extGChanged = true; }
+    }
+    if (!(GRUPPI_MONITORAGGIO['risc'] || []).length) {
+        const rs = M.filter(e => e.id.startsWith('climate.') && /termo|radiat|trv|valve/i.test(e.id + ' ' + e.name)).slice(0, 30);
+        if (rs.length) { GRUPPI_MONITORAGGIO['risc'] = GRUPPI_MONITORAGGIO['risc'] || []; extG['risc'] = rs.map(e => e.id); rs.forEach(e => GRUPPI_MONITORAGGIO['risc'].push(e.id)); nAvvisi += rs.length; extGChanged = true; }
+    }
     if (extGChanged) localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
 
     // — SLOT: scoring v3 — parole temporali distintive, peso maggiore ai match nell'ID, tie-break intelligente
@@ -8265,7 +8294,8 @@ function wzAutoDetect() {
     }
 
     wzRender();
-    alert('🪄 Rilevamento completato!\n\n' +
+    const _counts = { nSlot, nLuci, nClima, nCam, nStanze, nAvvisi };
+    if (!WIZ._silentDetect) alert('🪄 Rilevamento completato!\n\n' +
         (nSlot ? '🧩 ' + nSlot + ' entità collegate\n' : '') +
         (nLuci ? '💡 ' + nLuci + ' luci\n' : '') +
         (nClima ? '❄️ ' + nClima + ' unità clima\n' : '') +
@@ -8273,6 +8303,7 @@ function wzAutoDetect() {
         (nStanze ? '🌡️ ' + nStanze + ' stanze\n' : '') +
         (nAvvisi ? '🔔 ' + nAvvisi + ' avvisi\n' : '') +
         '\nControlla le proposte negli accordion: puoi correggere o rimuovere tutto liberamente.');
+    return _counts;
 }
 
 function wzAddDevice() {
@@ -8451,12 +8482,68 @@ function wzSetNavMode(mode) {
 
 /* ═══ v0.7.0 "One Editor": il wizard si ferma alle sezioni. Rilevamento automatico
    integrato, poi salvataggio e apertura diretta dell'editor (unico luogo di configurazione). ═══ */
-function wzFinishV7(withDetect) {
+async function wzFinishV7(withDetect) {
     if (withDetect) {
-        try { wzAutoDetect(); } catch(e) { console.warn('[wizard] auto-detect:', e); }
+        /* v0.8.3: se le entità non sono ancora arrivate le carico e ASPETTO (fino a 15s),
+           invece di fermarmi con "Attendi il caricamento…" */
+        if (!WIZ.allMeta || !WIZ.allMeta.length) {
+            wzShowWait('⏳ Leggo tutte le entità da Home Assistant…');
+            try { wzLoadAllEntities(); } catch(e) {}
+            const t0 = Date.now();
+            while ((!WIZ.allMeta || !WIZ.allMeta.length) && Date.now() - t0 < 15000) {
+                await new Promise(r => setTimeout(r, 400));
+            }
+            wzHideWait();
+        }
+        if (!WIZ.allMeta || !WIZ.allMeta.length) {
+            alert('⚠️ Non riesco a leggere le entità da Home Assistant.\nVerifica URL e token nel passo della connessione, poi riprova.');
+            return;
+        }
+        let counts = null;
+        WIZ._silentDetect = true;
+        try { counts = wzAutoDetect(); } catch(e) { console.warn('[wizard] auto-detect:', e); }
+        WIZ._silentDetect = false;
+        wzShowDetectSummary(counts || {});
+        return; /* wzFinish parte dal bottone del riepilogo */
     }
     sessionStorage.setItem('cd_open_editor_after_reload', '1');
     wzFinish();
+}
+
+function wzShowWait(txt) {
+    let ov = document.getElementById('cd-wz-wait'); if (ov) ov.remove();
+    ov = document.createElement('div'); ov.id = 'cd-wz-wait';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:2147483200;display:flex;align-items:center;justify-content:center;padding:20px;';
+    ov.innerHTML = '<div style="background:var(--card-bg,#fff);border-radius:20px;padding:26px 30px;font-weight:900;font-size:15px;box-shadow:0 20px 60px rgba(0,0,0,0.4);">' + txt + '</div>';
+    document.body.appendChild(ov);
+}
+function wzHideWait() { const ov = document.getElementById('cd-wz-wait'); if (ov) ov.remove(); }
+
+/* v0.8.3: RIEPILOGO RILEVAMENTO — quante entità e DOVE sono state assegnate */
+function wzShowDetectSummary(n) {
+    const rows = [
+        ['🧩', 'Entità delle sezioni (Energia, Boiler, EV, MiniPC…)', n.nSlot],
+        ['💡', 'Luci', n.nLuci],
+        ['❄️', 'Unità clima', n.nClima],
+        ['📹', 'Telecamere', n.nCam],
+        ['🌡️', 'Stanze (temperatura + umidità)', n.nStanze],
+        ['🔔', 'Quadro avvisi (aperture, batterie, luci, clima)', n.nAvvisi],
+    ].filter(r => r[2] > 0);
+    const tot = rows.reduce((s, r) => s + r[2], 0);
+    let ov = document.getElementById('cd-wz-summary'); if (ov) ov.remove();
+    ov = document.createElement('div'); ov.id = 'cd-wz-summary';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:2147483200;display:flex;align-items:center;justify-content:center;padding:20px;';
+    const body = tot
+        ? rows.map(r => `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;background:rgba(148,163,184,0.10);"><span style="font-size:20px;">${r[0]}</span><span style="flex:1;font-weight:800;font-size:13px;">${r[1]}</span><span style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;color:#059669;">${r[2]}</span></div>`).join('')
+        : '<div style="padding:14px;border-radius:14px;background:rgba(245,158,11,0.12);color:#b45309;font-weight:800;font-size:13px;">😕 Nessuna entità riconosciuta automaticamente: potrai assegnarle a mano dall\'editor con la ricerca 🔍.</div>';
+    ov.innerHTML = `<div style="background:var(--card-bg,#fff);border-radius:24px;padding:24px;width:min(460px,100%);max-height:82vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,0.4);display:flex;flex-direction:column;gap:8px;">
+        <div style="font-weight:900;font-size:18px;margin-bottom:4px;">🪄 Rilevamento completato</div>
+        ${tot ? '<div style="font-weight:800;font-size:13px;color:var(--text-dim,#64748b);margin-bottom:6px;">' + tot + ' elementi assegnati automaticamente:</div>' : ''}
+        ${body}
+        <div style="font-size:12px;color:var(--text-dim,#64748b);font-weight:700;margin-top:6px;">Potrai controllare, correggere o rimuovere ogni proposta dall\'editor.</div>
+        <button class="ed-save-btn" style="margin-top:10px;" onclick="sessionStorage.setItem('cd_open_editor_after_reload','1'); document.getElementById('cd-wz-summary').remove(); wzFinish();">✅ Perfetto, apri l'editor →</button>
+    </div>`;
+    document.body.appendChild(ov);
 }
 
 function wzFinish() {
@@ -12676,19 +12763,15 @@ function buildTempCards() {
         const hid = hum.replace(/\./g,'_').replace(/-/g,'_');
         const rgb = r.rgb || STANZE_RGB_PALETTE[i % STANZE_RGB_PALETTE.length];
         const nm = (r.name||'').replace(/'/g, '&#39;');
-        return `<div class="temp-card" style="--tc-rgb:${rgb};" onclick="apriStorico(event, '${temp}', '${nm}')">
-          <div class="temp-card-header">
-            <div class="temp-room-icon-wrap"><span class="temp-room-icon">${r.icon||'🏠'}</span><span class="temp-room-name">${r.name}</span></div>
-            <span class="temp-comfort-badge" id="tc_${tid}">—</span>
+        return `<div class="temp-card tc2" style="--tc-rgb:${rgb};" onclick="apriStorico(event, '${temp}', '${nm}')">
+          <span class="temp-comfort-badge tc2-badge" id="tc_${tid}">—</span>
+          <div class="tc2-head">
+            <div class="tc2-ico">${r.icon||'🏠'}</div>
+            <div class="tc2-name">${r.name}</div>
           </div>
-          <div class="temp-card-body">
-            <div class="temp-main-group">
-              <span class="temp-main-lbl">Temperatura</span>
-              <div class="temp-value-wrap"><span class="temp-value" id="tv_${tid}">—</span><span class="temp-unit">°</span></div>
-            </div>
-            <div class="temp-hum-group" onclick="event.stopPropagation(); apriStorico(event, '${hum}', '${nm} Umidità')">
-              <span class="temp-hum-lbl">💧 Umidità</span><span class="temp-hum-val" id="hv_${hid}">—%</span>
-            </div>
+          <div class="tc2-body">
+            <div class="tc2-temp"><span class="temp-value" id="tv_${tid}">—</span><span class="tc2-deg">°C</span></div>
+            <div class="tc2-hum" onclick="event.stopPropagation(); apriStorico(event, '${hum}', '${nm} Umidità')">💧 <span class="temp-hum-val" id="hv_${hid}">—%</span></div>
           </div>
         </div>`;
     }).join('');

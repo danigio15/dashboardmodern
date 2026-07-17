@@ -6,6 +6,20 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.8.3] — 2026-07-17
+
+### ✨ Aggiunto
+- **🪄 Rilevamento con riepilogo** — "Rileva tutto" ora dice esattamente **quante entità ha assegnato e dove**: pannello finale con conteggio per destinazione (entità sezioni, luci, clima, telecamere, stanze, avvisi) e totale, prima di aprire l'editor. Se le entità non sono ancora caricate, il wizard le legge da solo e aspetta (fino a 15s) invece di fermarsi con "Attendi il caricamento…".
+- **🔍 Rilevamento per dominio e classe** — oltre ad aperture (device_class door/window/opening) e batterie (%), il quadro avvisi ora si riempie da solo anche con luci (`light.*`), clima e riscaldamento (`climate.*`, distinti fra condizionatori e termosifoni/TRV).
+- **🎨 Card stanze completamente ridisegnate** — badge icona 58px col colore della stanza, striscia colorata in alto, temperatura enorme in gradiente (44px Oswald), pillola umidità 💧, badge comfort in alto a destra, hover con ombra colorata. Design pulito senza etichette ridondanti, ottimizzato anche per mobile.
+
+## [0.8.3] — 2026-07-17 (EN)
+
+### ✨ Added
+- **🪄 Detection with summary** — "Detect all" now tells you exactly **how many entities were assigned and where**: final panel with per-destination counts (section entities, lights, climate, cameras, rooms, alerts) and a total, before opening the editor. If entities aren't loaded yet, the wizard fetches them itself and waits (up to 15s) instead of stopping with "Wait for entities…".
+- **🔍 Domain & class detection** — besides openings (device_class door/window/opening) and batteries (%), the alerts board now auto-fills with lights (`light.*`), climate and heating (`climate.*`, split between AC units and radiators/TRVs).
+- **🎨 Fully redesigned room cards** — 58px icon badge in the room color, colored top strip, huge gradient temperature (44px Oswald), 💧 humidity pill, comfort badge top-right, colored hover shadow. Clean label-free design, mobile-optimized.
+
 ## [0.8.2] — 2026-07-17
 
 ### ✨ Aggiunto

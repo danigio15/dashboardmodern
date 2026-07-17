@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🏠 Dashboard Modern
+<img src="https://raw.githubusercontent.com/danigio15/dashboardmodern/main/logo.png" width="120" alt="Dashboard Modern logo">
+
+# Dashboard Modern
 
 ### La dashboard per Home Assistant che si configura da sola — e ti segue su ogni dispositivo
 

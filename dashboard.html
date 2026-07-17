@@ -4549,11 +4549,11 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
 .tc2-badge { position:absolute; top:14px; right:14px; }
 .tc2-head { display:flex; align-items:center; gap:13px; margin-bottom:14px; padding-right:36px; }
 .tc2-ico { width:58px; height:58px; flex:0 0 58px; display:flex; align-items:center; justify-content:center; font-size:31px; line-height:1; border-radius:18px; background: linear-gradient(135deg, rgba(var(--tc-rgb),0.22), rgba(var(--tc-rgb),0.06)); box-shadow: inset 0 0 0 1.5px rgba(var(--tc-rgb),0.30); }
-.tc2-name { font-size:16px; font-weight:900; letter-spacing:0.2px; color:var(--text,#0f172a); min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.tc2-name { font-size:16px; font-weight:900; letter-spacing:0.2px; color:var(--text,#0f172a); min-width:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.25; }
 .tc2-body { display:flex; align-items:flex-end; justify-content:space-between; gap:10px; }
 .tc2-temp { display:flex; align-items:baseline; gap:3px; font-family:'Oswald',sans-serif; }
 .tc2 .temp-value { font-size:44px !important; font-weight:700 !important; line-height:1 !important; background: linear-gradient(135deg, rgb(var(--tc-rgb)), rgba(var(--tc-rgb),0.55)); -webkit-background-clip:text; background-clip:text; color:transparent !important; }
-.tc2-deg { font-size:17px; font-weight:800; color:var(--text-dim,#64748b); }
+.tc2-deg { font-size:15px; font-weight:900; color:var(--text-dim,#64748b); letter-spacing:0.5px; }
 .tc2-hum { display:flex; align-items:center; gap:6px; padding:8px 12px; border-radius:14px; background: rgba(14,165,233,0.10); font-weight:900; font-size:13px; color:#0369a1; white-space:nowrap; }
 .tc2-hum .temp-hum-val { font-size:14px !important; font-weight:900 !important; color:inherit !important; }
 html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd3fc; }
@@ -6043,7 +6043,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.8.3';
+const DASHBOARD_VERSION = '0.8.5';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -8533,9 +8533,28 @@ function wzShowDetectSummary(n) {
     let ov = document.getElementById('cd-wz-summary'); if (ov) ov.remove();
     ov = document.createElement('div'); ov.id = 'cd-wz-summary';
     ov.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:2147483200;display:flex;align-items:center;justify-content:center;padding:20px;';
+    /* v0.8.4: su un impianto già configurato il rilevamento non aggiunge doppioni —
+       il riepilogo lo DICE, invece di sembrare un fallimento. */
+    let existing = [];
+    if (!tot) {
+        try {
+            const ov = Object.keys(cdCfg('cd_entity_overrides')).length;
+            const st = cdCfgList('cd_stanze').length, lu = Object.keys(cdCfg('cd_luci')).length;
+            const cl = cdCfgList('cd_clima_units').length, cam = cdCfgList('cd_cameras').length;
+            if (ov) existing.push('🧩 ' + ov + ' entità');
+            if (lu) existing.push('💡 ' + lu + ' luci');
+            if (cl) existing.push('❄️ ' + cl + ' clima');
+            if (cam) existing.push('📹 ' + cam + ' telecamere');
+            if (st) existing.push('🌡️ ' + st + ' stanze');
+        } catch(e) {}
+    }
+    let already = 0;
+    try { already = Object.keys(cdCfg('cd_entity_overrides')).length + cdCfgList('cd_stanze').length + cdCfgList('cd_clima_units').length + cdCfgList('cd_cameras').length + Object.keys(cdCfg('cd_luci')).length; } catch(e) {}
     const body = tot
         ? rows.map(r => `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;background:rgba(148,163,184,0.10);"><span style="font-size:20px;">${r[0]}</span><span style="flex:1;font-weight:800;font-size:13px;">${r[1]}</span><span style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;color:#059669;">${r[2]}</span></div>`).join('')
-        : '<div style="padding:14px;border-radius:14px;background:rgba(245,158,11,0.12);color:#b45309;font-weight:800;font-size:13px;">😕 Nessuna entità riconosciuta automaticamente: potrai assegnarle a mano dall\'editor con la ricerca 🔍.</div>';
+        : (existing.length
+            ? '<div style="padding:14px;border-radius:14px;background:rgba(16,185,129,0.10);color:#047857;font-weight:800;font-size:13px;">✅ Tutto già configurato (' + existing.join(' · ') + ').<br>Il rilevamento aggiunge solo ciò che manca: niente doppioni.</div>'
+            : (already > 0 ? '<div style="padding:14px;border-radius:14px;background:rgba(16,185,129,0.12);color:#047857;font-weight:800;font-size:13px;">✅ Tutto già configurato (' + already + ' elementi attivi): nessuna novità da aggiungere — il rilevamento propone solo ciò che manca, senza toccare le tue scelte.</div>' : '<div style="padding:14px;border-radius:14px;background:rgba(245,158,11,0.12);color:#b45309;font-weight:800;font-size:13px;">😕 Nessuna entità riconosciuta automaticamente: potrai assegnarle a mano dall\'editor con la ricerca 🔍.</div>'));
     ov.innerHTML = `<div style="background:var(--card-bg,#fff);border-radius:24px;padding:24px;width:min(460px,100%);max-height:82vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,0.4);display:flex;flex-direction:column;gap:8px;">
         <div style="font-weight:900;font-size:18px;margin-bottom:4px;">🪄 Rilevamento completato</div>
         ${tot ? '<div style="font-weight:800;font-size:13px;color:var(--text-dim,#64748b);margin-bottom:6px;">' + tot + ' elementi assegnati automaticamente:</div>' : ''}
@@ -9049,10 +9068,13 @@ async function cdBakeDownload() {
             const k = localStorage.key(i);
             if (k && k.indexOf('cd_') === 0) { try { cfg[k] = JSON.parse(localStorage.getItem(k)); } catch(_) { cfg[k] = localStorage.getItem(k); } }
         }
-        const inj = '<scr' + 'ipt>window.CD_BAKED_CONFIG = ' + JSON.stringify(cfg).replace(/</g, '\\u003c') + ';</scr' + 'ipt>';
-        html = /<!--CD_BAKED-->/.test(html)
-            ? html.replace(/<!--CD_BAKED-->[\s\S]*?<!--\/CD_BAKED-->/, '<!--CD_BAKED-->' + inj + '<!--/CD_BAKED-->')
-            : html.replace('</head>', '<!--CD_BAKED-->' + inj + '<!--/CD_BAKED--></head>');
+        /* v0.8.4 fix (#10): marker e chiusura head SPEZZATI nel sorgente — la sostituzione
+           non puo' mai colpire il codice di questa funzione (corrompeva i download). */
+        const M1 = '<!--CD_' + 'BAKED-->', M2 = '<!--/CD_' + 'BAKED-->', HEAD = '</he' + 'ad>';
+        const inj = M1 + '<scr' + 'ipt>window.CD_BAKED_CONFIG = ' + JSON.stringify(cfg).replace(/</g, '\\u003c') + ';</scr' + 'ipt>' + M2;
+        const i1 = html.indexOf(M1), i2 = html.indexOf(M2);
+        if (i1 > -1 && i2 > i1) html = html.slice(0, i1) + inj + html.slice(i2 + M2.length);
+        else { const ih = html.indexOf(HEAD); html = ih > -1 ? html.slice(0, ih) + inj + html.slice(ih) : inj + html; }
         const blob = new Blob([html], { type: 'text/html' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
@@ -10785,10 +10807,34 @@ function render() {
 
       const dSol = cdPNum('dm.energy_produzione_solare_oggi'); const dHome = cdPNum('dm.energy_consumo_casa_oggi'); const dBoiler = cdPNum('dm.energy_boiler_oggi'); const dWb = cdPNum('dm.ev_energia_wallbox_oggi'); const dClima = cdPNum('dm.energy_condizionatori_oggi'); const dLav = cdPNum('dm.energy_somma_lavanderia_oggi'); const dCuc = cdPNum('dm.energy_somma_cucina_oggi'); const dGridB = cdPRaw('dm.energy_energia_prelevata_oggi'); const dGridS = cdPRaw('dm.energy_energia_immessa_oggi'); const dBatC = cdPRaw('dm.energy_batteria_caricata_oggi'); const dBatD = cdPRaw('dm.energy_batteria_scaricata_oggi');
       document.getElementById('v-solar-day').textContent = cdPVal('dm.energy_produzione_solare_oggi'); document.getElementById('v-home-day').textContent = cdPVal('dm.energy_consumo_casa_oggi'); document.getElementById('v-boiler-day').textContent = cdPVal('dm.energy_boiler_oggi'); document.getElementById('v-wb-day').textContent = cdPVal('dm.ev_energia_wallbox_oggi'); document.getElementById('v-clima-day').textContent = cdPVal('dm.energy_condizionatori_oggi'); document.getElementById('v-lav-day').textContent = cdPVal('dm.energy_somma_lavanderia_oggi'); document.getElementById('v-cuc-day').textContent = cdPVal('dm.energy_somma_cucina_oggi'); document.getElementById('v-grid-day').innerHTML = `<span style="color:#e11d48">↓ ${dGridB !== '—' ? dGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${dGridS !== '—' ? dGridS : 0} kWh</span>`; document.getElementById('v-battery-day').innerHTML = `<span style="color:#10b981">↓ ${dBatC !== '—' ? dBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${dBatD !== '—' ? dBatD : 0} kWh</span>`;
+
+      /* v0.8.4 (#6): CASA come nella dashboard Energia di HA — bilancio dei flussi mostrati:
+         solare − immessa + prelevata + batteria scaricata − batteria caricata. Così la mappa
+         torna sempre nei conti; l'entità mappata resta il fallback quando mancano i pezzi. */
+      try {
+          const _n = v => { const x = parseFloat(v); return isNaN(x) ? null : x; };
+          const _gb = _n(dGridB), _gs = _n(dGridS), _bc = _n(dBatC), _bd = _n(dBatD);
+          if (dSol > 0 || _gb !== null) {
+              const bal = dSol - (_gs || 0) + (_gb || 0) + (_bd || 0) - (_bc || 0);
+              if (bal >= 0) document.getElementById('v-home-day').textContent = (bal >= 100 ? bal.toFixed(1) : bal.toFixed(2)) + ' kWh';
+          }
+      } catch(e) {}
       setNode('n-solar-day', dSol > 0.1); setNode('n-grid-day', parseFloat(dGridB) > 0.1 || parseFloat(dGridS) > 0.1); setNode('n-battery-day', parseFloat(dBatC) > 0.1 || parseFloat(dBatD) > 0.1); setNode('n-home-day', true); setNode('n-wb-day', dWb > 0.1); setNode('n-boiler-day', dBoiler > 0.1); setNode('n-clima-day', dClima > 0.1); setNode('n-lav-day', dLav > 0.1); setNode('n-cuc-day', dCuc > 0.1); setLine('line-solar-home-day', dSol > 0.1); setLine('line-grid-home-day', parseFloat(dGridB) > 0.1); setLine('line-solar-grid-day', parseFloat(dGridS) > 0.1); setLine('line-battery-home-day', parseFloat(dBatD) > 0.1); setLine('line-solar-battery-day', parseFloat(dBatC) > 0.1); setLine('line-home-wb-day', dWb > 0.1); setLine('line-home-boiler-day', dBoiler > 0.1); setLine('line-home-clima-day', dClima > 0.1); setLine('line-home-lav-day', dLav > 0.1); setLine('line-home-cuc-day', dCuc > 0.1);
 
       const mSol = cdPNum('dm.energy_produzione_solare_mese'); const mHome = cdPNum('dm.energy_consumo_casa_mese'); const mBoiler = cdPNum('dm.energy_boiler_mese'); const mWb = cdPNum('dm.ev_energia_wallbox_mese'); const mClima = cdPNum('dm.energy_condizionatori_mese'); const mLav = cdPNum('dm.energy_somma_lavanderia_mese'); const mCuc = cdPNum('dm.energy_somma_cucina_mese'); const mGridB = cdPRaw('dm.energy_rete_acquistata_mese'); const mGridS = cdPRaw('dm.energy_rete_venduta_mese'); const mBatC = cdPRaw('dm.energy_batteria_caricata_mese'); const mBatD = cdPRaw('dm.energy_batteria_usata_mese');
       document.getElementById('v-solar-month').textContent = cdPVal('dm.energy_produzione_solare_mese'); document.getElementById('v-home-month').textContent = cdPVal('dm.energy_consumo_casa_mese'); document.getElementById('v-boiler-month').textContent = cdPVal('dm.energy_boiler_mese'); document.getElementById('v-wb-month').textContent = cdPVal('dm.ev_energia_wallbox_mese'); document.getElementById('v-clima-month').textContent = cdPVal('dm.energy_condizionatori_mese'); document.getElementById('v-lav-month').textContent = cdPVal('dm.energy_somma_lavanderia_mese'); document.getElementById('v-cuc-month').textContent = cdPVal('dm.energy_somma_cucina_mese'); document.getElementById('v-grid-month').innerHTML = `<span style="color:#e11d48">↓ ${mGridB !== '—' ? mGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${mGridS !== '—' ? mGridS : 0} kWh</span>`; document.getElementById('v-battery-month').innerHTML = `<span style="color:#10b981">↓ ${mBatC !== '—' ? mBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${mBatD !== '—' ? mBatD : 0} kWh</span>`;
+
+      /* v0.8.4 (#6): CASA come nella dashboard Energia di HA — bilancio dei flussi mostrati:
+         solare − immessa + prelevata + batteria scaricata − batteria caricata. Così la mappa
+         torna sempre nei conti; l'entità mappata resta il fallback quando mancano i pezzi. */
+      try {
+          const _n = v => { const x = parseFloat(v); return isNaN(x) ? null : x; };
+          const _gb = _n(mGridB), _gs = _n(mGridS), _bc = _n(mBatC), _bd = _n(mBatD);
+          if (mSol > 0 || _gb !== null) {
+              const bal = mSol - (_gs || 0) + (_gb || 0) + (_bd || 0) - (_bc || 0);
+              if (bal >= 0) document.getElementById('v-home-month').textContent = (bal >= 100 ? bal.toFixed(1) : bal.toFixed(2)) + ' kWh';
+          }
+      } catch(e) {}
       setNode('n-solar-month', mSol > 0.1); setNode('n-grid-month', parseFloat(mGridB) > 0.1 || parseFloat(mGridS) > 0.1); setNode('n-battery-month', parseFloat(mBatC) > 0.1 || parseFloat(mBatD) > 0.1); setNode('n-home-month', true); setNode('n-wb-month', mWb > 0.1); setNode('n-boiler-month', mBoiler > 0.1); setNode('n-clima-month', mClima > 0.1); setNode('n-lav-month', mLav > 0.1); setNode('n-cuc-month', mCuc > 0.1); setLine('line-solar-home-month', mSol > 0.1); setLine('line-grid-home-month', parseFloat(mGridB) > 0.1); setLine('line-solar-grid-month', parseFloat(mGridS) > 0.1); setLine('line-battery-home-month', parseFloat(mBatD) > 0.1); setLine('line-solar-battery-month', parseFloat(mBatC) > 0.1); setLine('line-home-wb-month', mWb > 0.1); setLine('line-home-boiler-month', mBoiler > 0.1); setLine('line-home-clima-month', mClima > 0.1); setLine('line-home-lav-month', mLav > 0.1); setLine('line-home-cuc-month', mCuc > 0.1);
       const statiEV = {'A':'Non Connessa','B':'🔌 Collegata','C':'⚡ In Carica','D':'⚡ In Carica','F':'⚠️ Errore'}; 
       const codeEV = getRawState('dm.ev_stato_ricarica'); 
@@ -12423,6 +12469,11 @@ async function renderEdDeviceList(selMonth, selYear, isCurrentMonth, cons = 0, p
             </div>
         </div>`;
     }).join('');
+    /* v0.8.4 (#6): risposta alla domanda "da dove prende i dati?" — se tutto è a zero,
+       quasi sempre le entità non hanno le Long-Term Statistics. */
+    if (totalKwh <= 0 && ED_DEVICES.length) {
+        list.innerHTML += '<div style="padding:10px 14px; margin-top:8px; border-radius:14px; background:rgba(14,165,233,0.08); color:#0369a1; font-size:11.5px; font-weight:700;">ℹ️ Il Report legge le <b>Long-Term Statistics</b> di Home Assistant. Se i valori restano a zero, verifica che le entità abbiano <code>state_class: total_increasing</code> (o <code>total</code>): Strumenti per sviluppatori → Statistiche.</div>';
+    }
 
     setTimeout(() => {
         list.querySelectorAll('.ed-dev-bar').forEach(bar => {
@@ -12477,7 +12528,18 @@ async function cdRefreshPeriodDeltas(force) {
                 arr.forEach(p => {
                     if (p.change !== null && p.change !== undefined && !isNaN(p.change)) { tot += p.change; any = true; }
                 });
-                if (any && tot >= 0) CD_PERIOD[r] = Math.round(tot * 100) / 100;
+                let extra = 0; /* v0.8.5: extra SOLO se l'ultimo punto statistico è più vecchio di 65 min
+                   (le versioni recenti di HA includono già l'ora in corso: aggiungerlo sempre raddoppiava) */
+                try {
+                    const lp = arr[arr.length - 1];
+                    const st0 = typeof lp.start === 'number' ? lp.start : Date.parse(lp.start);
+                    if (!isNaN(st0) && Date.now() - st0 > 3900000) {
+                        const lastSt = parseFloat(lp.state);
+                        const nowV = parseFloat((STATES[ids[i]] || {}).state);
+                        if (!isNaN(lastSt) && !isNaN(nowV)) { const d = nowV - lastSt; if (d > 0 && d < 50) extra = d; }
+                    }
+                } catch(e) {}
+                if (any && tot + extra >= 0) CD_PERIOD[r] = Math.round((tot + extra) * 100) / 100;
             });
         };
         await run(dayRefs, new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString(), 'day');
@@ -12746,11 +12808,12 @@ function buildTempCards() {
         const floors = [];
         _rooms.forEach(r => { const f = r.floor || 'Altro'; if (!floors.includes(f)) floors.push(f); });
         if (!CD_TEMP_FLOOR || !floors.includes(CD_TEMP_FLOOR)) CD_TEMP_FLOOR = floors[0];
-        tabs = '<div style="grid-column:1/-1; display:flex; gap:8px; overflow-x:auto; padding:2px 2px 6px; -webkit-overflow-scrolling:touch;">' + floors.map((f, fi) => {
+        tabs = '<div style="grid-column:1/-1; display:flex; gap:10px; overflow-x:auto; padding:4px 2px 10px; -webkit-overflow-scrolling:touch;">' + floors.map((f, fi) => {
             const act = f === CD_TEMP_FLOOR;
             const fEsc = f.replace(/"/g, '&quot;');
-            return `<button type="button" data-floor="${fEsc}" onclick="cdSetTempFloor(this.dataset.floor)" style="flex:0 0 auto; border:none; cursor:pointer; border-radius:16px; padding:10px 18px; font-weight:900; font-size:12px; letter-spacing:0.5px; text-transform:uppercase; display:flex; flex-direction:column; align-items:center; gap:2px; font-family:inherit; ${act ? 'background:linear-gradient(135deg,#bae6fd,#e0f2fe); color:#075985; box-shadow:0 3px 10px rgba(2,132,199,0.25);' : 'background:rgba(148,163,184,0.13); color:var(--text-dim);'}">
-              <span>${(cdCfg('cd_floor_icons') || {})[f] || '🏢'} ${f}</span><span class="tfl-avg" data-floor="${fEsc}" style="font-size:16px; font-family:'Oswald',sans-serif;">—°</span>
+            const fIco = (cdCfg('cd_floor_icons') || {})[f] || '🏢';
+            return `<button type="button" class="sub-tab-btn${act ? ' active' : ''}" data-floor="${fEsc}" onclick="cdSetTempFloor(this.dataset.floor)" style="display:flex; align-items:center; gap:9px; flex:0 0 auto; font-family:inherit;">
+              <span>${fIco} ${f}</span><span class="tfl-avg" data-floor="${fEsc}" style="font-family:'Oswald',sans-serif; font-size:15px; font-weight:700; letter-spacing:0;">—°</span>
             </button>`;
         }).join('') + '</div>';
         visible = _rooms.filter(r => (r.floor || 'Altro') === CD_TEMP_FLOOR);

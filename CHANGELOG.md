@@ -6,6 +6,15 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.8.5] — 2026-07-17
+### Corretto
+- ⚡ **Flussi allineati a HA**: l'ora in corso viene aggiunta SOLO se le statistiche sono davvero in ritardo (>65 min) — le versioni recenti di HA la includono già e il valore risultava gonfiato di ~2 kWh · 💾 **Download riparato ovunque**: anche il percorso del wizard usava le stringhe intere `</head>`/marker come bersaglio (ora spezzate in tutto il file) — rifai il download da un file pulito · 🎨 Tab dei piani centrati
+
+## [0.8.5] — 2026-07-17 (EN)
+### Fixed
+- ⚡ **Flows aligned with HA**: the in-progress hour is added ONLY when statistics truly lag (>65 min) — recent HA already includes it and values were inflated by ~2 kWh · 💾 **Download fixed everywhere**: the wizard path also used whole `</head>`/marker strings as targets (now split file-wide) — redo the download from a clean file · 🎨 Centered floor tabs
+
+
 ## [0.8.4] — 2026-07-17
 
 ### 🐛 Corretto

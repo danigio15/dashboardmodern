@@ -6021,7 +6021,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.8.1';
+const DASHBOARD_VERSION = '0.8.2';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -10011,7 +10011,8 @@ function cdAutoHide() {
         const oc = el.getAttribute('onclick') || '';
         const refs = oc.match(/dm\.[a-z0-9_]+/g);
         if (!refs || !refs.length) return;
-        const allUnmapped = refs.every(r => !ENTITY_OVERRIDES[r]);
+        /* v0.8.2: a ref is covered also when the period engine derives it from the twin field (day←month) */
+        const allUnmapped = refs.every(r => !ENTITY_OVERRIDES[r] && (typeof CD_PERIOD === 'undefined' || CD_PERIOD[r] === undefined));
         if (allUnmapped) {
             const card = el.closest(CARD_SEL) || el;
             card.style.display = 'none';
@@ -12275,21 +12276,37 @@ async function renderEdDeviceList(selMonth, selYear, isCurrentMonth, cons = 0, p
    coincide col valore attuale, quindi il motore è universale. */
 const CD_PERIOD = {};
 let _cdPerLast = 0;
+/* v0.8.2: corrispondenze giorno↔mese con nomi diversi (rete e batteria) */
+const CD_DAY_FROM_MONTH = {
+    'dm.energy_energia_prelevata_oggi':  'dm.energy_rete_acquistata_mese',
+    'dm.energy_energia_immessa_oggi':    'dm.energy_rete_venduta_mese',
+    'dm.energy_batteria_caricata_oggi':  'dm.energy_batteria_caricata_mese',
+    'dm.energy_batteria_scaricata_oggi': 'dm.energy_batteria_usata_mese',
+};
 async function cdRefreshPeriodDeltas(force) {
     try {
         if (!ws || ws.readyState !== WebSocket.OPEN) return;
         if (!force && Date.now() - _cdPerLast < 240000) return;
         _cdPerLast = Date.now();
-        const dayRefs = [], monRefs = [];
+        const dayRefs = [], monRefs = [], entOf = {};
         Object.keys(ENTITY_OVERRIDES || {}).forEach(r => {
-            if (/(_oggi|_giorno)$/.test(r)) dayRefs.push(r);
-            else if (/_mese$/.test(r)) monRefs.push(r);
+            if (/(_oggi|_giorno)$/.test(r)) { dayRefs.push(r); entOf[r] = resolveEntity(r); }
+            else if (/_mese$/.test(r)) { monRefs.push(r); entOf[r] = resolveEntity(r); }
+        });
+        /* v0.8.2: every entity mapped in the MONTH field (even a cumulative TOTAL counter)
+           automatically feeds the matching "today" ref when that one is unmapped:
+           the daily delta is computed from the SAME entity. */
+        monRefs.forEach(mr => {
+            let dr = mr.replace(/_mese$/, '_oggi');
+            const ecc = Object.entries(CD_DAY_FROM_MONTH).find(([d, m]) => m === mr);
+            if (ecc) dr = ecc[0];
+            if (!ENTITY_OVERRIDES[dr] && !dayRefs.includes(dr)) { dayRefs.push(dr); entOf[dr] = resolveEntity(mr); }
         });
         const now = new Date();
         const endISO = now.toISOString();
         const run = async (refs, startISO, period) => {
             if (!refs.length) return;
-            const ids = refs.map(r => resolveEntity(r));
+            const ids = refs.map(r => entOf[r]);
             const stats = await fetchHAStatistics(ids, startISO, endISO, period);
             refs.forEach((r, i) => {
                 const arr = stats[ids[i]];
@@ -12304,6 +12321,7 @@ async function cdRefreshPeriodDeltas(force) {
         await run(dayRefs, new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString(), 'day');
         await run(monRefs, new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), 'month');
         try { render(); } catch(e) {}
+        try { cdAutoHide(); } catch(e) {}
     } catch(e) { console.warn('[Periodi] refresh fallito:', e && e.message); }
 }
 setInterval(() => cdRefreshPeriodDeltas(false), 300000);

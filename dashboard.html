@@ -3156,10 +3156,6 @@ nav.tabs.bottom-nav-bar .tab.active .text {
 }
 
 /* ── SEZIONE TEMPERATURE STANZE — Design Premium ── */
-/* v0.8.1: icona stanza grande in badge colorato */
-.temp-room-icon { font-size: 30px !important; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; border-radius: 16px; background: linear-gradient(135deg, rgba(var(--tc-rgb),0.20), rgba(var(--tc-rgb),0.07)); box-shadow: inset 0 0 0 1.5px rgba(var(--tc-rgb),0.28); flex-shrink: 0; }
-.temp-room-name { font-size: 15px !important; font-weight: 900 !important; letter-spacing: 0.2px; }
-.temp-room-icon-wrap { gap: 12px !important; align-items: center; }
 .temp-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -4543,6 +4539,12 @@ body.cd-nav-fixed nav.tabs.bottom-nav-bar {
 }
 body.cd-nav-fixed .bottom-nav-handle { display: none !important; }
 body.cd-nav-fixed { padding-bottom: 96px !important; }
+
+/* v0.8.2: STANZE — icona grande in badge colorato (in coda per vincere sulle regole base) */
+.temp-room-icon { font-size: 30px !important; width: 54px !important; height: 54px !important; display: flex !important; align-items: center !important; justify-content: center !important; border-radius: 16px !important; background: linear-gradient(135deg, rgba(var(--tc-rgb),0.22), rgba(var(--tc-rgb),0.07)) !important; box-shadow: inset 0 0 0 1.5px rgba(var(--tc-rgb),0.30) !important; flex-shrink: 0 !important; line-height: 1 !important; }
+.temp-room-name { font-size: 15.5px !important; font-weight: 900 !important; letter-spacing: 0.2px !important; }
+.temp-room-icon-wrap { gap: 12px !important; align-items: center !important; }
+.temp-card { padding-top: 18px !important; }
 </style>
 </head>
 <body>
@@ -6025,7 +6027,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.8.1';
+const DASHBOARD_VERSION = '0.8.2';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -10076,7 +10078,8 @@ function cdAutoHide() {
         const oc = el.getAttribute('onclick') || '';
         const refs = oc.match(/dm\.[a-z0-9_]+/g);
         if (!refs || !refs.length) return;
-        const allUnmapped = refs.every(r => !ENTITY_OVERRIDES[r]);
+        /* v0.8.2: un ref è coperto anche se il motore periodi lo deriva dal campo gemello (giorno←mese) */
+        const allUnmapped = refs.every(r => !ENTITY_OVERRIDES[r] && (typeof CD_PERIOD === 'undefined' || CD_PERIOD[r] === undefined));
         /* v0.8.0: simmetrico — quando mappi un'entità la card RIAPPARE (prima restava nascosta per sempre) */
         const card = el.closest(CARD_SEL) || el;
         card.style.display = allUnmapped ? 'none' : '';
@@ -12348,21 +12351,37 @@ async function renderEdDeviceList(selMonth, selYear, isCurrentMonth, cons = 0, p
    coincide col valore attuale, quindi il motore è universale. */
 const CD_PERIOD = {};
 let _cdPerLast = 0;
+/* v0.8.2: corrispondenze giorno↔mese con nomi diversi (rete e batteria) */
+const CD_DAY_FROM_MONTH = {
+    'dm.energy_energia_prelevata_oggi':  'dm.energy_rete_acquistata_mese',
+    'dm.energy_energia_immessa_oggi':    'dm.energy_rete_venduta_mese',
+    'dm.energy_batteria_caricata_oggi':  'dm.energy_batteria_caricata_mese',
+    'dm.energy_batteria_scaricata_oggi': 'dm.energy_batteria_usata_mese',
+};
 async function cdRefreshPeriodDeltas(force) {
     try {
         if (!ws || ws.readyState !== WebSocket.OPEN) return;
         if (!force && Date.now() - _cdPerLast < 240000) return;
         _cdPerLast = Date.now();
-        const dayRefs = [], monRefs = [];
+        const dayRefs = [], monRefs = [], entOf = {};
         Object.keys(ENTITY_OVERRIDES || {}).forEach(r => {
-            if (/(_oggi|_giorno)$/.test(r)) dayRefs.push(r);
-            else if (/_mese$/.test(r)) monRefs.push(r);
+            if (/(_oggi|_giorno)$/.test(r)) { dayRefs.push(r); entOf[r] = resolveEntity(r); }
+            else if (/_mese$/.test(r)) { monRefs.push(r); entOf[r] = resolveEntity(r); }
+        });
+        /* v0.8.2: ogni entità mappata nel MESE (anche un contatore TOTALE) alimenta
+           automaticamente il riferimento "oggi" corrispondente, se questo non è mappato:
+           il delta giornaliero viene calcolato dalla STESSA entità. */
+        monRefs.forEach(mr => {
+            let dr = mr.replace(/_mese$/, '_oggi');
+            const ecc = Object.entries(CD_DAY_FROM_MONTH).find(([d, m]) => m === mr);
+            if (ecc) dr = ecc[0];
+            if (!ENTITY_OVERRIDES[dr] && !dayRefs.includes(dr)) { dayRefs.push(dr); entOf[dr] = resolveEntity(mr); }
         });
         const now = new Date();
         const endISO = now.toISOString();
         const run = async (refs, startISO, period) => {
             if (!refs.length) return;
-            const ids = refs.map(r => resolveEntity(r));
+            const ids = refs.map(r => entOf[r]);
             const stats = await fetchHAStatistics(ids, startISO, endISO, period);
             refs.forEach((r, i) => {
                 const arr = stats[ids[i]];
@@ -12377,6 +12396,7 @@ async function cdRefreshPeriodDeltas(force) {
         await run(dayRefs, new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString(), 'day');
         await run(monRefs, new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), 'month');
         try { render(); } catch(e) {}
+        try { cdAutoHide(); } catch(e) {}
     } catch(e) { console.warn('[Periodi] refresh fallito:', e && e.message); }
 }
 setInterval(() => cdRefreshPeriodDeltas(false), 300000);

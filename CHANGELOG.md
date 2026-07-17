@@ -6,6 +6,32 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.8.2] — 2026-07-17
+
+### ✨ Aggiunto
+- **📅 Giornaliera derivata dai totali del mese** — se hai mappato solo il campo "mese" con un contatore TOTALE cumulativo, la mappa Giornaliera si popola da sola con il delta da mezzanotte della STESSA entità (vale per tutti i nodi: casa, solare, rete ↓↑, batteria ↓↑, boiler, wallbox, clima, nodi 1-2, anche dove i nomi giorno/mese non coincidono). Funziona anche al contrario: solo "oggi" mappato → il mese si ricava da lì.
+
+### 🐛 Corretto
+- **Nodi giornalieri nascosti** — le card/nodi alimentati dal motore periodi non vengono più nascosti da cdAutoHide come "non mappati"; dopo ogni refresh del motore le card ricompaiono da sole.
+
+## [0.8.2] — 2026-07-17 (EN)
+
+### ✨ Added
+- **📅 Daily view derived from monthly totals** — if you only mapped the "month" field with a cumulative TOTAL counter, the Daily map auto-populates with the since-midnight delta of the SAME entity (all nodes: home, solar, grid ↓↑, battery ↓↑, boiler, wallbox, climate, nodes 1-2, including pairs whose day/month names differ). Works the other way too: only "today" mapped → the month is derived from it.
+
+### 🐛 Fixed
+- **Hidden daily nodes** — cards/nodes fed by the period engine are no longer hidden by cdAutoHide as "unmapped"; after every engine refresh cards reappear on their own.
+
+## [0.8.2] — 2026-07-17
+
+### ✨ Aggiunto
+- **📅 Derivazione giornaliera automatica** — se un campo "oggi" non è mappato ma il corrispondente "mese" sì (il caso tipico: contatore TOTALE inserito solo nel campo mese), il valore di oggi viene calcolato dalla STESSA entità come delta da mezzanotte. Vale per tutte le coppie mese→giorno (casa, solare, boiler, wallbox, clima, nodi 1-2) incluse le tre con nomi diversi (rete prelevata/immessa, batteria scaricata). Un campo "oggi" mappato esplicitamente ha sempre la precedenza. In pratica: basta inserire i totali nei campi mese e la dashboard ricostruisce da sola giornaliera, mensile e Report.
+
+## [0.8.2] — 2026-07-17 (EN)
+
+### ✨ Added
+- **📅 Automatic daily derivation** — if a "today" field is not mapped but its "month" counterpart is (the typical case: a TOTAL counter entered only in the month field), today's value is computed from the SAME entity as a delta since midnight. Applies to every month→day pair (home, solar, boiler, wallbox, climate, nodes 1-2) including the three with different stems (grid import/export, battery discharged). An explicitly mapped "today" field always wins. In short: enter your totals in the month fields and the dashboard rebuilds daily, monthly and Report on its own.
+
 ## [0.8.1] — 2026-07-17
 
 ### 🐛 Corretto

@@ -6,6 +6,30 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.8.1] — 2026-07-17
+
+### 🐛 Corretto
+- **📊 Mesi passati e Bilancio Anno finalmente sullo storico** — le statistiche venivano richieste a HA con i riferimenti interni `dm.*` (che HA non conosce) in più punti: ora tutte le richieste risolvono le entità reali e la risposta viene rimappata. Il Bilancio Anno inoltre stima il consumo dal bilancio energetico quando manca il contatore e, se le statistiche annuali sono vuote, parte almeno dai dati del mese corrente invece di "Dati non disponibili".
+- **📉 Mesi senza statistiche** — la Panoramica di un mese passato senza alcun dato mostra un avviso chiaro invece di zeri sicuri.
+- **💾 RAM dinamica** — il valore si adatta al sensore: % se è in percentuale, valore con la sua unità se è in MB/GB (con conversione automatica MB→GB), percentuale calcolata se c'è l'attributo total. Niente più "—" con la barra piena.
+
+### ✨ Aggiunto
+- **🏢 Icona per ogni piano** — nel form stanza c'è il campo icona del piano (con picker 😀): il tab del piano nelle Temperature la mostra al posto del 🏢 generico.
+- **🎨 Stanze più belle** — icona della stanza grande (54px) in un badge colorato col colore della card, nome più evidente.
+- **🔔 Avvisi raggruppati** — l'editor Avvisi è organizzato in sezioni richiudibili (Aperture, Batterie, Luci, Clima, Riscaldamento) col conteggio per gruppo.
+
+## [0.8.1] — 2026-07-17 (EN)
+
+### 🐛 Fixed
+- **📊 Past months and Year Balance finally read history** — statistics were requested from HA with internal `dm.*` refs (unknown to HA) in several places: all requests now resolve real entities and remap the response. The Year Balance also estimates consumption from the energy balance when the meter is missing and, if yearly statistics are empty, starts from current-month data instead of "No data".
+- **📉 Months without statistics** — the Overview of an empty past month shows a clear notice instead of confident zeros.
+- **💾 Dynamic RAM** — the value adapts to the sensor: % if it's a percentage, value with its unit if it's MB/GB (automatic MB→GB conversion), computed percentage when a total attribute exists. No more "—" with a full bar.
+
+### ✨ Added
+- **🏢 Per-floor icons** — the room form has a floor-icon field (with 😀 picker): the floor tab in Temperatures shows it instead of the generic 🏢.
+- **🎨 Prettier rooms** — big room icon (54px) in a colored badge matching the card color, bolder name.
+- **🔔 Grouped alerts** — the Alerts editor is organized in collapsible sections (Openings, Batteries, Lights, Climate, Heating) with per-group counts.
+
 ## [0.8.0] — 2026-07-17 · ⭐ Major release
 
 ### ✨ Aggiunto

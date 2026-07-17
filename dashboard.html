@@ -3156,6 +3156,10 @@ nav.tabs.bottom-nav-bar .tab.active .text {
 }
 
 /* ── SEZIONE TEMPERATURE STANZE — Design Premium ── */
+/* v0.8.1: icona stanza grande in badge colorato */
+.temp-room-icon { font-size: 30px !important; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; border-radius: 16px; background: linear-gradient(135deg, rgba(var(--tc-rgb),0.20), rgba(var(--tc-rgb),0.07)); box-shadow: inset 0 0 0 1.5px rgba(var(--tc-rgb),0.28); flex-shrink: 0; }
+.temp-room-name { font-size: 15px !important; font-weight: 900 !important; letter-spacing: 0.2px; }
+.temp-room-icon-wrap { gap: 12px !important; align-items: center; }
 .temp-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -5524,7 +5528,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
         </div>
         <div class="srv-metric" style="--m-rgb: 124, 58, 237;" onclick="apriStorico(event,'dm.server_ram','RAM')">
           <div class="srv-metric-top"><span class="srv-metric-lbl">RAM</span><span class="srv-metric-icon">💾</span></div>
-          <div><span class="srv-metric-val" id="v-srv-ram">—</span><span class="srv-metric-unit">%</span></div>
+          <div><span class="srv-metric-val" id="v-srv-ram">—</span><span class="srv-metric-unit" id="u-srv-ram">%</span></div>
           <div class="srv-metric-bar"><div class="srv-metric-fill" id="srv-fill-ram" style="width:0%;background:#7c3aed;"></div></div>
         </div>
         <div class="srv-metric" style="--m-rgb: 16, 185, 129;" onclick="apriStorico(event,'dm.server_disco','Disco')">
@@ -6021,7 +6025,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.8.0';
+const DASHBOARD_VERSION = '0.8.1';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6901,6 +6905,7 @@ function edEditStanza2(i) {
     document.getElementById('ed-st2-name').value = r.name || '';
     document.getElementById('ed-st2-icon').value = r.icon || '';
     document.getElementById('ed-st2-floor').value = r.floor || '';
+    try { const _fm = cdCfg('cd_floor_icons'); const _fi = document.getElementById('ed-st2-flicon'); if (_fi) _fi.value = (r.floor && _fm[r.floor]) || ''; } catch(e) {}
     document.getElementById('ed-st2-temp').value = r.temp || '';
     document.getElementById('ed-st2-hum').value = r.hum || '';
     window._edEditStanzaIdx = i;
@@ -6932,6 +6937,7 @@ function edAddStanza2() {
             if (h) r.hum = h; else delete r.hum;
             const fl = (document.getElementById('ed-st2-floor').value || '').trim();
             if (fl) r.floor = fl; else delete r.floor;
+            edSaveFloorIcon(fl);
             localStorage.setItem('cd_stanze', JSON.stringify(rooms));
         }
         delete window._edEditStanzaIdx;
@@ -6951,6 +6957,7 @@ function edAddStanza2() {
     const r = { name, icon, temp };
     if (hum) r.hum = hum;
     if (floor) r.floor = floor;
+    edSaveFloorIcon(floor);
     rooms.push(r);
     localStorage.setItem('cd_stanze', JSON.stringify(rooms));
     try { cdMarkDirty(); cdSyncPush(); } catch(e){}
@@ -7042,18 +7049,23 @@ function edDelLoad(grp, i) {
 function editorRenderAvvisi() {
     const extN = edGetExtra('cd_avvisi_names_extra');
     const GRP_LBL = { win: '🚪 Aperture', batt: '🔋 Batterie', luci: '💡 Luci', clima: '❄️ Clima', risc: '🔥 Riscaldamento' };
+    /* v0.8.1: un accordion per sezione (Aperture, Batterie, Luci…) invece della lista piatta */
     let rows = '';
     Object.entries(GRP_LBL).forEach(([grp, glbl]) => {
-        (GRUPPI_MONITORAGGIO[grp] || []).forEach(id => {
+        const ids = GRUPPI_MONITORAGGIO[grp] || [];
+        if (!ids.length) return;
+        const inner = ids.map(id => {
             const nm = extN[id] || AVVISI_NAMES[id] || (STATES[id]?.attributes?.friendly_name) || id;
-            rows += `<div class="ed-row">
+            return `<div class="ed-row">
               <div class="ed-row-main">
                 <div class="ed-row-new">${nm}</div>
-                <div class="ed-row-old mono">${glbl} · ${id}</div>
+                <div class="ed-row-old mono">${id}</div>
               </div>
               <div class="ed-del" onclick="edDelAvviso('${grp}','${id}')">🗑️</div>
             </div>`;
-        });
+        }).join('');
+        rows += `<details class="ed-acc"><summary class="ed-acc-head">${glbl} <span class="ed-acc-n">${ids.length}</span></summary>
+            <div class="ed-acc-body"><div class="ed-list">${inner}</div></div></details>`;
     });
     if (!rows) rows = '<div class="ed-empty">Nessun avviso configurato</div>';
     return `
@@ -7549,7 +7561,7 @@ function wzRender() {
           <div style="display:flex; gap:8px; margin:10px 0 8px;">
             <input id="ed-st2-icon" class="ed-input" style="flex:0 0 56px;" placeholder="🌡️" maxlength="4"><button type="button" onclick="wzPickIcon('#ed-st2-icon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
             <input id="ed-st2-name" class="ed-input" style="flex:1;" placeholder="Nome stanza">
-            <input id="ed-st2-floor" class="ed-input" style="flex:0 0 32%;" placeholder="Piano (opz.)">
+            <input id="ed-st2-floor" class="ed-input" style="flex:0 0 32%;" placeholder="Piano (opz.)"><input id="ed-st2-flicon" class="ed-input" style="flex:0 0 52px;" placeholder="🏢" maxlength="4" title="Icona del piano"><button type="button" onclick="wzPickIcon('#ed-st2-flicon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
           </div>
           <div style="display:flex; gap:6px; margin-bottom:6px;">
             <input id="ed-st2-temp" class="ed-input mono" autocomplete="off" placeholder="sensor.temperatura_x" style="flex:1; font-family:monospace;">
@@ -8643,7 +8655,7 @@ function editorRenderSezioni() {
           <div style="display:flex; gap:8px; margin:10px 0 8px;">
             <input id="ed-st2-icon" class="ed-input" style="flex:0 0 56px;" placeholder="🌡️" maxlength="4"><button type="button" onclick="wzPickIcon('#ed-st2-icon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
             <input id="ed-st2-name" class="ed-input" style="flex:1;" placeholder="Nome stanza">
-            <input id="ed-st2-floor" class="ed-input" style="flex:0 0 30%;" placeholder="Piano (opz.)">
+            <input id="ed-st2-floor" class="ed-input" style="flex:0 0 30%;" placeholder="Piano (opz.)"><input id="ed-st2-flicon" class="ed-input" style="flex:0 0 52px;" placeholder="🏢" maxlength="4" title="Icona del piano"><button type="button" onclick="wzPickIcon('#ed-st2-flicon')" style="flex:0 0 38px; height:38px; border:none; border-radius:10px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; font-size:16px; cursor:pointer;">😀</button>
           </div>
           <div style="display:flex; gap:6px; margin-bottom:6px;">
             <input id="ed-st2-temp" class="ed-input mono" autocomplete="off" placeholder="sensor.temperatura_x" style="flex:1; font-family:monospace;">
@@ -10862,17 +10874,28 @@ function render() {
       // ── MiniPC: tutte le variabili PRIMA di usarle ──────────
       const cpuVal  = parseFloat(getRawState('dm.server_cpu'))  || 0;
       const ramVal  = parseFloat(getRawState('dm.server_ram')) || 0;
-      const ramTot  = parseFloat(STATES['dm.server_ram']?.attributes?.total) || 0;
+      const ramS    = STATES['dm.server_ram'];
+      const ramTot  = parseFloat(ramS?.attributes?.total) || 0;
       const diskVal = parseFloat(getRawState('dm.server_disco')) || 0;
       const tempVal = parseFloat(getRawState('dm.server_temperatura_cpu')) || 0;
-      const ramPct  = ramTot > 0 ? Math.min(100, (ramVal / ramTot) * 100) : (ramVal > 0 && ramVal <= 100 ? ramVal : 0); /* v0.8.0: sensori già in % usati diretti */
+      /* v0.8.1: RAM DINAMICA — se il sensore è in % mostra la %, se è un valore (MB/GB)
+         mostra il valore con la sua unità; con attributo total la % viene calcolata. */
+      const ramUnit = ((ramS && ramS.attributes && ramS.attributes.unit_of_measurement) || '').trim();
+      let ramPct = 0, ramText = '—', ramUnitTxt = '%';
+      if (ramVal > 0) {
+          if (ramUnit === '%' || (ramTot === 0 && !ramUnit && ramVal <= 100)) { ramPct = Math.min(100, ramVal); ramText = ramVal.toFixed(0); }
+          else if (ramTot > 0) { ramPct = Math.min(100, (ramVal / ramTot) * 100); ramText = ramPct.toFixed(0); }
+          else if (/mb|mib/i.test(ramUnit) || (!ramUnit && ramVal > 1024)) { ramText = (ramVal / 1024).toFixed(1); ramUnitTxt = 'GB'; }
+          else { ramText = ramVal >= 100 ? ramVal.toFixed(0) : ramVal.toFixed(1); ramUnitTxt = ramUnit || ''; }
+      }
+      window._cdRamPct = ramPct;
 
       // Valori testuali nei ring
       const cpuEl  = document.getElementById('v-srv-cpu');
       const ramEl  = document.getElementById('v-srv-ram');
       const diskEl = document.getElementById('v-srv-disk');
       if (cpuEl)  cpuEl.textContent  = cpuVal  > 0 ? cpuVal.toFixed(1)  : getDisplay('dm.server_cpu').replace('%','').trim() || '—';
-      if (ramEl)  ramEl.textContent  = ramPct  > 0 ? ramPct.toFixed(0)  : '—';
+      if (ramEl) { ramEl.textContent = ramText; const _u = document.getElementById('u-srv-ram'); if (_u) _u.textContent = ramUnitTxt; }
       if (diskEl) diskEl.textContent = diskVal > 0 ? diskVal.toFixed(0) : getDisplay('dm.server_disco').replace('%','').trim() || '—';
 
       // Ring animati SVG  — circonferenza r=42: 2π×42 ≈ 264
@@ -11070,7 +11093,7 @@ function render() {
               if (el) { el.style.width = Math.min(100, pct) + '%'; }
           };
           setBar('srv-fill-cpu',  cpuPct);
-          setBar('srv-fill-ram',  ramTot > 0 ? ramMb / ramTot * 100 : 0);
+          setBar('srv-fill-ram',  (window._cdRamPct !== undefined ? window._cdRamPct : (ramTot > 0 ? ramMb / ramTot * 100 : 0)));
           setBar('srv-fill-disk', diskPct);
 
           if (tempC > 0) {
@@ -11700,7 +11723,9 @@ async function edCalcolaBilancioAnno(selYear) {
     
     try {
         // Chiedo dati MESE per MESE, prendo il 'change' di ciascuno (delta del periodo) e sommo
-        const sensors = [ED_SENSORS_CURR.cons, ED_SENSORS_CURR.prelevato];
+        /* v0.8.1: tutti i sensori dell'anno; se manca il consumo lo si stima dal bilancio energetico */
+        const S = ED_SENSORS_CURR;
+        const sensors = [S.cons, S.prelevato, S.prod, S.immesso, S.batCarico, S.batScarico];
         const stats   = await fetchHAStatistics(sensors, tStart, tEnd, 'month');
         
         const sumChange = (sensorId) => {
@@ -11719,8 +11744,22 @@ async function edCalcolaBilancioAnno(selYear) {
         };
         consAnno      = sumChange(ED_SENSORS_CURR.cons);
         prelevatoAnno = sumChange(ED_SENSORS_CURR.prelevato);
+        if (consAnno <= 0) {
+            const stima = sumChange(S.prod) - sumChange(S.immesso) + prelevatoAnno + sumChange(S.batScarico) - sumChange(S.batCarico);
+            if (stima > 0.5) consAnno = Math.round(stima * 10) / 10;
+        }
     } catch(e) {
         console.warn('[ED] Bilancio anno - statistics non disponibile:', e.message);
+    }
+
+    /* v0.8.1: se le statistiche annuali non danno nulla ma il mese corrente sì (motore periodi),
+       l'anno parte almeno dai dati del mese in corso invece di "Dati non disponibili". */
+    if (isCurrentYear && consAnno <= 0 && prelevatoAnno <= 0) {
+        try {
+            prelevatoAnno = cdPNum(ED_SENSORS_CURR.prelevato) || 0;
+            const _c = cdPNum(ED_SENSORS_CURR.cons) || 0;
+            if (_c > 0) consAnno = _c;
+        } catch(e) {}
     }
     
     // Calcoli economici
@@ -12038,7 +12077,7 @@ async function renderEnergyDashboard() {
         
         // ── METODO 2: History API (fallback - max ultimi 10 giorni) ──
         if (!statsOk) {
-            const allSensors = allSensorsList.join(',');
+            const allSensors = allSensorsList.map(r => { try { return resolveEntity(r); } catch(e) { return r; } }).join(',');
             try {
                 const res = await fetch(
                     `${HA_HTTP_URL}/api/history/period/${tStart}?filter_entity_id=${allSensors}&minimal_response&end_time=${tEnd}`,
@@ -12125,6 +12164,10 @@ async function renderEnergyDashboard() {
                 ? `<span class="ed-badge red">⚠️ -${deficit} kWh deficit</span>`
                 : `<span class="ed-badge green">🎯 Zero deficit</span>`) +
             `<span class="ed-badge blue">⚡ ${prod.toFixed(0)} kWh prodotti</span>`;
+        /* v0.8.1: mese passato senza alcuna statistica → nota chiara al posto di zeri sicuri */
+        if (!isCurrentMonth && prod <= 0 && cons <= 0 && prelevato <= 0) {
+            badgesEl.innerHTML = '<span class="ed-badge" style="background:rgba(245,158,11,0.14); color:#b45309;">⚠️ Nessuna statistica disponibile per questo mese</span>';
+        }
     }
 
     // ── Wallbox ──────────────────────────────────────────────────
@@ -12357,6 +12400,11 @@ function cdPVal(ref) {
 // Helper: legge le Long-Term Statistics tramite WebSocket
 // HA mantiene queste statistiche per anni (non vengono purgate come la cronologia dettagliata)
 function fetchHAStatistics(entityIds, startISO, endISO, period = 'day') {
+    /* v0.8.1 fix: i riferimenti interni dm.* vanno RISOLTI verso le entità reali prima di
+       chiedere le statistiche a HA (che i dm.* non li conosce): per questo i mesi passati
+       e il Bilancio Anno restavano a zero. La risposta viene rimappata sulle chiavi originali,
+       così tutti i chiamanti continuano a leggere stats[dm.ref] senza modifiche. */
+    const _res = entityIds.map(id => { try { return resolveEntity(id); } catch(e) { return id; } });
     return new Promise((resolve, reject) => {
         if (!ws || ws.readyState !== WebSocket.OPEN) { reject(new Error('WebSocket non connesso')); return; }
         const reqId = msgId++;
@@ -12366,7 +12414,12 @@ function fetchHAStatistics(entityIds, startISO, endISO, period = 'day') {
                 if (m.id === reqId && m.type === 'result') {
                     ws.removeEventListener('message', handler);
                     clearTimeout(timeoutId);
-                    if (m.success) resolve(m.result || {});
+                    if (m.success) {
+                        const raw = m.result || {};
+                        const out = {};
+                        entityIds.forEach((orig, i) => { out[orig] = raw[_res[i]] || raw[orig] || []; });
+                        resolve(out);
+                    }
                     else reject(new Error((m.error && m.error.message) || 'Errore statistics'));
                 }
             } catch(e) { /* ignora messaggi non JSON */ }
@@ -12381,7 +12434,7 @@ function fetchHAStatistics(entityIds, startISO, endISO, period = 'day') {
             type: 'recorder/statistics_during_period',
             start_time: startISO,
             end_time: endISO,
-            statistic_ids: entityIds,
+            statistic_ids: _res,
             period: period,
             types: ['max', 'state', 'sum', 'change']
         }));
@@ -12561,6 +12614,18 @@ function getStanze() {
     return CD_STANZE_DEFAULT;
 }
 
+
+/* v0.8.1: salva l'icona del piano (mappa cd_floor_icons: nome piano → emoji) */
+function edSaveFloorIcon(floorName) {
+    try {
+        const el = document.getElementById('ed-st2-flicon');
+        const ico = (el && el.value || '').trim();
+        if (!floorName) return;
+        const fm = cdCfg('cd_floor_icons');
+        if (ico) fm[floorName] = ico; else delete fm[floorName];
+        localStorage.setItem('cd_floor_icons', JSON.stringify(fm));
+    } catch(e) {}
+}
 let CD_TEMP_FLOOR = null;
 function buildTempCards() {
     const grid = document.getElementById('temp-grid');
@@ -12578,7 +12643,7 @@ function buildTempCards() {
             const act = f === CD_TEMP_FLOOR;
             const fEsc = f.replace(/"/g, '&quot;');
             return `<button type="button" data-floor="${fEsc}" onclick="cdSetTempFloor(this.dataset.floor)" style="flex:0 0 auto; border:none; cursor:pointer; border-radius:16px; padding:10px 18px; font-weight:900; font-size:12px; letter-spacing:0.5px; text-transform:uppercase; display:flex; flex-direction:column; align-items:center; gap:2px; font-family:inherit; ${act ? 'background:linear-gradient(135deg,#bae6fd,#e0f2fe); color:#075985; box-shadow:0 3px 10px rgba(2,132,199,0.25);' : 'background:rgba(148,163,184,0.13); color:var(--text-dim);'}">
-              <span>🏢 ${f}</span><span class="tfl-avg" data-floor="${fEsc}" style="font-size:16px; font-family:'Oswald',sans-serif;">—°</span>
+              <span>${(cdCfg('cd_floor_icons') || {})[f] || '🏢'} ${f}</span><span class="tfl-avg" data-floor="${fEsc}" style="font-size:16px; font-family:'Oswald',sans-serif;">—°</span>
             </button>`;
         }).join('') + '</div>';
         visible = _rooms.filter(r => (r.floor || 'Altro') === CD_TEMP_FLOOR);

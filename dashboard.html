@@ -6043,7 +6043,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.9.4';
+const DASHBOARD_VERSION = '0.9.5';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -12491,6 +12491,18 @@ async function renderEnergyDashboard() {
             } catch(e) { console.error('History fetch error:', e); }
         }
     }
+
+    /* v0.9.5 FIX DEFINITIVO: CASA come il pannello Energia di HA e come la mappa Mensile.
+       Il consumo casa = solare − immesso + prelevato + batteria scaricata − batteria caricata.
+       Il sensore diretto (dm.energy_consumo_casa_mese) misura spesso solo una parte dei circuiti
+       (es. 393 invece di 464): il bilancio energetico dà il consumo TOTALE reale, identico a HA.
+       Uso il bilancio quando ho i pezzi principali; il sensore resta fallback. */
+    try {
+        if (prod > 0 || prelevato > 0 || immesso > 0) {
+            const _bal = prod - immesso + prelevato + batScar - batCar;
+            if (_bal >= 0 && _bal < 100000) cons = Math.round(_bal * 10) / 10;
+        }
+    } catch(e) {}
 
     /* v0.7.5 (#6): COERENZA DATI — se il consumo totale non è disponibile ma il resto sì,
        lo si ricava dal bilancio energetico:

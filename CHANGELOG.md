@@ -6,6 +6,16 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.9.5] — 2026-07-18
+
+### Corretto
+- **📊 Consumo Casa nel Report finalmente corretto** — il Report mostrava un consumo inferiore al reale (Luglio 393 invece di 464, Giugno 784 invece di 910) perché leggeva il sensore diretto di consumo, che misura solo una PARTE dei circuiti di casa. La mappa Mensile invece calcolava già il valore giusto dal bilancio energetico. Ora anche il Report usa la stessa formula del pannello Energia di HA: consumo casa = solare − immesso + prelevato + batteria scaricata − batteria caricata. Verificato sui dati reali di due mesi: Luglio 464 kWh e Giugno 910 kWh, identici al pannello HA. Produzione, rete e batteria erano già corretti.
+
+## [0.9.5] — 2026-07-18 (EN)
+
+### Fixed
+- **📊 Home consumption in Report finally correct** — the Report showed a consumption lower than reality (July 393 instead of 464, June 784 instead of 910) because it read the direct consumption sensor, which measures only PART of the home circuits. The Monthly map already computed the right value from the energy balance. Now the Report uses the same formula as HA's Energy panel: home consumption = solar − exported + imported + battery discharged − battery charged. Verified on two months of real data: July 464 kWh and June 910 kWh, identical to the HA panel. Production, grid and battery were already correct.
+
 ## [0.9.4] — 2026-07-18
 
 ### Corretto

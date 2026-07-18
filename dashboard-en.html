@@ -6037,7 +6037,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.9.4';
+const DASHBOARD_VERSION = '0.9.5';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -12437,6 +12437,17 @@ async function renderEnergyDashboard() {
             } catch(e) { console.error('History fetch error:', e); }
         }
     }
+
+    /* v0.9.5 DEFINITIVE FIX: HOME as HA's Energy panel and the Monthly map.
+       Home consumption = solar − exported + imported + battery discharged − battery charged.
+       The direct sensor often measures only part of the circuits: the energy balance gives the
+       real TOTAL consumption, identical to HA. Balance used when main pieces exist; sensor is fallback. */
+    try {
+        if (prod > 0 || prelevato > 0 || immesso > 0) {
+            const _bal = prod - immesso + prelevato + batScar - batCar;
+            if (_bal >= 0 && _bal < 100000) cons = Math.round(_bal * 10) / 10;
+        }
+    } catch(e) {}
 
     /* v0.7.5 (#6): DATA COHERENCE — if total consumption is unavailable but the rest is,
        derive it from the energy balance:

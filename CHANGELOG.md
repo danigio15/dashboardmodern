@@ -6,6 +6,16 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.9.2] — 2026-07-18
+
+### Corretto
+- **📊 Report mesi passati con contatori TOTALI: valori corretti** — con contatori cumulativi (es. Solarman total production) i mesi passati mostravano numeri sballati/raddoppiati (es. Giugno 1747 kWh) o identici tra mesi. Due bug si sommavano: (1) il fallback History prendeva l'ULTIMO valore del contatore nel mese (= cumulativo lifetime) invece della differenza ultimo−primo; (2) le statistiche mensili non venivano validate. Ora l'energia del mese è calcolata come delta del periodo (change del bucket mensile o differenza dei valori cumulativi), con controllo di plausibilità e fallback History corretto che fa la differenza. Ogni mese mostra il suo valore reale.
+
+## [0.9.2] — 2026-07-18 (EN)
+
+### Fixed
+- **📊 Past-month Report with TOTAL counters: correct values** — with cumulative counters (e.g. Solarman total production) past months showed wrong/doubled numbers (e.g. June 1747 kWh) or identical values across months. Two bugs combined: (1) the History fallback took the LAST counter value in the month (= lifetime cumulative) instead of last−first difference; (2) monthly statistics were not validated. The month energy is now computed as the period delta (monthly bucket change or cumulative-value difference), with a plausibility check and a corrected History fallback that takes the difference. Every month shows its real value.
+
 ## [0.9.1] — 2026-07-18
 
 ### Corretto

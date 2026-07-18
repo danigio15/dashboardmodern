@@ -6,6 +6,16 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.9.3] — 2026-07-18
+
+### Corretto
+- **📊 Report vs mappa: consumo allineato** — nel mese corrente il Report/Panoramica mostrava un consumo diverso dalla mappa Mensile (es. 393 kWh invece di 464 kWh) pur usando la STESSA entità. Causa: al primo caricamento del Report il motore periodi non aveva ancora calcolato il delta del mese, così il valore ripiegava sul dato grezzo del contatore. Ora il Report forza il calcolo del motore e attende il risultato prima di mostrare i numeri: consumo, produzione, autosufficienza, badge e KPI coincidono con la mappa e con il pannello Energia di HA.
+
+## [0.9.3] — 2026-07-18 (EN)
+
+### Fixed
+- **📊 Report vs map: consumption aligned** — for the current month the Report/Overview showed a consumption different from the Monthly map (e.g. 393 kWh instead of 464 kWh) despite using the SAME entity. Cause: on first Report load the period engine hadn't computed the month delta yet, so the value fell back to the raw counter reading. The Report now forces the engine computation and waits for the result before showing numbers: consumption, production, self-sufficiency, badges and KPIs match the map and HA's Energy panel.
+
 ## [0.9.2] — 2026-07-18
 
 ### Corretto

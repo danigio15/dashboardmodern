@@ -6043,7 +6043,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.9.2';
+const DASHBOARD_VERSION = '0.9.3';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -12342,7 +12342,16 @@ async function renderEnergyDashboard() {
 
     if (isCurrentMonth) {
         // ── MESE CORRENTE: motore periodi (delta dal 1° del mese) ──
-        // v0.8.0: funziona sia con entità mensili sia con contatori TOTALI cumulativi
+        // v0.9.3 FIX: se il motore periodi non ha ancora calcolato il consumo (CD_PERIOD vuoto
+        // al primo caricamento), lo forzo e ASPETTO — altrimenti cdPNum cadrebbe sul valore
+        // grezzo del contatore filtrato, dando un numero diverso dalla mappa (es. 393 invece di 464).
+        if (typeof CD_PERIOD !== 'undefined' && CD_PERIOD[ED_SENSORS_CURR.cons] === undefined) {
+            try {
+                await cdRefreshPeriodDeltas(true);
+                let _w = 0;
+                while (CD_PERIOD[ED_SENSORS_CURR.cons] === undefined && _w < 6000) { await new Promise(r => setTimeout(r, 300)); _w += 300; }
+            } catch(e) {}
+        }
         prod      = cdPNum(ED_SENSORS_CURR.prod);
         cons      = cdPNum(ED_SENSORS_CURR.cons);
         immesso   = cdPNum(ED_SENSORS_CURR.immesso);

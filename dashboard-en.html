@@ -6037,7 +6037,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.9.2';
+const DASHBOARD_VERSION = '0.9.3';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -12288,6 +12288,16 @@ async function renderEnergyDashboard() {
 
     if (isCurrentMonth) {
         // ── CURRENT MONTH: period engine (delta from the 1st) ──
+        // v0.9.3 FIX: if the period engine hasn't computed consumption yet (CD_PERIOD empty on
+        // first load), force it and WAIT — otherwise cdPNum would fall back to the raw filtered
+        // counter value, giving a number different from the map (e.g. 393 instead of 464).
+        if (typeof CD_PERIOD !== 'undefined' && CD_PERIOD[ED_SENSORS_CURR.cons] === undefined) {
+            try {
+                await cdRefreshPeriodDeltas(true);
+                let _w = 0;
+                while (CD_PERIOD[ED_SENSORS_CURR.cons] === undefined && _w < 6000) { await new Promise(r => setTimeout(r, 300)); _w += 300; }
+            } catch(e) {}
+        }
         prod      = cdPNum(ED_SENSORS_CURR.prod);
         cons      = cdPNum(ED_SENSORS_CURR.cons);
         immesso   = cdPNum(ED_SENSORS_CURR.immesso);

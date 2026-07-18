@@ -6043,7 +6043,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.9.3';
+const DASHBOARD_VERSION = '0.9.4';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -12383,8 +12383,15 @@ async function renderEnergyDashboard() {
         //   - 'sum'    = somma cumulativa LIFETIME (cresce sempre, NON usabile direttamente)
         //   - 'max'    = massimo raggiunto (utile come fallback)
         try {
-            // period:'month' restituisce UN solo punto per mese con il delta totale già calcolato
-            const stats = await fetchHAStatistics(allSensorsList, tStart, tEnd, 'month');
+            // v0.9.4: period:'day' con finestra che parte 1 GIORNO PRIMA del mese, così ho
+            // il valore cumulativo di partenza. L'energia del mese = (sum ultimo giorno) − (sum
+            // del giorno prima dell'inizio). È il metodo del pannello Energia di HA, esatto sui
+            // contatori totali. period:'month' dava valori dimezzati/errati su alcuni contatori.
+            const tStartBase = new Date(selYear, selMonth-1, 1);
+            tStartBase.setDate(tStartBase.getDate() - 2);
+            const stats = await fetchHAStatistics(allSensorsList, tStartBase.toISOString(), tEnd, 'day');
+            const _monthStartMs = new Date(selYear, selMonth-1, 1).getTime();
+            const _monthEndMs   = new Date(selYear, selMonth, 1).getTime();
             
             /* v0.9.2 FIX DEFINITIVO per contatori TOTALI cumulativi.
                HA registra per ogni bucket orario: sum = valore CUMULATIVO del contatore a fine ora.
@@ -12396,24 +12403,34 @@ async function renderEnergyDashboard() {
                change = energia del mese (delta già calcolato). Per contatori TOTALI cumulativi
                questo è il valore corretto. Se arrivano più bucket, uso la differenza dei 'sum'
                cumulativi (ultimo − primo bucket) che equivale all'energia del periodo. */
+            /* v0.9.4: energia del mese = differenza dei valori CUMULATIVI (sum) tra l'ultimo
+               e il primo bucket giornaliero che ricadono nel mese selezionato. Con contatori
+               TOTALI che crescono sempre questo dà il delta esatto del mese (come il pannello HA).
+               Fallback progressivi: somma dei change nel mese, poi differenza di state. */
             const getStatVal = (sensorId) => {
                 const arr = stats[sensorId];
                 if (!Array.isArray(arr) || arr.length === 0) return 0;
-                // caso normale: 1 bucket mensile → change del mese
-                if (arr.length === 1) {
-                    const it = arr[0];
-                    if (it.change !== null && it.change !== undefined && !isNaN(it.change) && it.change >= 0) return it.change;
-                    if (it.sum !== null && it.sum !== undefined && !isNaN(it.sum)) return 0; // un solo sum non dà delta
-                }
-                // più bucket: differenza dei sum cumulativi
-                const sums = arr.map(i => (i.sum !== null && i.sum !== undefined && !isNaN(i.sum)) ? parseFloat(i.sum) : null).filter(v => v !== null);
-                if (sums.length >= 2) { const d = sums[sums.length-1] - sums[0]; if (d >= 0 && d < 100000) return d; }
-                // fallback: somma change
+                const tms = (p) => (typeof p.start === 'number' ? p.start : Date.parse(p.start));
+                // punti dal giorno-baseline (subito prima del mese) fino a fine mese
+                const pts = arr.filter(p => { const t = tms(p); return !isNaN(t) && t < _monthEndMs; })
+                               .sort((a,b) => tms(a) - tms(b));
+                if (!pts.length) return 0;
+                // baseline = ultimo sum PRIMA dell'inizio mese (o il primo disponibile)
+                const before = pts.filter(p => tms(p) < _monthStartMs);
+                const inMonth = pts.filter(p => tms(p) >= _monthStartMs);
+                const sumOf = (p) => (p && p.sum !== null && p.sum !== undefined && !isNaN(p.sum)) ? parseFloat(p.sum) : null;
+                // 1) differenza dei sum cumulativi
+                const baseP = before.length ? before[before.length-1] : (inMonth.length ? inMonth[0] : null);
+                const lastP = inMonth.length ? inMonth[inMonth.length-1] : null;
+                const sBase = sumOf(baseP), sLast = sumOf(lastP);
+                if (sBase !== null && sLast !== null) { const d = sLast - sBase; if (d >= 0 && d < 100000) return Math.round(d*10)/10; }
+                // 2) somma dei change dei soli bucket nel mese
                 let tot = 0, any = false;
-                arr.forEach(item => { if (item.change !== null && item.change !== undefined && !isNaN(item.change)) { tot += item.change; any = true; } });
-                if (any && tot >= 0) return tot;
-                const st = arr.map(i => parseFloat(i.state)).filter(v => !isNaN(v));
-                if (st.length >= 2) { const d = st[st.length-1] - st[0]; return d > 0 ? d : 0; }
+                inMonth.forEach(p => { if (p.change !== null && p.change !== undefined && !isNaN(p.change)) { tot += p.change; any = true; } });
+                if (any && tot >= 0) return Math.round(tot*10)/10;
+                // 3) differenza di state
+                const st = inMonth.map(p => parseFloat(p.state)).filter(v => !isNaN(v));
+                if (st.length >= 2) { const d = st[st.length-1] - st[0]; return d > 0 ? Math.round(d*10)/10 : 0; }
                 return 0;
             };
             prod      = getStatVal(ED_SENSORS_CURR.prod);
@@ -12436,8 +12453,11 @@ async function renderEnergyDashboard() {
         if (!statsOk) {
             const allSensors = allSensorsList.map(r => { try { return resolveEntity(r); } catch(e) { return r; } }).join(',');
             try {
+                // v0.9.4: parto qualche ora PRIMA del mese per avere il valore cumulativo di partenza
+                const _histStart = new Date(selYear, selMonth-1, 1);
+                _histStart.setHours(_histStart.getHours() - 6);
                 const res = await fetch(
-                    `${HA_HTTP_URL}/api/history/period/${tStart}?filter_entity_id=${allSensors}&minimal_response&end_time=${tEnd}`,
+                    `${HA_HTTP_URL}/api/history/period/${_histStart.toISOString()}?filter_entity_id=${allSensors}&minimal_response&end_time=${tEnd}`,
                     { headers: { "Authorization": `Bearer ${LONG_LIVED_TOKEN}` } }
                 );
                 if (res.ok) {

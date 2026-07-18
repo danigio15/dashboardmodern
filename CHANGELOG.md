@@ -6,6 +6,16 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.9.4] — 2026-07-18
+
+### Corretto
+- **📊 Mesi passati: valori dimezzati/errati con contatori TOTALI** — selezionando un mese concluso (es. Giugno) con contatori cumulativi, il Report mostrava circa la metà del reale (es. Solare 627 invece di 1120 kWh, Casa 392 invece di 910). La lettura con period:month restituiva un change parziale su alcuni contatori. Ora l'energia del mese è calcolata come DIFFERENZA dei valori cumulativi (sum) tra l'ultimo e il primo giorno del mese, usando period:day con un baseline preso dal giorno precedente — esattamente come il pannello Energia di HA. Verificato: Giugno solare 1119.9 kWh = pannello HA. Stesso baseline applicato al fallback History.
+
+## [0.9.4] — 2026-07-18 (EN)
+
+### Fixed
+- **📊 Past months: halved/wrong values with TOTAL counters** — selecting a completed month (e.g. June) with cumulative counters, the Report showed about half the real value (e.g. Solar 627 instead of 1120 kWh, Home 392 instead of 910). Reading with period:month returned a partial change on some counters. The month energy is now computed as the DIFFERENCE of cumulative values (sum) between the last and first day of the month, using period:day with a baseline taken from the previous day — exactly like HA's Energy panel. Verified: June solar 1119.9 kWh = HA panel. Same baseline applied to the History fallback.
+
 ## [0.9.3] — 2026-07-18
 
 ### Corretto

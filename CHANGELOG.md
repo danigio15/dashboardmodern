@@ -6,6 +6,18 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.9.6] — 2026-07-18
+
+### Migliorato
+- **🔍 Rilevamento automatico ancora più completo** — il wizard ora interroga l'intero motore di HA e colloca molto di più: limiti alzati (luci fino a 300, aperture e batterie fino a 80, clima/riscaldamento fino a 60) e nuovo rilevamento delle **azioni rapide** da script e scene (con nome dalla stanza HA). Lo scoring resta quello preciso già basato su device_class, state_class, unità e area ufficiale delle entità. Tutto resta modificabile: sono proposte.
+- **🖼️ Logo visibile su HACS** — logo e immagini del README convertiti in Markdown puro: HACS bloccava i tag HTML img mostrandoli come link rotti. Ora il logo compare nella pagina del repository.
+
+## [0.9.6] — 2026-07-18 (EN)
+
+### Improved
+- **🔍 Even more complete auto-detection** — the wizard now queries the entire HA engine and places much more: raised limits (lights up to 300, openings and batteries up to 80, climate/heating up to 60) and new **quick actions** detection from scripts and scenes (named from the HA area). Scoring stays the precise one based on device_class, state_class, unit and official entity area. Everything stays editable: they are proposals.
+- **🖼️ Logo visible on HACS** — logo and README images converted to pure Markdown: HACS blocked HTML img tags showing them as broken links. The logo now appears on the repository page.
+
 ## [0.9.5] — 2026-07-18
 
 ### Corretto

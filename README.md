@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="logo.png" width="120" alt="Dashboard Modern logo">
+![Dashboard Modern](https://raw.githubusercontent.com/danigio15/dashboardmodern/main/logo.png)
 
 # 🏠 Dashboard Modern
 
@@ -21,7 +21,7 @@
 
 <br>
 
-<img src="screenshots/home-light.png" width="380" alt="Dashboard Modern — Home">
+![Dashboard Modern — Home](https://raw.githubusercontent.com/danigio15/dashboardmodern/main/screenshots/home-light.png)
 
 </div>
 
@@ -50,7 +50,7 @@
 
 | Editor → tab 💡 Luci | Popup Gestione Luci |
 |:---:|:---:|
-| ![Editor Luci](screenshots/lights-editor.jpg) | ![Popup Luci](screenshots/lights-popup.jpg) |
+| ![Editor Luci](https://raw.githubusercontent.com/danigio15/dashboardmodern/main/screenshots/lights-editor.jpg) | ![Popup Luci](https://raw.githubusercontent.com/danigio15/dashboardmodern/main/screenshots/lights-popup.jpg) |
 | Crea le stanze e assegna ogni luce con il menu a tendina. Le **frecce ▲▼** a sinistra riposizionano stanze e luci. | Le luci appaiono raggruppate per stanza, nell'ordine impostato. Quelle senza stanza vanno in **Altre zone**. |
 
 > 💡 **Come si riordina:** ogni riga (stanza o luce) ha due frecce a sinistra — **▲ sale**, **▼ scende**. L'ordine che imposti nell'editor è esattamente quello che vedrai nel popup Gestione Luci, su tutti i dispositivi grazie alla sincronizzazione.
@@ -120,7 +120,7 @@
 
 | Editor → 💡 Lights tab | Lights popup |
 |:---:|:---:|
-| ![Lights editor](screenshots/lights-editor.jpg) | ![Lights popup](screenshots/lights-popup.jpg) |
+| ![Lights editor](https://raw.githubusercontent.com/danigio15/dashboardmodern/main/screenshots/lights-editor.jpg) | ![Lights popup](https://raw.githubusercontent.com/danigio15/dashboardmodern/main/screenshots/lights-popup.jpg) |
 | Create rooms and assign each light via dropdown. The **▲▼ arrows** on the left reorder rooms and lights. | Lights appear grouped by room, in the order you set. Lights without a room go to **Other zones**. |
 
 > 💡 **How to reorder:** each row (room or light) has two arrows on the left — **▲ up**, **▼ down**. The order you set in the editor is exactly what you'll see in the Lights popup, on every device thanks to sync.

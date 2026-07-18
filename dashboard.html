@@ -6043,7 +6043,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.9.5';
+const DASHBOARD_VERSION = '0.9.6';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -8062,12 +8062,26 @@ function wzLoadAllEntities() {
             if (m.type === 'result' && Array.isArray(m.result)) {
                 WIZ.allEntities = m.result.map(s => s.entity_id).sort();
                 // v265: metadati per l'auto-rilevamento
-                WIZ.allMeta = m.result.map(s => ({
-                    id: s.entity_id,
-                    name: (s.attributes && s.attributes.friendly_name) || s.entity_id,
-                    dc: (s.attributes && s.attributes.device_class) || '',
-                    unit: (s.attributes && s.attributes.unit_of_measurement) || ''
-                }));
+                /* v0.9.6: metadati ARRICCHITI per un rilevamento molto più preciso —
+                   dominio, stato, device_class, unit, state_class, area (dai registri HA). */
+                WIZ.allMeta = m.result.map(s => {
+                    const at = s.attributes || {};
+                    const dom = s.entity_id.split('.')[0];
+                    const reg = (WIZ.entReg && WIZ.entReg[s.entity_id]) || {};
+                    let areaId = reg.a || (reg.d && WIZ.devArea && WIZ.devArea[reg.d]) || '';
+                    const areaName = (areaId && WIZ.areaNames && WIZ.areaNames[areaId]) || '';
+                    return {
+                        id: s.entity_id,
+                        name: at.friendly_name || s.entity_id,
+                        dc: at.device_class || '',
+                        unit: at.unit_of_measurement || '',
+                        sc: at.state_class || '',
+                        dom: dom,
+                        state: s.state,
+                        area: areaName,
+                        dcat: at.device_category || ''
+                    };
+                });
                 tws.close();
                 const dl = document.getElementById('wz-entity-list');
                 if (dl) dl.innerHTML = WIZ.allEntities.map(e => `<option value="${e}">`).join('');
@@ -8244,7 +8258,7 @@ function wzAutoDetect() {
 
     // — Luci: se non selezionate nello step precedente, proponi tutte le light.*
     if (!Object.keys(WIZ.luci || {}).length) {
-        M.filter(e => e.id.startsWith('light.')).slice(0, 80).forEach(e => {
+        M.filter(e => e.id.startsWith('light.')).slice(0, 300).forEach(e => {
             if (!WIZ.luci) WIZ.luci = {};
             const area = wzAreaOf(e.id);
             WIZ.luci[e.id] = area && !e.name.toLowerCase().includes(area.toLowerCase()) ? area + ' - ' + e.name : e.name;
@@ -8297,28 +8311,40 @@ function wzAutoDetect() {
         nStanze = WIZ.stanze.length;
     }
 
+    // — v0.9.7: AZIONI RAPIDE automatiche da script, scene e input_boolean
+    //   (interroga TUTTO il motore HA: non solo sensori, ma anche entità azionabili)
+    if (!(WIZ.quickActions || []).length) {
+        WIZ.quickActions = [];
+        const _acts = M.filter(e => /^(script|scene)\./.test(e.id)).slice(0, 12);
+        _acts.forEach(e => {
+            const area = wzAreaOf(e.id);
+            const nm = e.name && e.name !== e.id ? e.name : e.id.split('.')[1].replace(/_/g, ' ');
+            WIZ.quickActions.push({ type: e.id.startsWith('scene.') ? 'scene' : 'script', name: area && !nm.toLowerCase().includes(area.toLowerCase()) ? area + ' - ' + nm : nm, entity: e.id });
+        });
+    }
+
     // — Quadro avvisi
     const extG = cdCfg('cd_gruppi_extra');
     let extGChanged = false;
     if (!(GRUPPI_MONITORAGGIO['win'] || []).length) {
-        const wins = M.filter(e => e.id.startsWith('binary_sensor.') && !/bypass/i.test(e.id + ' ' + e.name) && (['door','window','opening','garage_door'].includes(e.dc) || /finestra|porta|window|door|contact/i.test(e.id))).slice(0, 20);
+        const wins = M.filter(e => e.id.startsWith('binary_sensor.') && !/bypass/i.test(e.id + ' ' + e.name) && (['door','window','opening','garage_door'].includes(e.dc) || /finestra|porta|window|door|contact/i.test(e.id))).slice(0, 80);
         if (wins.length) { extG['win'] = wins.map(e => e.id); wins.forEach(e => GRUPPI_MONITORAGGIO['win'].push(e.id)); nAvvisi += wins.length; extGChanged = true; }
     }
     if (!(GRUPPI_MONITORAGGIO['batt'] || []).length) {
-        const batts = M.filter(e => e.id.startsWith('sensor.') && e.dc === 'battery' && e.unit === '%').slice(0, 20);
+        const batts = M.filter(e => e.id.startsWith('sensor.') && e.dc === 'battery' && e.unit === '%').slice(0, 80);
         if (batts.length) { extG['batt'] = batts.map(e => e.id); batts.forEach(e => GRUPPI_MONITORAGGIO['batt'].push(e.id)); nAvvisi += batts.length; extGChanged = true; }
     }
     /* v0.8.3: rilevamento per dominio/classe anche per luci, clima e riscaldamento */
     if (!(GRUPPI_MONITORAGGIO['luci'] || []).length) {
-        const ls = M.filter(e => e.id.startsWith('light.')).slice(0, 40);
+        const ls = M.filter(e => e.id.startsWith('light.'));
         if (ls.length) { GRUPPI_MONITORAGGIO['luci'] = GRUPPI_MONITORAGGIO['luci'] || []; extG['luci'] = ls.map(e => e.id); ls.forEach(e => GRUPPI_MONITORAGGIO['luci'].push(e.id)); nAvvisi += ls.length; extGChanged = true; }
     }
     if (!(GRUPPI_MONITORAGGIO['clima'] || []).length) {
-        const cl = M.filter(e => e.id.startsWith('climate.') && !/termo|radiat|trv|valve/i.test(e.id + ' ' + e.name)).slice(0, 20);
+        const cl = M.filter(e => e.id.startsWith('climate.') && !/termo|radiat|trv|valve/i.test(e.id + ' ' + e.name)).slice(0, 60);
         if (cl.length) { GRUPPI_MONITORAGGIO['clima'] = GRUPPI_MONITORAGGIO['clima'] || []; extG['clima'] = cl.map(e => e.id); cl.forEach(e => GRUPPI_MONITORAGGIO['clima'].push(e.id)); nAvvisi += cl.length; extGChanged = true; }
     }
     if (!(GRUPPI_MONITORAGGIO['risc'] || []).length) {
-        const rs = M.filter(e => e.id.startsWith('climate.') && /termo|radiat|trv|valve/i.test(e.id + ' ' + e.name)).slice(0, 30);
+        const rs = M.filter(e => e.id.startsWith('climate.') && /termo|radiat|trv|valve/i.test(e.id + ' ' + e.name)).slice(0, 60);
         if (rs.length) { GRUPPI_MONITORAGGIO['risc'] = GRUPPI_MONITORAGGIO['risc'] || []; extG['risc'] = rs.map(e => e.id); rs.forEach(e => GRUPPI_MONITORAGGIO['risc'].push(e.id)); nAvvisi += rs.length; extGChanged = true; }
     }
     if (extGChanged) localStorage.setItem('cd_gruppi_extra', JSON.stringify(extG));
@@ -8438,6 +8464,18 @@ function wzAutoDetect() {
             });
             if (listsMatched < Math.max(1, Math.ceil(keyLists.length * 0.6))) return;
             if (units) { if (units.includes(e.unit)) score += 3; else if (e.unit) score -= 2; }
+            /* v0.9.6: boost forte quando la CLASSE dell'entità combacia con lo slot — molto più
+               affidabile del nome. Es. slot "Temperatura" + device_class:temperature = match sicuro. */
+            const _slotDC = { temperatura:'temperature', umidita:'humidity', pressione:'pressure',
+                              potenza:'power', energia:'energy', tensione:'voltage', corrente:'current',
+                              batteria:'battery', illuminamento:'illuminance' };
+            for (const [kw, dcv] of Object.entries(_slotDC)) {
+                if (lblLow.includes(kw) && e.dc === dcv) { score += 5; break; }
+            }
+            // slot energetici (kWh, _oggi/_mese): premia i sensori con state_class total/total_increasing
+            if (units && units.includes('kWh') && (e.sc === 'total' || e.sc === 'total_increasing')) score += 3;
+            // se lo slot e l'entità sono nella STESSA area HA, piccolo bonus
+            if (e.area && lblLow.includes(e.area.toLowerCase())) score += 2;
             if (score > 0) scored.push({ e, score, idHits, len: e.id.length });
         });
         if (!scored.length) return;

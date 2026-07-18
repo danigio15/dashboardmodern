@@ -6037,7 +6037,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.9.0';
+const DASHBOARD_VERSION = '0.9.1';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -12322,22 +12322,23 @@ async function renderEnergyDashboard() {
             // period:'month' restituisce UN solo punto per mese con il delta totale già calcolato
             const stats = await fetchHAStatistics(allSensorsList, tStart, tEnd, 'month');
             
+            /* v0.9.1 FIX: SOMMA dei 'change' del periodo (come il motore periodi del mese corrente).
+               Il vecchio codice prendeva il 'change' MASSIMO tra i punti, oppure ripiegava su
+               'max'/'state' = valore LIFETIME del contatore totale: con contatori cumulativi
+               questo restituiva lo stesso numero per mesi diversi (es. Maggio=Giugno=784).
+               Sommando i change di ogni bucket il delta del mese è sempre corretto e distinto. */
             const getStatVal = (sensorId) => {
                 const arr = stats[sensorId];
                 if (!Array.isArray(arr) || arr.length === 0) return 0;
-                // Per ogni punto: priorità 'change' (delta del periodo), poi 'max', poi 'state'
-                // NON usare 'sum' direttamente perché è lifetime e cresce sempre
-                let bestVal = 0;
+                let tot = 0, any = false;
                 arr.forEach(item => {
-                    if (item.change !== null && item.change !== undefined && !isNaN(item.change) && item.change > bestVal) {
-                        bestVal = item.change;
-                    } else if (bestVal === 0 && item.max !== null && item.max !== undefined && !isNaN(item.max)) {
-                        bestVal = item.max;
-                    } else if (bestVal === 0 && item.state !== null && item.state !== undefined && !isNaN(item.state)) {
-                        bestVal = item.state;
-                    }
+                    if (item.change !== null && item.change !== undefined && !isNaN(item.change)) { tot += item.change; any = true; }
                 });
-                return bestVal;
+                if (any) return tot > 0 ? tot : 0;
+                // nessun 'change' disponibile: differenza tra ultimo e primo 'state' del periodo
+                const st = arr.map(i => parseFloat(i.state)).filter(v => !isNaN(v));
+                if (st.length >= 2) { const d = st[st.length-1] - st[0]; return d > 0 ? d : 0; }
+                return 0;
             };
             prod      = getStatVal(ED_SENSORS_CURR.prod);
             cons      = getStatVal(ED_SENSORS_CURR.cons);

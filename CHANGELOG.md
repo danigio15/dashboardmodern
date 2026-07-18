@@ -6,6 +6,16 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.9.1] — 2026-07-18
+
+### Corretto
+- **📊 Mesi passati con valori identici** — Report/Panoramica di mesi diversi (es. Maggio e Giugno) mostravano gli stessi identici numeri di produzione e consumo quando l'entità mappata è un contatore TOTALE cumulativo. La lettura delle Long-Term Statistics prendeva il change "massimo" tra i punti e, in mancanza, ripiegava su max/state = valore lifetime del contatore (uguale per ogni mese). Ora somma i change di ogni bucket del periodo (come già fa il motore del mese corrente): il delta di ciascun mese è sempre corretto e distinto. Corregge sia i KPI sia i badge in alto.
+
+## [0.9.1] — 2026-07-18 (EN)
+
+### Fixed
+- **📊 Past months showing identical values** — Report/Overview for different months (e.g. May and June) showed the exact same production and consumption when the mapped entity is a cumulative TOTAL counter. The Long-Term Statistics reader took the "maximum" change across points and, failing that, fell back to max/state = the counter lifetime value (same for every month). It now sums the change of each period bucket (as the current-month engine already does): each month delta is always correct and distinct. Fixes both KPIs and the top badges.
+
 ## [0.9.0] — 2026-07-18
 
 ### Aggiunto

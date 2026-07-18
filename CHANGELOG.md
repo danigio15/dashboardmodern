@@ -6,6 +6,16 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.9.0] — 2026-07-18
+
+### Aggiunto
+- **💡 Gestione luci per stanza** — nuovo tab "Luci" nell'editor: crea le stanze, assegna ogni luce a una stanza con un menu a tendina e riordina sia le stanze sia le luci dentro ogni stanza con le frecce su/giù. Il popup Gestione Luci rispetta stanze e ordine impostati; le luci senza stanza finiscono in "Altre zone". Retrocompatibile: se non organizzi nulla, continua a raggruppare dal prefisso del nome ("Stanza - Dettaglio") come prima. Tutto si sincronizza tra dispositivi.
+
+## [0.9.0] — 2026-07-18 (EN)
+
+### Added
+- **💡 Lights by room** — new "Lights" editor tab: create rooms, assign each light to a room via dropdown, and reorder both rooms and the lights inside each room with up/down arrows. The Lights popup honors the rooms and order you set; lights without a room go to "Other zones". Backward compatible: if you organize nothing, it keeps grouping by name prefix ("Room - Detail") as before. Everything syncs across devices.
+
 ## [0.8.6] — 2026-07-18
 
 ### Corretto

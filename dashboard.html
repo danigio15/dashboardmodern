@@ -6043,7 +6043,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.8.6';
+const DASHBOARD_VERSION = '0.9.0';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6699,6 +6699,7 @@ function apriConfigEntita() {
         <div class="ed-tabs">
           <button class="ed-tab" data-tab="sezioni" onclick="editorSwitch('sezioni')">📑 Sezioni</button>
           <button class="ed-tab" data-tab="load"  onclick="editorSwitch('load')">🔌 Carichi</button>
+          <button class="ed-tab" data-tab="luci"  onclick="editorSwitch('luci')">💡 Luci</button>
           <button class="ed-tab" data-tab="avvisi" onclick="editorSwitch('avvisi')">🔔 Avvisi</button>
           <button class="ed-tab" data-tab="hide"  onclick="editorSwitch('hide')">👁️ Nascondi</button>
         </div>
@@ -6716,6 +6717,7 @@ function editorSwitch(tab) {
     if (tab === 'sezioni') body.innerHTML = editorRenderSezioni();
     if (tab === 'sost')   body.innerHTML = editorRenderSost();
     if (tab === 'load')   body.innerHTML = editorRenderLoad();
+    if (tab === 'luci')   body.innerHTML = editorRenderLuci();
     if (tab === 'avvisi') body.innerHTML = editorRenderAvvisi();
     if (tab === 'testi')  body.innerHTML = editorRenderTesti();
     if (tab === 'hide')   body.innerHTML = editorRenderHide();
@@ -7064,6 +7066,190 @@ function edDelLoad(grp, i) {
 }
 
 /* ─────────── TAB 3: AVVISI ─────────── */
+
+/* ═══════════════════ TAB LUCI — stanze + raggruppamento + riordino (v0.9.0) ═══════════════════ */
+/* Modello dati:
+   cd_luci            {id: nome}                        (esistente)
+   cd_luci_rooms      {id: "NomeStanza"}                (assegnazione luce → stanza)
+   cd_luci_order      {stanza: [id, id, ...]}           (ordine luci dentro ogni stanza)
+   cd_luci_room_order ["Stanza1","Stanza2",...]         (ordine delle stanze)
+   Le luci senza stanza finiscono nel gruppo speciale "Altre zone". */
+
+function cdLuciRoomsCfg()  { try { return JSON.parse(localStorage.getItem('cd_luci_rooms'))  || {}; } catch(e) { return {}; } }
+function cdLuciOrderCfg()  { try { return JSON.parse(localStorage.getItem('cd_luci_order'))  || {}; } catch(e) { return {}; } }
+function cdLuciRoomOrder() { try { return JSON.parse(localStorage.getItem('cd_luci_room_order')) || []; } catch(e) { return []; } }
+
+/* Stanza assegnata a una luce: esplicita (cd_luci_rooms) o dedotta dal prefisso "Stanza - " */
+function cdLightRoom(id) {
+    const rooms = cdLuciRoomsCfg();
+    if (rooms[id]) return rooms[id];
+    const nm = (cdCfg('cd_luci') || {})[id] || (STATES[id] && STATES[id].attributes && STATES[id].attributes.friendly_name) || id;
+    const di = nm.indexOf(' - ');
+    return di > -1 ? nm.substring(0, di).trim() : '';
+}
+
+/* Elenco stanze note (ordine salvato + eventuali nuove), sempre con "Altre zone" in coda */
+function cdLuciRoomList() {
+    const set = [];
+    cdLuciRoomOrder().forEach(r => { if (r && !set.includes(r)) set.push(r); });
+    const rooms = cdLuciRoomsCfg();
+    Object.values(rooms).forEach(r => { if (r && !set.includes(r)) set.push(r); });
+    Object.keys(cdCfg('cd_luci') || {}).forEach(id => { const r = cdLightRoom(id); if (r && !set.includes(r)) set.push(r); });
+    return set;
+}
+
+function editorRenderLuci() {
+    const luci = cdCfg('cd_luci') || {};
+    const ids = Object.keys(luci);
+    if (!ids.length) {
+        return `<div style="padding:20px; text-align:center; color:var(--text-dim,#64748b); font-size:13px;">
+            💡 Nessuna luce configurata.<br>Aggiungi le luci dal wizard iniziale (passo "Luci"), poi torna qui per organizzarle in stanze.
+          </div>`;
+    }
+    const rooms = cdLuciRoomList();
+
+    // raggruppo le luci per stanza rispettando l'ordine salvato
+    const grouped = {};
+    rooms.forEach(r => grouped[r] = []);
+    grouped['__altre__'] = [];
+    ids.forEach(id => { const r = cdLightRoom(id); (grouped[r] ? grouped[r] : grouped['__altre__']).push(id); });
+    // ordino dentro ogni stanza
+    const ord = cdLuciOrderCfg();
+    Object.keys(grouped).forEach(r => {
+        const savedOrder = ord[r === '__altre__' ? 'Altre zone' : r] || [];
+        grouped[r].sort((a, b) => {
+            const ia = savedOrder.indexOf(a), ib = savedOrder.indexOf(b);
+            if (ia === -1 && ib === -1) return (luci[a]||'').localeCompare(luci[b]||'');
+            if (ia === -1) return 1; if (ib === -1) return -1; return ia - ib;
+        });
+    });
+
+    const roomOptions = (sel) => ['<option value="">— Altre zone —</option>']
+        .concat(rooms.map(r => `<option value="${r.replace(/"/g,'&quot;')}" ${r === sel ? 'selected' : ''}>${r}</option>`))
+        .join('');
+
+    const lightRow = (id, room, idx, count) => {
+        const nm = luci[id] || id;
+        const dett = (() => { const di = nm.indexOf(' - '); return di > -1 ? nm.substring(di+3) : nm; })();
+        return `<div class="ed-lrow" style="display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:12px; background:rgba(148,163,184,0.07); margin-bottom:6px;">
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <button class="ed-ord-btn" ${idx===0?'disabled':''} onclick="cdLuciMove('${id}', -1)" style="width:26px; height:22px; border:none; border-radius:6px; background:rgba(148,163,184,0.18); cursor:pointer; font-size:11px; ${idx===0?'opacity:0.3;':''}">▲</button>
+              <button class="ed-ord-btn" ${idx===count-1?'disabled':''} onclick="cdLuciMove('${id}', 1)" style="width:26px; height:22px; border:none; border-radius:6px; background:rgba(148,163,184,0.18); cursor:pointer; font-size:11px; ${idx===count-1?'opacity:0.3;':''}">▼</button>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:800; font-size:12.5px; color:var(--text,#0f172a); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">💡 ${dett}</div>
+              <div style="font-family:monospace; font-size:9.5px; color:var(--text-dim,#94a3b8); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${id}</div>
+            </div>
+            <select class="ed-input" style="flex:0 0 40%; font-size:11.5px; padding:6px;" onchange="cdLuciSetRoom('${id}', this.value)">${roomOptions(room)}</select>
+          </div>`;
+    };
+
+    let html = `<div style="font-size:12px; color:var(--text-dim,#64748b); margin-bottom:12px; line-height:1.5;">
+        💡 Assegna ogni luce a una stanza e riordina con le frecce. Le stanze e l'ordine si riflettono nel popup <b>Gestione Luci</b>.
+      </div>`;
+
+    // Gestione stanze
+    html += `<div style="background:rgba(14,165,233,0.06); border-radius:14px; padding:12px; margin-bottom:16px;">
+        <div style="font-weight:900; font-size:12.5px; margin-bottom:8px; color:var(--text,#0f172a);">🏠 Stanze</div>
+        <div id="ed-luci-rooms">${rooms.length ? rooms.map((r, i) => `
+          <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <button ${i===0?'disabled':''} onclick="cdLuciRoomMove(${i}, -1)" style="width:24px; height:20px; border:none; border-radius:5px; background:rgba(148,163,184,0.18); cursor:pointer; font-size:10px; ${i===0?'opacity:0.3;':''}">▲</button>
+              <button ${i===rooms.length-1?'disabled':''} onclick="cdLuciRoomMove(${i}, 1)" style="width:24px; height:20px; border:none; border-radius:5px; background:rgba(148,163,184,0.18); cursor:pointer; font-size:10px; ${i===rooms.length-1?'opacity:0.3;':''}">▼</button>
+            </div>
+            <input class="ed-input" style="flex:1; font-size:12px; padding:7px;" value="${r.replace(/"/g,'&quot;')}" onchange="cdLuciRenameRoom('${r.replace(/'/g,"\\'")}', this.value)">
+            <button onclick="cdLuciDeleteRoom('${r.replace(/'/g,"\\'")}')" style="flex:0 0 34px; height:32px; border:none; border-radius:9px; background:rgba(239,68,68,0.1); color:#dc2626; cursor:pointer; font-size:14px;">🗑</button>
+          </div>`).join('') : '<div style="font-size:11.5px; color:var(--text-dim,#94a3b8); padding:4px 0;">Nessuna stanza: creane una qui sotto o assegnala direttamente a una luce.</div>'}</div>
+        <div style="display:flex; gap:6px; margin-top:8px;">
+          <input id="ed-new-luci-room" class="ed-input" style="flex:1; font-size:12px;" placeholder="Nome nuova stanza (es. Salone)">
+          <button class="ed-btn" style="flex:0 0 auto;" onclick="cdLuciAddRoom()">+ Aggiungi</button>
+        </div>
+      </div>`;
+
+    // Luci raggruppate
+    rooms.forEach(r => {
+        const list = grouped[r] || [];
+        html += `<div style="margin-bottom:14px;">
+            <div style="font-weight:900; font-size:12px; letter-spacing:0.5px; text-transform:uppercase; color:#0369a1; margin-bottom:6px;">🏠 ${r} <span style="color:var(--text-dim,#94a3b8); font-weight:700;">· ${list.length}</span></div>
+            ${list.length ? list.map((id, i) => lightRow(id, r, i, list.length)).join('') : '<div style="font-size:11px; color:var(--text-dim,#94a3b8); padding:4px 10px;">Nessuna luce in questa stanza.</div>'}
+          </div>`;
+    });
+    // Altre zone
+    const altre = grouped['__altre__'] || [];
+    if (altre.length) {
+        html += `<div style="margin-bottom:14px;">
+            <div style="font-weight:900; font-size:12px; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-dim,#64748b); margin-bottom:6px;">📦 Altre zone <span style="font-weight:700;">· ${altre.length}</span></div>
+            ${altre.map((id, i) => lightRow(id, '', i, altre.length)).join('')}
+          </div>`;
+    }
+
+    html += `<button class="ed-save-btn" onclick="edToast('💾 Organizzazione luci salvata — ricarica per applicare'); cdSyncPush && cdSyncPush();">💾 Salva organizzazione luci</button>`;
+    return html;
+}
+
+function cdLuciAddRoom() {
+    const inp = document.getElementById('ed-new-luci-room');
+    const name = (inp && inp.value || '').trim();
+    if (!name) return;
+    const order = cdLuciRoomOrder();
+    if (!order.includes(name)) order.push(name);
+    localStorage.setItem('cd_luci_room_order', JSON.stringify(order));
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    editorSwitch('luci');
+}
+function cdLuciRenameRoom(oldName, newName) {
+    newName = (newName || '').trim();
+    if (!newName || newName === oldName) return;
+    const rooms = cdLuciRoomsCfg(); Object.keys(rooms).forEach(id => { if (rooms[id] === oldName) rooms[id] = newName; });
+    localStorage.setItem('cd_luci_rooms', JSON.stringify(rooms));
+    const order = cdLuciRoomOrder().map(r => r === oldName ? newName : r);
+    localStorage.setItem('cd_luci_room_order', JSON.stringify(order));
+    const ord = cdLuciOrderCfg(); if (ord[oldName]) { ord[newName] = ord[oldName]; delete ord[oldName]; localStorage.setItem('cd_luci_order', JSON.stringify(ord)); }
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    editorSwitch('luci');
+}
+function cdLuciDeleteRoom(name) {
+    const rooms = cdLuciRoomsCfg(); Object.keys(rooms).forEach(id => { if (rooms[id] === name) delete rooms[id]; });
+    localStorage.setItem('cd_luci_rooms', JSON.stringify(rooms));
+    localStorage.setItem('cd_luci_room_order', JSON.stringify(cdLuciRoomOrder().filter(r => r !== name)));
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    editorSwitch('luci');
+}
+function cdLuciRoomMove(idx, dir) {
+    const order = cdLuciRoomList();
+    const j = idx + dir;
+    if (j < 0 || j >= order.length) return;
+    [order[idx], order[j]] = [order[j], order[idx]];
+    localStorage.setItem('cd_luci_room_order', JSON.stringify(order));
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    editorSwitch('luci');
+}
+function cdLuciSetRoom(id, room) {
+    const rooms = cdLuciRoomsCfg();
+    if (room) rooms[id] = room; else delete rooms[id];
+    localStorage.setItem('cd_luci_rooms', JSON.stringify(rooms));
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    editorSwitch('luci');
+}
+function cdLuciMove(id, dir) {
+    const room = cdLightRoom(id) || 'Altre zone';
+    const key = room;
+    // ricostruisco l'ordine attuale del gruppo di questa luce
+    const luci = cdCfg('cd_luci') || {};
+    const same = Object.keys(luci).filter(x => (cdLightRoom(x) || 'Altre zone') === (cdLightRoom(id) || 'Altre zone'));
+    const ord = cdLuciOrderCfg();
+    let cur = (ord[key] || []).filter(x => same.includes(x));
+    same.forEach(x => { if (!cur.includes(x)) cur.push(x); });
+    const i = cur.indexOf(id), j = i + dir;
+    if (i === -1 || j < 0 || j >= cur.length) return;
+    [cur[i], cur[j]] = [cur[j], cur[i]];
+    ord[key] = cur;
+    localStorage.setItem('cd_luci_order', JSON.stringify(ord));
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+    editorSwitch('luci');
+}
+
+
 function editorRenderAvvisi() {
     const extN = edGetExtra('cd_avvisi_names_extra');
     const GRP_LBL = { win: '🚪 Aperture', batt: '🔋 Batterie', luci: '💡 Luci', clima: '❄️ Clima', risc: '🔥 Riscaldamento' };
@@ -7299,7 +7485,7 @@ function edImport() {
 }
 function edResetAll() {
     if (!confirm('Rimuovere TUTTE le personalizzazioni di questo dispositivo?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_luci_rooms','cd_luci_order','cd_luci_room_order','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'].forEach(k=>localStorage.removeItem(k));
     location.reload();
 }
 
@@ -7613,7 +7799,7 @@ function wzRender() {
    La configurazione viene salvata anche nell'archivio utente di Home Assistant
    (frontend user_data): configuri una volta, la ritrovi su ogni dispositivo. */
 /* v301: cd_theme e cd_navbar_mode NON sono sincronizzati — sono preferenze del singolo dispositivo */
-const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
+const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_luci_rooms','cd_luci_order','cd_luci_room_order','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
 
 function cdSyncCollect() {
     const out = { _savedAt: Date.now() };
@@ -8431,7 +8617,7 @@ function wzAddCamera() {
 }
 function wzResetAll() {
     if (!confirm('Cancellare TUTTA la configurazione salvata su questo dispositivo (token, sezioni, luci, entità, stanze, camere, tema)?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_luci_rooms','cd_luci_order','cd_luci_room_order','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
     location.reload();
 }
 /* v298: applica la modalità barra fissa a livello CSS — funziona ovunque */
@@ -9343,17 +9529,39 @@ function apriGestioneLuci(isClick = false, luciFilter = null, customTitle = null
   let onCount = 0;
   const gruppi = {};   // { 'Salone': [{id, dett, isOn}], ... }
   const ordine = [];   // ordine di prima apparizione
+  // v0.9.0: se l'utente ha organizzato le luci in stanze (tab Luci dell'editor) uso quelle;
+  //         l'ordine delle stanze e delle luci segue cd_luci_room_order / cd_luci_order.
+  const _hasRooms = (typeof cdLuciRoomsCfg === 'function') && (Object.keys(cdLuciRoomsCfg()).length || cdLuciRoomOrder().length);
+  const _roomOrder = _hasRooms ? cdLuciRoomList() : [];
+  const _lightOrder = _hasRooms ? cdLuciOrderCfg() : {};
   (window._luciPopupFilter || GRUPPI_MONITORAGGIO['luci']).forEach(id => {
     const sObj = STATES[id]; if(!sObj) return;
     let nm = LUCI_NAMES[id] || sObj.attributes?.friendly_name || id;
     let zona = nm, dett = '';
     const di = nm.indexOf(' - ');
     if (di > -1) { zona = nm.substring(0, di).trim(); dett = nm.substring(di + 3).trim(); }
+    if (_hasRooms) {
+        const r = (typeof cdLightRoom === 'function') && cdLightRoom(id);
+        zona = r || 'Altre zone';
+        if (di === -1) dett = nm;
+    }
     const isOn = sObj.state === 'on';
     if (isOn) onCount++;
     if (!gruppi[zona]) { gruppi[zona] = []; ordine.push(zona); }
     gruppi[zona].push({ id, dett: dett || nm, isOn });
   });
+  // riordino stanze e luci secondo la configurazione dell'utente
+  if (_hasRooms) {
+    ordine.sort((a, b) => {
+        if (a === 'Altre zone') return 1; if (b === 'Altre zone') return -1;
+        const ia = _roomOrder.indexOf(a), ib = _roomOrder.indexOf(b);
+        if (ia === -1 && ib === -1) return 0; if (ia === -1) return 1; if (ib === -1) return -1; return ia - ib;
+    });
+    Object.keys(gruppi).forEach(z => {
+        const so = _lightOrder[z] || [];
+        gruppi[z].sort((x, y) => { const ix = so.indexOf(x.id), iy = so.indexOf(y.id); if (ix === -1 && iy === -1) return 0; if (ix === -1) return 1; if (iy === -1) return -1; return ix - iy; });
+    });
+  }
 
   // Card luce verticale compatta (griglia 2 colonne)
   // showZona: nelle card delle stanze mono-luce mostro la zona come nome principale

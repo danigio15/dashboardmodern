@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/danigio15/dashboardmodern/main/logo.png" width="120" alt="Dashboard Modern logo">
+<img src="logo.png" width="120" alt="Dashboard Modern logo">
 
 # 🏠 Dashboard Modern
 
@@ -21,7 +21,7 @@
 
 <br>
 
-<img src="https://raw.githubusercontent.com/danigio15/dashboardmodern/main/screenshots/home-light.png" width="380" alt="Dashboard Modern — Home">
+<img src="screenshots/home-light.png" width="380" alt="Dashboard Modern — Home">
 
 </div>
 
@@ -48,18 +48,10 @@
 - Il **popup Gestione Luci** rispetta stanze e ordine impostati; le luci senza stanza finiscono in "Altre zone"
 - **Retrocompatibile**: se non organizzi nulla, continua a raggruppare dal nome ("Salone - Faretti") come prima
 
-<div align="center">
-<table>
-<tr>
-<td width="50%"><img src="https://raw.githubusercontent.com/danigio15/dashboardmodern/main/screenshots/lights-editor.jpg" alt="Editor Luci — stanze e assegnazione"></td>
-<td width="50%"><img src="https://raw.githubusercontent.com/danigio15/dashboardmodern/main/screenshots/lights-popup.jpg" alt="Popup Gestione Luci raggruppato per stanza"></td>
-</tr>
-<tr>
-<td align="center"><sub><b>Editor → tab 💡 Luci:</b> crea le stanze e assegna ogni luce con il menu a tendina. Le <b>frecce ▲▼</b> a sinistra riposizionano stanze e luci nell'ordine che preferisci.</sub></td>
-<td align="center"><sub><b>Popup Gestione Luci:</b> le luci appaiono raggruppate per stanza, nell'ordine impostato. Le luci senza stanza finiscono in <b>Altre zone</b>.</sub></td>
-</tr>
-</table>
-</div>
+| Editor → tab 💡 Luci | Popup Gestione Luci |
+|:---:|:---:|
+| ![Editor Luci](screenshots/lights-editor.jpg) | ![Popup Luci](screenshots/lights-popup.jpg) |
+| Crea le stanze e assegna ogni luce con il menu a tendina. Le **frecce ▲▼** a sinistra riposizionano stanze e luci. | Le luci appaiono raggruppate per stanza, nell'ordine impostato. Quelle senza stanza vanno in **Altre zone**. |
 
 > 💡 **Come si riordina:** ogni riga (stanza o luce) ha due frecce a sinistra — **▲ sale**, **▼ scende**. L'ordine che imposti nell'editor è esattamente quello che vedrai nel popup Gestione Luci, su tutti i dispositivi grazie alla sincronizzazione.
 
@@ -126,18 +118,10 @@
 - The **Lights popup** honors the rooms and order you set; lights without a room go to "Other zones"
 - **Backward compatible**: if you organize nothing, it keeps grouping by name ("Living room - Spots") as before
 
-<div align="center">
-<table>
-<tr>
-<td width="50%"><img src="https://raw.githubusercontent.com/danigio15/dashboardmodern/main/screenshots/lights-editor.jpg" alt="Lights editor — rooms and assignment"></td>
-<td width="50%"><img src="https://raw.githubusercontent.com/danigio15/dashboardmodern/main/screenshots/lights-popup.jpg" alt="Lights popup grouped by room"></td>
-</tr>
-<tr>
-<td align="center"><sub><b>Editor → 💡 Lights tab:</b> create rooms and assign each light via dropdown. The <b>▲▼ arrows</b> on the left reorder rooms and lights however you like.</sub></td>
-<td align="center"><sub><b>Lights popup:</b> lights appear grouped by room, in the order you set. Lights without a room go to <b>Other zones</b>.</sub></td>
-</tr>
-</table>
-</div>
+| Editor → 💡 Lights tab | Lights popup |
+|:---:|:---:|
+| ![Lights editor](screenshots/lights-editor.jpg) | ![Lights popup](screenshots/lights-popup.jpg) |
+| Create rooms and assign each light via dropdown. The **▲▼ arrows** on the left reorder rooms and lights. | Lights appear grouped by room, in the order you set. Lights without a room go to **Other zones**. |
 
 > 💡 **How to reorder:** each row (room or light) has two arrows on the left — **▲ up**, **▼ down**. The order you set in the editor is exactly what you'll see in the Lights popup, on every device thanks to sync.
 

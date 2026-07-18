@@ -6043,7 +6043,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.8.5';
+const DASHBOARD_VERSION = '0.8.6';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -7250,48 +7250,7 @@ function editorGetFullConfig() {
 /* v255: scarica l'HTML con le personalizzazioni "cotte" dentro (permanenti, multi-dispositivo).
    Fa il fetch del file sorgente ORIGINALE (pulito), sostituisce il blocco CD_BAKED_CONFIG,
    e triggera il download con nome versione successiva. */
-async function edDownloadHTML() {
-    edToast('Genero il file...');
-    let src;
-    try {
-        const resp = await fetch(window.location.pathname + '?_=' + Date.now(), { cache: 'no-store' });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        src = await resp.text();
-    } catch(e) {
-        alert('Non riesco a leggere il file sorgente (' + e.message + ').\n\nPuoi comunque usare "Copia configurazione" e incollarla a Claude.');
-        return;
-    }
-    if (!src.includes('/* CD_BAKED_START */')) {
-        alert('Il file sorgente non contiene i marcatori CD_BAKED. Usa "Copia configurazione" e incollala a Claude.');
-        return;
-    }
-
-    // Costruisci il nuovo blocco baked dai localStorage attuali (le personalizzazioni di questo dispositivo)
-    const keys = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
-    const merged = {};
-    keys.forEach(k => { merged[k] = cdCfg(k); });  // cdCfg = localStorage o baked precedente
-    const bakedBlock = '/* CD_BAKED_START */\n'
-        + 'window.CD_BAKED_CONFIG = ' + JSON.stringify(merged, null, 2) + ';\n'
-        + '/* CD_BAKED_END */';
-
-    // Sostituisci il vecchio blocco baked con quello nuovo
-    const newSrc = src.replace(/\/\* CD_BAKED_START \*\/[\s\S]*?\/\* CD_BAKED_END \*\//, bakedBlock);
-
-    // Nome file: incrementa il numero di versione se presente (dashboard_vNNN.html)
-    let fname = (window.location.pathname.split('/').pop() || 'dashboard.html');
-    const m = fname.match(/^(.*?_v)(\d+)(\.html)$/i);
-    if (m) fname = m[1] + (parseInt(m[2],10) + 1) + m[3];
-    else fname = fname.replace(/\.html$/i, '') + '_edit.html';
-
-    // Download
-    const blob = new Blob([newSrc], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = fname;
-    document.body.appendChild(a); a.click();
-    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
-    edToast('Scaricato: ' + fname);
-}
+async function edDownloadHTML() { return cdBakeDownload(); } /* v0.8.8: unificata su cdBakeDownload (la vecchia regex poteva corrompere il file) */
 function editorRenderExport() {
     const cfg = editorGetFullConfig();
     const json = JSON.stringify(cfg, null, 2);
@@ -7759,8 +7718,8 @@ function cdSyncPush(silent = true) {
 /* Pull con WS dedicato (usato dal wizard, dove serve il token appena inserito) */
 function cdSyncPull(token, cb) {
     try {
-        const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const tws = new WebSocket(`${proto}//${location.host}/api/websocket`);
+        const _ha = cdResolveHaWs();
+        const tws = new WebSocket(_ha.ws || ((location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host + '/api/websocket'));
         let mid = 1;
         const timer = setTimeout(() => { try { tws.close(); } catch(e){}; cb(null); }, 6000);
         tws.onmessage = (ev) => {
@@ -7773,15 +7732,36 @@ function cdSyncPull(token, cb) {
     } catch(e) { cb(null); }
 }
 
+/* v0.8.7 (#10): l'host di Home Assistant NON è location.host quando il file è aperto
+   da un download (githubusercontent, file://, o un web server diverso da HA). Questo helper
+   ricava l'URL HA reale dai campi del wizard o dalla connessione salvata. */
+function cdResolveHaWs() {
+    let url = '';
+    try {
+        const r = document.getElementById('wz-remote'); const l = document.getElementById('wz-local');
+        url = (r && r.value.trim()) || (l && l.value.trim()) || '';
+    } catch(e) {}
+    if (!url) { try { const conn = JSON.parse(localStorage.getItem('cd_connection') || '{}'); url = conn.remote_url || conn.local_ip || ''; } catch(e) {} }
+    const host = location.host;
+    const onHA = host && location.protocol !== 'file:' && !/githubusercontent|github\.io|githubassets/i.test(host);
+    if (!url && onHA) return { ws: (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + host + '/api/websocket', ok: true };
+    if (!url) return { ws: '', ok: false, needUrl: true };
+    let u = url.replace(/\/$/, '');
+    if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+    const wsBase = u.replace(/^http/i, 'ws');
+    return { ws: wsBase + '/api/websocket', ok: true, base: u };
+}
+
 function wzTestToken() {
     WIZ.remoteUrl = (document.getElementById('wz-remote') ? document.getElementById('wz-remote').value.trim() : WIZ.remoteUrl || '');
     const tk = (document.getElementById('wz-token').value || '').trim();
     const res = document.getElementById('wz-test-result');
     if (!tk || !tk.startsWith('eyJ')) { res.innerHTML = '<div class="wz-err">⚠️ Il token non sembra valido (deve iniziare con eyJ)</div>'; return; }
     res.innerHTML = '<div class="wz-info">⏳ Verifico…</div>';
-    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const _ha = cdResolveHaWs();
+    if (!_ha.ok) { res.innerHTML = '<div class="wz-err">⚠️ Inserisci l\'URL di Home Assistant (campo qui sopra) prima di verificare — questo file è aperto fuori da HA.</div>'; return; }
     try {
-        const tws = new WebSocket(`${proto}//${location.host}/api/websocket`);
+        const tws = new WebSocket(_ha.ws);
         let done = false;
         tws.onmessage = (ev) => {
             const m = JSON.parse(ev.data);
@@ -7808,7 +7788,7 @@ function wzTestToken() {
             }
             if (m.type === 'auth_invalid') { done = true; res.innerHTML = '<div class="wz-err">❌ Token rifiutato da HA. Ricontrolla di averlo copiato tutto.</div>'; tws.close(); }
         };
-        tws.onerror = () => { if (!done) res.innerHTML = '<div class="wz-err">❌ Impossibile raggiungere HA. Apri la dashboard DALL\'interno di Home Assistant.</div>'; };
+        tws.onerror = () => { if (!done) res.innerHTML = '<div class="wz-err">❌ Impossibile raggiungere HA a ' + (_ha.base || location.host) + '.<br>Controlla URL e che HA sia raggiungibile da questo dispositivo. Se il file è aperto da un download, l\'URL qui sopra è obbligatorio.</div>'; };
         setTimeout(() => { if (!done) { res.innerHTML = '<div class="wz-err">❌ Timeout. Riprova.</div>'; try{tws.close();}catch(e){} } }, 8000);
     } catch(e) { res.innerHTML = '<div class="wz-err">❌ ' + e.message + '</div>'; }
 }
@@ -7816,8 +7796,8 @@ function wzTestToken() {
 function wzLoadLights() {
     wzRender();
     // Connessione temporanea per leggere le entità light/switch
-    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const tws = new WebSocket(`${proto}//${location.host}/api/websocket`);
+    const _ha = cdResolveHaWs();
+    const tws = new WebSocket(_ha.ws || ((location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host + '/api/websocket'));
     let mid = 1;
     tws.onmessage = (ev) => {
         const m = JSON.parse(ev.data);
@@ -9061,27 +9041,32 @@ function edSaveCosti() {
    così ogni browser/dispositivo che apre il file da /config/www è già pronto (niente token da reinserire). */
 async function cdBakeDownload() {
     try {
-        const res = await fetch(location.pathname, { cache: 'no-store' });
+        const res = await fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         let html = await res.text();
         const cfg = {};
         for (let i = 0; i < localStorage.length; i++) {
             const k = localStorage.key(i);
             if (k && k.indexOf('cd_') === 0) { try { cfg[k] = JSON.parse(localStorage.getItem(k)); } catch(_) { cfg[k] = localStorage.getItem(k); } }
         }
-        /* v0.8.4 fix (#10): marker e chiusura head SPEZZATI nel sorgente — la sostituzione
-           non puo' mai colpire il codice di questa funzione (corrompeva i download). */
-        const M1 = '<!--CD_' + 'BAKED-->', M2 = '<!--/CD_' + 'BAKED-->', HEAD = '</he' + 'ad>';
-        const inj = M1 + '<scr' + 'ipt>window.CD_BAKED_CONFIG = ' + JSON.stringify(cfg).replace(/</g, '\\u003c') + ';</scr' + 'ipt>' + M2;
-        const i1 = html.indexOf(M1), i2 = html.indexOf(M2);
-        if (i1 > -1 && i2 > i1) html = html.slice(0, i1) + inj + html.slice(i2 + M2.length);
-        else { const ih = html.indexOf(HEAD); html = ih > -1 ? html.slice(0, ih) + inj + html.slice(ih) : inj + html; }
+        /* v0.8.8 fix (#10): uso i marker REALI del file (CD_BAKED_START/END), costruiti
+           spezzati così non compaiono mai come stringa intera nel codice di questa funzione
+           (era la causa del file corrotto: prima cercavo marker inesistenti e iniettavo un
+           SECONDO blocco config in conflitto col primo). */
+        const A = '/* CD_' + 'BAKED_START */', B = '/* CD_' + 'BAKED_END */';
+        const block = A + '\nwindow.CD_BAKED_CONFIG = ' + JSON.stringify(cfg, null, 2).replace(/<\/(script)/gi, '<\\/$1') + ';\n' + B;
+        const iA = html.indexOf(A), iB = html.indexOf(B);
+        if (iA < 0 || iB < 0 || iB < iA) throw new Error('marcatori CD_BAKED non trovati nel file');
+        html = html.slice(0, iA) + block + html.slice(iB + B.length);
+        let fname = (location.pathname.split('/').pop() || 'dashboard.html');
         const blob = new Blob([html], { type: 'text/html' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = (location.pathname.split('/').pop() || 'dashboard.html');
-        a.click();
-        edToast('💾 File scaricato — caricalo in /config/www al posto dell\'attuale: token e config inclusi');
-    } catch(e) { alert('Download non riuscito: ' + e.message); }
+        a.download = fname;
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { try { document.body.removeChild(a); URL.revokeObjectURL(a.href); } catch(e){} }, 1000);
+        edToast('💾 File scaricato — sostituisci quello in /config/www: token e configurazione inclusi');
+    } catch(e) { alert('Download non riuscito: ' + e.message + '\n\nRiapri la dashboard da dentro Home Assistant (/local/...) e riprova.'); }
 }
 
 /* v0.7.5: SALVA SEZIONE — su mobile l'evento change può non scattare (tastiera aperta,
@@ -10141,8 +10126,8 @@ function buildClimaCards() {
         </div>`;
     };
     const units = getClimaUnits();
-    if (gF) gF.innerHTML = units.filter(u => u.type !== 'termo').map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1;">Nessun condizionatore configurato</div>';
-    if (gC) gC.innerHTML = units.filter(u => u.type === 'termo').map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1;">Nessun termosifone configurato</div>';
+    if (gF) gF.innerHTML = units.filter(u => u.type !== 'termo').map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1; justify-content:center; flex-wrap:wrap;">Nessun condizionatore configurato</div>';
+    if (gC) gC.innerHTML = units.filter(u => u.type === 'termo').map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1; justify-content:center; flex-wrap:wrap;">Nessun termosifone configurato</div>';
     try { if (Object.keys(_RAW_STATES).length) updateClimaCards(); } catch(e) {}
 }
 document.addEventListener('DOMContentLoaded', () => {
@@ -11779,13 +11764,15 @@ function edUpdateKpiOnly() {
         if (!isCurrentMonth) return; // skip: lascia i valori del mese passato già calcolati da renderEnergyDashboard
     }
     
-    const prod      = parseFloat(getRawState(ED_SENSORS_CURR.prod))      || 0;
-    const cons      = parseFloat(getRawState(ED_SENSORS_CURR.cons))      || 0;
-    const immesso   = parseFloat(getRawState(ED_SENSORS_CURR.immesso))   || 0;
-    const prelevato = parseFloat(getRawState(ED_SENSORS_CURR.prelevato)) || 0;
-    const batCar    = parseFloat(getRawState(ED_SENSORS_CURR.batCarico))  || 0;
-    const batScar   = parseFloat(getRawState(ED_SENSORS_CURR.batScarico)) || 0;
-    const wbOn      = parseFloat(getRawState(ED_SENSORS_CURR.wbOn))      || 0;
+    /* v0.8.6: STESSE regole del badge/mappa — il motore periodi (delta del mese) invece del
+       valore grezzo del contatore, così PRODUZIONE FV non mostra più il totale lifetime (es. 11400). */
+    const prod      = cdPNum(ED_SENSORS_CURR.prod);
+    const cons      = cdPNum(ED_SENSORS_CURR.cons);
+    const immesso   = cdPNum(ED_SENSORS_CURR.immesso);
+    const prelevato = cdPNum(ED_SENSORS_CURR.prelevato);
+    const batCar    = cdPNum(ED_SENSORS_CURR.batCarico);
+    const batScar   = cdPNum(ED_SENSORS_CURR.batScarico);
+    const wbOn      = cdPNum(ED_SENSORS_CURR.wbOn);
 
     const auto      = cons > 0 ? Math.min(100, Math.round(((cons - prelevato) / cons) * 100)) : 0;
     const autoconsumo = Math.max(0, prod - immesso);
@@ -12808,7 +12795,7 @@ function buildTempCards() {
         const floors = [];
         _rooms.forEach(r => { const f = r.floor || 'Altro'; if (!floors.includes(f)) floors.push(f); });
         if (!CD_TEMP_FLOOR || !floors.includes(CD_TEMP_FLOOR)) CD_TEMP_FLOOR = floors[0];
-        tabs = '<div style="grid-column:1/-1; display:flex; gap:10px; overflow-x:auto; padding:4px 2px 10px; -webkit-overflow-scrolling:touch;">' + floors.map((f, fi) => {
+        tabs = '<div style="grid-column:1/-1; justify-content:center; flex-wrap:wrap; display:flex; gap:10px; overflow-x:auto; padding:4px 2px 10px; -webkit-overflow-scrolling:touch;">' + floors.map((f, fi) => {
             const act = f === CD_TEMP_FLOOR;
             const fEsc = f.replace(/"/g, '&quot;');
             const fIco = (cdCfg('cd_floor_icons') || {})[f] || '🏢';
@@ -13394,10 +13381,11 @@ async function edCaricaDettaglio() {
     let valMese = 0, consCasa = 0, prelevatoRete = 0;
     
     if (isCurrentMonth) {
-        // Mese corrente: leggi direttamente i sensori live
-        valMese       = parseFloat(getRawState(sensor))                   || 0;
-        consCasa      = parseFloat(getRawState(ED_SENSORS_CURR.cons))      || 0;
-        prelevatoRete = parseFloat(getRawState(ED_SENSORS_CURR.prelevato)) || 0;
+        // v0.8.6: mese corrente dal motore periodi (delta del mese), coerente col resto —
+        // vale anche se il sensore del dispositivo selezionato è un contatore TOTALE.
+        valMese       = (typeof CD_PERIOD !== 'undefined' && CD_PERIOD[sensor] !== undefined) ? CD_PERIOD[sensor] : (parseFloat(getRawState(sensor)) || 0);
+        consCasa      = cdPNum(ED_SENSORS_CURR.cons);
+        prelevatoRete = cdPNum(ED_SENSORS_CURR.prelevato);
     } else {
         // Mese passato: usa le Long-Term Statistics
         try {

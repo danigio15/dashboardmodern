@@ -6,6 +6,23 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.8.6] — 2026-07-18
+
+### Corretto
+- **⚡ PRODUZIONE FV e tutti i sensori allineati** — la card KPI della Panoramica e il Dettaglio Dispositivo del Report leggevano il valore GREZZO del contatore (il totale lifetime, es. 11400 kWh) invece del delta del mese come già facevano il badge in alto (608 kWh) e la mappa. Ora ogni punto usa lo stesso motore periodi: produzione, consumo, autosufficienza, risparmio e ripartizioni sono coerenti ovunque, anche quando il sensore mappato è un contatore TOTALE.
+- **🔌 Connessione da file scaricato (#10)** — il wizard usava sempre l'indirizzo della pagina (`location.host`): aprendo il file da un host che non è HA puntava all'indirizzo sbagliato e il collegamento falliva. Ora verifica connessione, sync e lettura entità usano l'URL di Home Assistant salvato o inserito nei campi del wizard (funziona identico con Nabu Casa e DuckDNS); se il file è aperto fuori da HA il messaggio d'errore indica l'host tentato.
+- **💾 Download configurato riparato (#10)** — c'erano due sistemi di bake in conflitto e quello usato dal pulsante 💾 cercava marcatori inesistenti, iniettando un SECONDO blocco di configurazione che rompeva il file scaricato (riapriva il wizard). Ora un unico metodo sostituisce il blocco REALE tra i marcatori `CD_BAKED_START/END`, spezzati nel sorgente perché non possano auto-corrompersi. Verificato: il file scaricato ha un solo blocco config, token e URL vengono letti all'avvio (niente wizard), e ri-scaricandolo resta identico (nessun accumulo).
+
+### Nota d'uso (Nabu Casa / DuckDNS)
+- Il file scaricato con 💾 va messo in `/config/www` e aperto **da dentro Home Assistant** (`https://tuo-indirizzo/local/dashboard.html`): vale sia per Nabu Casa sia per DuckDNS — l'indirizzo con cui apri la pagina è già quello di HA, quindi collegamento e token integrato funzionano senza reinserire nulla.
+
+## [0.8.6] — 2026-07-18 (EN)
+
+### Fixed
+- **⚡ PV PRODUCTION and all sensors aligned** — the Overview KPI card and the Report device detail read the RAW counter value (lifetime total, e.g. 11400 kWh) instead of the month delta already used by the top badge (608 kWh) and the map. Every spot now uses the same period engine: production, consumption, self-sufficiency, savings and splits are consistent everywhere, even with cumulative TOTAL sensors.
+- **🔌 Connection from downloaded file (#10)** — the wizard always used the page address (`location.host`): opening the file from a non-HA host pointed to the wrong address and the connection failed. Verification, sync and entity loading now use the Home Assistant URL saved or entered in the wizard (identical for Nabu Casa and DuckDNS); if the file is opened outside HA the error states the attempted host.
+- **💾 Baked download fixed (#10)** — two conflicting bake systems existed and the 💾 button looked for non-existent markers, injecting a SECOND config block that broke the downloaded file (reopening the wizard). A single method now replaces the REAL block between `CD_BAKED_START/END` markers, split in the source so they can't self-corrupt. Verified: the downloaded file has one config block, token and URL are read at startup (no wizard), and re-downloading stays identical.
+
 ## [0.8.5] — 2026-07-17
 ### Corretto
 - ⚡ **Flussi allineati a HA**: l'ora in corso viene aggiunta SOLO se le statistiche sono davvero in ritardo (>65 min) — le versioni recenti di HA la includono già e il valore risultava gonfiato di ~2 kWh · 💾 **Download riparato ovunque**: anche il percorso del wizard usava le stringhe intere `</head>`/marker come bersaglio (ora spezzate in tutto il file) — rifai il download da un file pulito · 🎨 Tab dei piani centrati
@@ -13,7 +30,6 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 ## [0.8.5] — 2026-07-17 (EN)
 ### Fixed
 - ⚡ **Flows aligned with HA**: the in-progress hour is added ONLY when statistics truly lag (>65 min) — recent HA already includes it and values were inflated by ~2 kWh · 💾 **Download fixed everywhere**: the wizard path also used whole `</head>`/marker strings as targets (now split file-wide) — redo the download from a clean file · 🎨 Centered floor tabs
-
 
 ## [0.8.4] — 2026-07-17
 
@@ -36,32 +52,6 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ### ✨ Added
 - **🏠 Project logo** — `logo.png` and `icon.png` in the repo (used by README and HACS).
-
-## [0.8.4] — 2026-07-17
-
-### 🐛 Corretto
-- **💾 File scaricato corrotto (#10)** — il download con token integrato produceva un file con JavaScript rotto ("Invalid regular expression"): la regex che cercava il segnaposto matchava sé stessa nel codice sorgente e la configurazione veniva iniettata dentro il codice. Ora i marker sono costruiti a runtime e la sostituzione avviene per posizione: il file scaricato è valido e ri-scaricabile all'infinito senza duplicare nulla. La funzione (col bottone 💾) è stata portata anche nel file inglese, dove mancava del tutto.
-- **🏠 Nodo CASA coerente con Home Assistant (#6)** — nelle mappe Giornaliera e Mensile il valore di CASA è ora calcolato col bilancio dei flussi mostrati (solare − immessa + prelevata + batteria scaricata − caricata), esattamente come fa la dashboard Energia di HA: la mappa torna sempre nei conti. L'entità mappata resta il fallback.
-- **📊 Report a zero (#6)** — quando tutte le voci dell'Analisi risultano a 0, una nota spiega la fonte dati: il Report legge le Long-Term Statistics e le entità devono avere state_class total_increasing (o total).
-
-### ✨ Migliorato
-- **🏢 Tab dei piani omogenei** — i tab delle Temperature ora usano lo stesso stile a pillola delle altre sezioni (Report/Istantanea/…), con icona del piano e media in evidenza.
-- **🌡️ Card stanze rifinite** — il nome non si tronca più ("Camer…"): va su due righe; °C più leggibile.
-- **🪄 Riepilogo rilevamento onesto** — su un impianto già configurato il pannello dice "✅ Tutto già configurato" con il dettaglio dell'esistente, invece del fuorviante "nessuna entità riconosciuta" (il rilevamento non crea doppioni: aggiunge solo ciò che manca).
-- **🎨 Logo ufficiale** — nuovo logo del progetto (logo.svg / logo.png / icon.png) per repo, README e HACS.
-
-## [0.8.4] — 2026-07-17 (EN)
-
-### 🐛 Fixed
-- **💾 Corrupted downloaded file (#10)** — the token-baked download produced a file with broken JavaScript: the placeholder regex matched itself in the source and the config was injected into the code. Markers are now built at runtime and replaced by position: the downloaded file is valid and re-downloadable forever with no duplication. The feature (with the 💾 button) was also ported to the English file, where it was missing entirely.
-- **🏠 HOME node coherent with Home Assistant (#6)** — in the Daily and Monthly maps the HOME value is now computed from the displayed flow balance (solar − exported + imported + battery discharged − charged), exactly like HA's Energy dashboard: the map always adds up. The mapped entity remains the fallback.
-- **📊 Report at zero (#6)** — when all Analysis entries are 0, a note explains the data source: the Report reads Long-Term Statistics and entities need state_class total_increasing (or total).
-
-### ✨ Improved
-- **🏢 Uniform floor tabs** — Temperature floor tabs now use the same pill style as the other sections, with floor icon and average highlighted.
-- **🌡️ Refined room cards** — names no longer truncate: two-line wrap; clearer °C.
-- **🪄 Honest detection summary** — on an already-configured system the panel says "✅ Everything already configured" with details, instead of the misleading "no entities recognized" (detection never duplicates: it only adds what's missing).
-- **🎨 Official logo** — new project logo (logo.svg / logo.png / icon.png) for the repo, README and HACS.
 
 ## [0.8.3] — 2026-07-17
 
@@ -92,16 +82,6 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ### 🐛 Fixed
 - **Hidden daily nodes** — cards/nodes fed by the period engine are no longer hidden by cdAutoHide as "unmapped"; after every engine refresh cards reappear on their own.
-
-## [0.8.2] — 2026-07-17
-
-### ✨ Aggiunto
-- **📅 Derivazione giornaliera automatica** — se un campo "oggi" non è mappato ma il corrispondente "mese" sì (il caso tipico: contatore TOTALE inserito solo nel campo mese), il valore di oggi viene calcolato dalla STESSA entità come delta da mezzanotte. Vale per tutte le coppie mese→giorno (casa, solare, boiler, wallbox, clima, nodi 1-2) incluse le tre con nomi diversi (rete prelevata/immessa, batteria scaricata). Un campo "oggi" mappato esplicitamente ha sempre la precedenza. In pratica: basta inserire i totali nei campi mese e la dashboard ricostruisce da sola giornaliera, mensile e Report.
-
-## [0.8.2] — 2026-07-17 (EN)
-
-### ✨ Added
-- **📅 Automatic daily derivation** — if a "today" field is not mapped but its "month" counterpart is (the typical case: a TOTAL counter entered only in the month field), today's value is computed from the SAME entity as a delta since midnight. Applies to every month→day pair (home, solar, boiler, wallbox, climate, nodes 1-2) including the three with different stems (grid import/export, battery discharged). An explicitly mapped "today" field always wins. In short: enter your totals in the month fields and the dashboard rebuilds daily, monthly and Report on its own.
 
 ## [0.8.1] — 2026-07-17
 
@@ -285,7 +265,6 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 - **Avvisi persi al refresh** *(issue #5, definitivo)* — le modifiche non ancora sincronizzate sono ora protette e vengono inviate subito.
 - **Confronto settimanale a zero** *(issue #6)* — ora usa le entità configurate dall'utente (produzione o consumo giornaliero) invece di un sensore fisso; se non configurate mostra "—".
 
-
 ## [0.6.2] — 2026-07-16
 
 ### ✨ Migliorato
@@ -389,24 +368,6 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 ### 🐛 Corretto
 - **Card clima/stanze vuote al primo caricamento** *(issue #1)* — su dispositivi lenti gli stati arrivavano prima della costruzione delle card, che restavano su "SPENTO/--°" finché qualcosa non cambiava. Ora gli stati vengono applicati subito dopo la costruzione.
 
-## [0.3.14] — 2026-07-15
-
-### 🐛 Corretto — coerenza contatori/popup
-- **Contatori del Quadro Avvisi e popup ora combaciano SEMPRE** — contatori e liste sono calcolati dalla stessa fonte (le entità configurate nella dashboard), non più da sensori esterni. Fine dei "CLIMA 4" con popup vuoto.
-- **Popup aperture/batterie a due sezioni** — prima "⚠️ APERTE/SCARICHE (N)" (esattamente ciò che conta il numero), poi "✓ TUTTO OK".
-- **Clima attivi** contati dalle unità clima configurate (condizionatori → Clima, termosifoni → Riscaldamento).
-- **Meteo non configurato** — il widget viene nascosto del tutto (niente più "UNAVAILABLE --°").
-
-## [0.3.13] — 2026-07-15
-
-### 🐛 Corretto — CRITICO
-- **Dashboard che non si aggiornava con configurazione parziale** *(issues #1 e #2 — il "non vedo nulla")* — un riferimento non configurato poteva interrompere l'aggiornamento dell'intera interfaccia: card clima "spente" coi puntini anche se configurate, sezioni ferme. Ora i riferimenti non mappati sono innocui e tutto il resto si aggiorna sempre. **Dopo l'update rifate un giro di wizard (7 tap sul titolo) se avevate configurato con versioni precedenti.**
-
-### ✨ Aggiunto
-- **🔋 Popup batterie completo** *(issue #2)* — mostra TUTTE le batterie con la percentuale, le più scariche in cima (🪫 rosso ≤20%).
-- **🚪 Popup aperture completo** *(issue #2)* — tutte le porte/finestre con stato APERTA/Chiusa, le aperte in cima.
-- **🧺 Lavatrici non smart** *(issue #2)* — nuovo campo "Potenza presa lavatrice": collega la presa smart e lo stato (in funzione/spenta) è derivato dai watt (soglia 5W).
-
 ## [0.3.12] — 2026-07-15
 
 ### ✨ Aggiunto
@@ -508,273 +469,3 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 # 🇬🇧 English
 
 The format follows [Keep a Changelog](https://keepachangelog.com) and [SemVer](https://semver.org).
-
-## [0.7.2] — 2026-07-16
-
-### 🐛 Fixed
-- **✏️ Rooms pencil doing nothing** — it read a different list from the one shown (synced/baked configs): edit, reorder and delete now always operate on the real list, and the form opens and fills on tap.
-- **🔍 Picker on map-node sensors too** and **node name pre-filled** — the name now appears as real editable text, not a grey hint.
-- **Loads select populated by YOUR groups** — Kitchen/Laundry only appear if you have no custom groups.
-- **📊 Report with no entries: correct guidance** — the message now points to ⚙️ → Loads → Report (the old wizard reference no longer existed) and reminds that both monthly and TOTAL entities work.
-
-## [0.7.1] — 2026-07-16
-
-### 🐛 Fixed
-- **✏️ Pencil and ▲▼ arrows on rooms in the editor** · **🗺️ neutral map-node titles** · **📌 Navigation bar card now truly highlights the active choice** (the theme selector was clearing it).
-
-## [0.7.0] — 2026-07-16 · "One Editor"
-
-### 🚀 New configuration architecture
-- **3-step wizard** → "🪄 Detect everything and open the editor". **The editor is the single configuration place** (lights new, renamable labels, 🔍 picker, rooms with Floor, Report, load groups, map nodes).
-- **♾️ Daily/monthly/yearly computed from TOTALS** — link your cumulative entities: the dashboard computes periods from history. No utility_meter.
-
-## [0.6.8] — 2026-07-16
-- Visible renamable labels · Report in editor→Sections · rooms addable from editor · navbar active state · multi-row tabs.
-
-## [0.6.7] — 2026-07-16
-- **Fixed**: theme never saving · fixed bar never active on PC · load groups disappearing on reload. **Added**: 🔍/✏️ in the editor · 🏢 rooms by floor.
-
-## [0.6.6] — 2026-07-16
-- **Fixed**: wizard locked by sync import loop · theme/navbar overwritten by sync. **Added**: Report entries in editor · map nodes "opens history" option.
-
-## [0.6.5] — 2026-07-16
-
-### 🐛 Fixed (important)
-- **Wizard locked by the "Imported N settings" message** — sync imported the configuration at EVERY wizard opening, reloading in a loop: automatic import now happens only on a fresh device (no local configuration).
-- **Theme and Navigation bar "not working"** — choices were being overwritten by the import: theme and bar are now per-device preferences, never synced.
-
-### ✨ Added
-- **📊 Report entries in the editor too** — ⚙️ → Configure Entities → Loads: add/remove Report entries without the wizard.
-- **📈 Map nodes without popup** — each node's menu now starts with "No popup — opens history" of the chosen sensor.
-- **🗺️ ALL nodes under the house are customizable** — Boiler, Wallbox and Climate can be renamed too (name, icon, sensor, group) via ⚙️ → Loads → Map nodes, like Laundry and Kitchen.
-
-### 🐛 Fixed
-- **"Alarm!" badge without a configured alarm** *(reported by Dima)* — the removal check missed unconfigured installs: the banner now truly disappears.
-- **Home node opening wrong popups** *(reported by Tinux)* — clicking nodes with unconfigured entities now does nothing instead of showing mismatched windows.
-
-## [0.6.4] — 2026-07-16
-
-### ✨ Added
-- **✏️ Edit without deleting** — rooms can be edited via pencil (pre-filled form, 💾 Save) and **reordered** with ▲▼ arrows. *(thanks Francesco!)*
-- **☁️ Automatic config import** — on a new device the config saved on HA is applied silently, no prompts.
-
-### 🐛 Fixed
-- **"Fixed" navigation bar now really works** — the logic was mobile-only: the choice now applies on PC/tablet too (active choice highlighted).
-- **Unresponsive theme** — the nav card had broken the Config page structure: repaired.
-- **Alerts lost on refresh** *(issue #5, final)* — unsynced local changes are now protected and pushed immediately.
-- **Weekly comparison at zero** *(issue #6)* — now uses the user's configured entities (daily production or consumption) instead of a fixed sensor; shows "—" if unconfigured.
-
-
-## [0.6.2] — 2026-07-16
-
-### ✨ Improved
-- **📊 Free-form Analysis Report** — no more locked names: add YOUR entries (name, icon, entity) from the wizard; the Report selector uses them automatically.
-- **🗺️ Customizable flow nodes** — the first two load groups you create replace Laundry/Kitchen on the map: your name, icon, popup and power (group sum).
-- **🔔 Automatic, clean alerts** — lights, climate and heating populate themselves from your sections; popups only show what needs attention (on/open/low).
-
-- **✏️ Renamable labels in the wizard** — every slot label (Energy, EV, Boiler…) can be renamed by tapping it: no more imposed names.
-- **📊 "Device Activity" follows your entries** — the Report list only shows devices you configured; unconfigured means empty (no fake zero rows).
-
-### 🐛 Fixed
-- **Duplicate "Devices" accordion in the wizard** — removed.
-- **Navigation bar: the "Fixed" button did not apply** from the Config page; the card layout was also fixed.
-- **More readable editor on desktop** — wider window and multi-row tabs (no more clipping).
-
-## [0.6.1] — 2026-07-16
-
-### ✨ Added
-- **📌 Fixed or auto-hide navigation bar** — new option in the wizard (Sections step) and in ⚙️ Config.
-
-### 🐛 Fixed
-- **Empty "Loads" tab in the editor** *(issue #4)* — fixed on fresh installs.
-
-## [0.6.0] — 2026-07-16
-
-### ✨ Added
-- **🔌 Custom load groups** *(issue #4)* — ⚙️ → Configure Entities → Loads: create your own groups ("Garage", "Ground Floor"…), add devices and get dedicated cards in the Energy section with active counter and popup.
-- **📊 Configurable Analysis Report** *(issue #6)* — monthly per-device energy (washer, dryer, oven…) can now be linked from the wizard: new "Analysis Report" accordion with 🔍 picker and auto-detection. No more zeros.
-
-### 🐛 Fixed
-- **Alerts disappearing on refresh** *(issue #5)* — a race between local save and cloud sync could overwrite just-made changes: local edits now always win.
-
-## [0.5.2] — 2026-07-16
-
-### 🐛 Fixed *(issue #3 — thanks for the reports!)*
-- **Added alerts disappearing** — climate units were overwriting the Climate/Heating alert group, wiping manual additions; your entries are now always preserved.
-- **Editor alerts without reload** — entities added to the Alerts Panel now appear and count immediately, no reload needed.
-- **Weather vanishing after a few seconds** — an unconfigured internal reference blocked the fallback to the user-configured weather: the widget now stays visible.
-
-## [0.5.1] — 2026-07-16
-
-### 🐛 Fixed
-- **Light-group popup showing all lights** — after a moment the custom group popup was regenerated without its filter by the auto-refresh: group filter and title are now preserved.
-
-## [0.5.0] — 2026-07-16
-
-### ✨ Highlights
-- **🏠 Detection from Home Assistant Areas** — 🪄 now reads HA's official registry: lights named "Room - Name" (auto grouping), one room card per Area with temperature and humidity paired by area (no longer by name), climate and cameras titled with their room. Integration-grade precision, single-file simplicity.
-- **☁️ Config synced across devices** — the configuration is stored on your Home Assistant user: set up on your phone and the tablet aligns on next start (and vice versa). Works for wizard and editor; on a new device just enter the token and everything comes back.
-- **⚡ Clean energy flows** — Wallbox/Kitchen/Laundry/Boiler/Climate nodes disappear when not configured and dim (flow paused) when the load is idle.
-
-## [0.4.3] — 2026-07-16
-
-### 🐛 Fixed
-- **Invasive autocomplete menu on mobile** — tapping an entity field made Android open the native list of all entities above the keyboard. Removed everywhere: fields are now free-typing and guided selection happens only via the 🔍 button (full list + search), now available on every wizard field: sections, alerts, devices, rooms, climate and cameras.
-
-## [0.4.2] — 2026-07-15
-
-### ✨ Improved
-- **⚡ Quick Actions form redesigned** — "💡 Lights popup — YOU pick the lights" is now the first choice with a guided flow: name → Add → searchable light selection. The entity field only appears when needed (toggle/script/scene) and has the 🔍 button. A hint under the form always explains the next step.
-
-## [0.4.1] — 2026-07-15
-
-### ✨ Improved
-- **🔍 Entity picker with search** — every field in the "Link your entities" step now has a 🔍 button opening the full list of your HA entities with live search: tap to pick, no more manual typing on mobile.
-- **✏️ Edit light groups** — "Light group" quick actions are now editable: pencil next to the group (wizard and editor) to add or remove lights, current ones pre-ticked.
-
-## [0.4.0] — 2026-07-15
-
-### ✨ New feature — 🔌 Custom appliances
-*(proposed by @magli74 in issue #2)*
-- **Home cards for any appliance or device**: dishwasher, dryer, pellet stove, bathroom heater, zone irrigation… For each you configure: name, icon, **switch** (toggle from the card), **power sensor** ("Running" state from a 5W threshold — perfect for smart plugs on non-smart appliances) and **value sensor** (pellet level, temperature…).
-- Add them from the wizard (🔌 Appliances accordion) or the editor; tap the card → history chart; the block disappears if none are configured.
-- A thermostat should be added as a **climate unit** (it is a `climate.*`): full card with temperatures and controls.
-
-## [0.3.15] — 2026-07-15
-
-### 🐛 Fixed
-- **Temperatures on climate cards** *(issue #2)* — climate card updates are now autonomous (own cycle, 20s safety net): temperatures appear on cards without opening the popup.
-- **Alarm stuck on "LOADING" in Security page** *(issue #2)* — if no alarm panel is configured, the alarm block disappears and the page shows cameras only.
-- **Washer popup for non-smart machines** *(issue #2)* — program/spin/temperature hidden when not configured: state (incl. watt threshold) and plug remain.
-
-### 🗺️ Roadmap
-- **Custom appliances** (dishwasher, dryer, pellet stove, bathroom heater…): generic cards with switch + power/level sensor — thanks Fabrizio for the idea!
-
-## [0.3.14] — 2026-07-15
-
-### 🐛 Fixed
-- **Alerts Panel counters inconsistent with popups** — the counters (lights on, active climate, openings, low batteries) are now **computed by the dashboard on the same items you see in the popups**: the card number and the list always match, on any installation. The old "Counter…" fields are no longer needed and were removed.
-- **"Active climate" counter** now counts YOUR configured climate units (ACs → Climate, radiators → Heating).
-- **Openings detection** — radiator "bypass" sensors excluded (noise).
-
-## [0.3.13] — 2026-07-15
-
-### ✨ Added
-- **☁️ Multi-device sync** *(issue #1)* — the configuration is now automatically saved to Home Assistant. On a new device just enter the token: the wizard finds the existing configuration and offers to import it — identical dashboard everywhere, no redo. Manual "Save to HA / Load from HA" buttons in Configure Entities → Export.
-
-### 🐛 Fixed
-- **Empty climate/room cards on first load** *(issue #1)* — on slow devices states arrived before the cards were built, leaving them stuck on "OFF/--°" until something changed. States are now applied right after building.
-
-## [0.3.14] — 2026-07-15
-
-### 🐛 Fixed — counter/popup consistency
-- **Alerts Panel counters and popups now ALWAYS match** — both are computed from the same source (the entities configured in the dashboard), no longer from external sensors. No more "CLIMATE 4" with an empty popup.
-- **Openings/batteries popup in two sections** — first "⚠️ OPEN/LOW (N)" (exactly what the counter counts), then "✓ ALL OK".
-- **Active climate** counted from configured climate units (AC → Climate, radiators → Heating).
-- **Unconfigured weather** — the widget is hidden entirely (no more "UNAVAILABLE --°").
-
-## [0.3.13] — 2026-07-15
-
-### 🐛 Fixed — CRITICAL
-- **Dashboard not updating with partial configuration** *(issues #1 & #2 — the "I see nothing")* — an unconfigured reference could stop the whole UI from updating: climate cards stuck "off" with dashes even when configured. Unmapped references are now harmless and everything else always updates. **After updating, re-run the wizard (7 taps on the title) if you configured with earlier versions.**
-
-### ✨ Added
-- **🔋 Full battery popup** *(issue #2)* — shows ALL batteries with their percentage, lowest first (🪫 red ≤20%).
-- **🚪 Full openings popup** *(issue #2)* — every door/window with OPEN/Closed state, open ones first.
-- **🧺 Non-smart washers** *(issue #2)* — new "Washer plug power" field: connect a smart plug and the running/off state is derived from watts (5W threshold).
-
-## [0.3.12] — 2026-07-15
-
-### ✨ Added
-- **💡 Custom light groups** *(issue #2)* — new "Light group" quick action: pick a name and the lights to include (searchable selector) and get a dedicated popup. Create "Ground Floor", "Garden", "Bedrooms"… each with its own lights.
-- **🔍 Search in lights selection** *(issue #2)* — live search field in the wizard Lights step: filter by name or entity.
-
-### 🐛 Fixed
-- **Alarm banner stuck on "Loading…"** *(issue #2)* — if the alarm is not configured, the alarm banner is removed from Home (and unconfigured weather now says so clearly).
-- **Internal wizard conflict** — lights and slots shared the same data structure and could overwrite each other: now fully separated.
-
-## [0.3.11] — 2026-07-15
-
-### ✨ Improved
-- **🪄 "auto" badge on detected fields** — every entity filled by auto-detection is highlighted in green with a 🪄 label: you can see exactly what was recognized. Editing the field removes the badge.
-- **🎯 Adaptive threshold** — slots with short labels (e.g. "Alarm panel") are now recognized; new synonyms for solar thermal and washing machine. Previously uncovered sections now detected.
-
-## [0.3.10] — 2026-07-15
-
-### ✨ Improved
-- **🪄 Auto-detection v3** — matching engine rewritten: whole-word recognition (no more random-substring errors), period awareness (a "monthly" sensor is never proposed for a "today" value), no entity assigned twice, short-acronym support (CPU, RAM, SOC). In tests: from 14 to 50+ matches at ~94% precision.
-
-## [0.3.9] — 2026-07-15
-
-### ✨ Improved
-- **🪄 Auto-detection v2** — much smarter engine: similarity scoring with threshold (no more rigid matches), extended bilingual synonyms (60+ IT/EN terms), unit-of-measure constraints (kWh for energy, W for power, % for charge, °C, km, bar…), improved humidity→room pairing, lights detection (if skipped in step 4) and boiler detection.
-
-### 🐛 Fixed
-- **"Auto-detect" button** — new high-contrast green with white text: fully readable in both themes.
-
-## [0.3.8] — 2026-07-15
-
-### ✨ Added
-- **🪄 Entity auto-detection** — new button in the "Link your entities" step: the dashboard reads your Home Assistant and automatically proposes climate units, cameras, rooms (temperature+humidity), alerts (openings and batteries) and section entities via smart matching. Every proposal remains editable: setup goes from minutes to seconds without losing customization.
-- **📊 Completion indicators** — each section shows "N/M linked" (green once you start linking).
-- **📋 Final summary** — the wizard's last step shows a count of everything you configured.
-
-## [0.3.7] — 2026-07-15
-
-### ✨ Added
-- **👋 Guided welcome message** — if no entities are configured yet (wizard skipped or empty Entities step), Home shows a banner explaining why cards are hidden and how to open the setup (7 taps on the title). Fixes the confusion reported in issue #1.
-
-## [0.3.6] — 2026-07-15
-
-### ✨ Added
-- **🌍 English version** — the release now ships two files: `dashboard.html` (Italian) and `dashboard-en.html` (English). Pick your language via the panel URL; every future update ships in both languages automatically.
-- **💗 Project support** — Sponsor button and PayPal link for donations.
-
-## [0.3.5] — 2026-07-14
-
-### ✨ Added
-- **🔔 Alerts Panel in the Setup Wizard** — add opening sensors (🚪) and batteries (🔋) with a custom name and entity autocomplete; every item is removable.
-
-### 🐛 Fixed
-- **Duplicated quick actions in the wizard** — the editor accordion had ended up inside the wizard by mistake; each is now in its own place.
-
-## [0.3.4] — 2026-07-14
-
-### ✨ Added
-- **🔄 Automatic updates** — after a HACS update the dashboard detects the new version and reloads itself bypassing the cache. You never need to touch the panel URL again.
-
-### 🔧 Changed
-- **🖼️ Car image** moved inside the "🚗 Electric car" accordion.
-
-## [0.3.3] — 2026-07-14
-
-### 🐛 Fixed
-- **Disabled sections still visible on mobile** — tabs are now physically removed from the DOM.
-- **Duplicated Rooms accordion** in the wizard.
-
-## [0.3.2] — 2026-07-14
-
-### ✨ Added
-- **🌡️ Rooms in the wizard** and **🌐 remote URL** (Nabu Casa) in the Connection step.
-
-### 🔧 Changed
-- **🔥 Simplified boiler**: single optional field inside "Climate units".
-
-## [0.3.1] — 2026-07-14
-
-### ✨ Added
-- **⚡ Customizable quick actions** (built-in or custom with entity/script and confirmation); if none are configured, the block disappears from Home.
-
-## [0.3.0] — 2026-07-14
-
-### ✨ Added
-- **👻 Auto-cleanup**: elements without configured entities are hidden.
-- **❄️ Unlimited climate units**: air conditioners and radiators can be added/removed from the UI.
-
-## [0.2.x] — 2026-07-14
-
-- **🧙 6-step Setup Wizard**, **📑 registry of 100+ entities** with human labels, **📹 unlimited cameras**, **🎨 light/dark/auto theme**, **⚙️ admin Config page**, **🆘 emergency access** (7 taps, `#setup`), **🔒 fully neutralized** distributed file.
-
-## [0.1.1] — 2026-07-14
-
-🎉 First public release via HACS.

@@ -6,6 +6,20 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.11.0] — 2026-07-19
+
+### Aggiunto
+- **🧺 Sezione Elettrodomestici generica** — non più solo la lavatrice: ora puoi aggiungere **quanti elettrodomestici vuoi** (lavatrice, lavastoviglie, asciugatrice, forno, microonde, frigo, congelatore, piano cottura, cappa, ferro, aspirapolvere, robot, condizionatore, ventilatore, scaldabagno, TV, caffettiera, tostapane, bollitore…). Set di **icone/immagini standard integrate** (SVG inline, in stile dashboard) con selettore dedicato.
+- **Funziona anche con elettrodomestici NON wifi** — lo stato (In funzione / Standby / Spento) è ricavato dal **consumo in Watt** tramite una presa smart, con soglia configurabile. Niente più tab vuoti.
+- **Editor molto personalizzabile** — per ogni elettrodomestico scegli nome, icona e **una o più entità** (a piacere), più la soglia di "in funzione". Card in home con stato live e popup di dettaglio con tutte le entità. La sezione si nasconde da sola se vuota.
+
+## [0.11.0] — 2026-07-19 (EN)
+
+### Added
+- **🧺 Generic Appliances section** — no longer just the washing machine: add **as many appliances as you want** (washing machine, dishwasher, dryer, oven, microwave, fridge, freezer, cooktop, hood, iron, vacuum, robot, air conditioner, fan, water heater, TV, coffee machine, toaster, kettle…). Built-in set of **standard icons/images** (inline SVG, dashboard style) with a dedicated picker.
+- **Works with NON-wifi appliances too** — status (Running / Standby / Off) is derived from **power draw in Watts** via a smart plug, with a configurable threshold. No more empty tabs.
+- **Highly customizable editor** — for each appliance choose name, icon and **one or more entities** (as many as you like), plus the "running" threshold. Home cards with live status and a detail popup listing all entities. The section auto-hides when empty.
+
 ## [0.10.10] — 2026-07-19
 
 ### Corretto

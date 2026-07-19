@@ -6,6 +6,24 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.10.9] — 2026-07-19
+
+### Corretto
+- **Errori `TypeError: Cannot read/set properties of null` in funzionamento normale** (issue #11) — non erano legati al Reset (mia diagnosi errata prima): l'auto-hide **rimuove fisicamente** dal DOM le pagine/sezioni non configurate (energia, telecamere…), ma `render()` e `refreshCameras()` continuavano ad aggiornare quegli elementi ormai assenti. Ora tutte le scritture di testo passano da un setter **null-safe** (`setTxt`, 62 punti) e `refreshCameras` verifica l'esistenza della pagina telecamere: niente più errori con configurazioni minimali.
+- **Config con chiavi brevi** — `cdCfg` ora riconosce anche le chiavi del file config senza prefisso `cd_` (es. `luci`, `branding`), oltre a `cd_luci`/`cd_branding`, così i file config scritti a mano vengono letti correttamente.
+
+### Nota
+- Se le **luci del file config non compaiono**: dipende dal fatto che il localStorage ha la precedenza sul file. Usa **☰ → Reset Totale** per svuotare il localStorage: da quel momento viene usata la configurazione del file.
+
+## [0.10.9] — 2026-07-19 (EN)
+
+### Fixed
+- **`TypeError: Cannot read/set properties of null` during normal operation** (issue #11) — not reset-related (my earlier diagnosis was wrong): the auto-hide **physically removes** unconfigured pages/sections from the DOM (energy, cameras…), but `render()` and `refreshCameras()` kept updating those now-absent elements. All text writes now go through a **null-safe** setter (`setTxt`, 62 spots) and `refreshCameras` checks that the cameras page exists: no more errors with minimal configurations.
+- **Config with short keys** — `cdCfg` now also recognizes config-file keys without the `cd_` prefix (e.g. `luci`, `branding`), in addition to `cd_luci`/`cd_branding`, so hand-written config files are read correctly.
+
+### Note
+- If **config-file lights don't appear**: it's because localStorage takes precedence over the file. Use **☰ → Full reset** to clear localStorage: from then on the file configuration is used.
+
 ## [0.10.8] — 2026-07-19
 
 ### Aggiunto

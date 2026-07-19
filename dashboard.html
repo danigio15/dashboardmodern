@@ -6095,7 +6095,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.10.8';
+const DASHBOARD_VERSION = '0.10.9';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6124,7 +6124,16 @@ window.CD_BAKED_CONFIG = {
 /* Helper: legge la config preferendo localStorage, poi il baked del file */
 function cdCfg(key) {
   try { const ls = localStorage.getItem(key); if (ls) return JSON.parse(ls); } catch(e) {}
-  try { return (window.CD_BAKED_CONFIG && window.CD_BAKED_CONFIG[key]) || {}; } catch(e) { return {}; }
+  try {
+    const B = window.CD_BAKED_CONFIG;
+    if (B) {
+      if (B[key] !== undefined) return B[key];
+      // v0.10.9: supporta anche config con chiavi brevi (luci, branding, sezioni…) senza prefisso cd_
+      const shortKey = key.replace(/^cd_/, '');
+      if (B[shortKey] !== undefined) return B[shortKey];
+    }
+  } catch(e) {}
+  return {};
 }
 /* v294 (issue #4): per le chiavi-lista cdCfg può restituire {} (default) — questo
    helper garantisce sempre un array, evitando .map/.forEach su oggetti. */
@@ -6226,6 +6235,9 @@ function dmIconChoose(e) {
 }
 
 /* v0.9.7 (#6): logo del brand (SVG inline, niente asset esterni) per wizard e config */
+/* v0.10.9: setter di testo null-safe. L'auto-hide RIMUOVE fisicamente pagine/sezioni non
+   configurate dal DOM; senza questo, render() andava in TypeError su elementi assenti. */
+function setTxt(id, v) { try { const e = document.getElementById(id); if (e) e.textContent = v; } catch(_) {} }
 function cdBrandLogo(size, withWordmark) {
     size = size || 44;
     const uid = 'cdlg' + Math.random().toString(36).slice(2, 7);
@@ -6731,7 +6743,7 @@ async function connect() {
     
     if(m.type === 'auth_required') ws.send(JSON.stringify({type:'auth', access_token:token}));
     if(m.type === 'auth_ok') {
-      document.getElementById('conn-text').textContent = 'Connesso';
+      setTxt('conn-text', 'Connesso');
       document.getElementById('live-dot').classList.add('connected');
       // v290: la configurazione salvata su HA (per-utente) viene propagata a questo dispositivo
       window._cdSyncReqId = msgId;
@@ -6777,7 +6789,7 @@ async function connect() {
         }
     }
   };
-  ws.onclose = () => { document.getElementById('live-dot').classList.remove('connected'); document.getElementById('conn-text').textContent = 'Riconnessione...'; setTimeout(connect, 5000); };
+  ws.onclose = () => { document.getElementById('live-dot').classList.remove('connected'); setTxt('conn-text', 'Riconnessione...'); setTimeout(connect, 5000); };
 }
 
 function toggle(eid) {
@@ -9938,9 +9950,9 @@ function confermaAzione(opts) {
   if (!modal) return;
   
   // Imposta contenuti
-  document.getElementById('confirm-icon').textContent = opts.icon || '⚠️';
-  document.getElementById('confirm-title').textContent = opts.title || 'Conferma azione';
-  document.getElementById('confirm-message').textContent = opts.message || 'Procedere?';
+  setTxt('confirm-icon', opts.icon || '⚠️');
+  setTxt('confirm-title', opts.title || 'Conferma azione');
+  setTxt('confirm-message', opts.message || 'Procedere?');
   
   // Imposta colore brand (per icona + bottone OK) via CSS variable
   const card = modal.querySelector('.confirm-card');
@@ -11407,7 +11419,7 @@ function apriMeteoOrario(targetDateStr) {
   if(navigator.vibrate) navigator.vibrate(10);
   document.getElementById('weather-hourly-modal').classList.add('show');
   let dateObj = new Date(targetDateStr); let dayName = dateObj.toLocaleDateString('it-IT', {weekday:'long'}).toUpperCase();
-  document.getElementById('weather-hourly-date').textContent = dayName;
+  setTxt('weather-hourly-date', dayName);
   const list = document.getElementById('weather-hourly-list'); list.innerHTML = '<div style="text-align:center; padding: 30px; font-weight:800; color:var(--text-dim);">Caricamento Ore...</div>';
   if (!currentWeatherEntity) return;
 
@@ -11454,7 +11466,7 @@ async function apriStorico(e, entityId, name, hours = 24) {
   currentHistName = name || entityId;
   
   document.getElementById('history-modal').classList.add('show');
-  document.getElementById('hist-title').textContent = currentHistName;
+  setTxt('hist-title', currentHistName);
   
   document.querySelectorAll('.hist-time-btn').forEach(btn => btn.classList.remove('active'));
   const activeBtn = document.querySelector(`.hist-time-btn[data-hours="${hours}"]`);
@@ -11554,7 +11566,7 @@ function updatePinDisplay() { for(let i=1; i<=4; i++) { const dot = document.get
 function kp(num) { if(navigator.vibrate) navigator.vibrate(15); if(currentPin.length < 4) { currentPin += num; updatePinDisplay(); } }
 function kpDel() { if(navigator.vibrate) navigator.vibrate(10); if(currentPin.length > 0) { currentPin = currentPin.slice(0, -1); updatePinDisplay(); } }
 function kpOk() { if(!ws) return; if(navigator.vibrate) navigator.vibrate([15, 30, 15]); let data = { entity_id: 'dm.security_centrale_allarme' }; if(currentPin.length > 0) data.code = currentPin; ws.send(JSON.stringify({ id: msgId++, type: 'call_service', domain: 'alarm_control_panel', service: targetAlarmService, service_data: data })); forceClose('custom-keypad'); }
-function promptPinAndSet(service) { if(navigator.vibrate) navigator.vibrate(15); currentPin = ''; targetAlarmService = service; updatePinDisplay(); const labels = { 'alarm_arm_away': 'Armamento Totale', 'alarm_arm_night': 'Armamento Notturno', 'alarm_disarm': 'Disinserimento Antifurto' }; document.getElementById('keypad-action-name').textContent = labels[service] || 'Azione'; document.getElementById('custom-keypad').classList.add('show'); }
+function promptPinAndSet(service) { if(navigator.vibrate) navigator.vibrate(15); currentPin = ''; targetAlarmService = service; updatePinDisplay(); const labels = { 'alarm_arm_away': 'Armamento Totale', 'alarm_arm_night': 'Armamento Notturno', 'alarm_disarm': 'Disinserimento Antifurto' }; setTxt('keypad-action-name', labels[service] || 'Azione'); document.getElementById('custom-keypad').classList.add('show'); }
 
 const errorImgSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='225'><rect width='400' height='225' fill='%23f0f4f8'/><text x='50%' y='50%' fill='%23a1a1a1' font-family='sans-serif' font-weight='800' font-size='20' text-anchor='middle' dominant-baseline='middle'>NESSUN SEGNALE</text></svg>";
 
@@ -11565,7 +11577,7 @@ function refreshCameras() {
     if (window._cdResetting) return;
   // Il setTimeout risolve il bug del click sul menu in basso
   setTimeout(() => {
-    if (!document.getElementById('page-security').classList.contains('active')) return;
+    { const _sp = document.getElementById('page-security'); if (!_sp || !_sp.classList.contains('active')) return; }
     
     // Nomi Entità corretti e allineati con quelli funzionanti dei popup
     const camMappings = getCameras().map((cam, i) => ({ id: camSlug(cam, i), entity: cam.entity }));
@@ -11638,10 +11650,10 @@ function render() {
       }
       if(weatherEnt && !wUnmapped) {
         const wLangMap = { 'clear-night': 'Sereno (Notte)', 'cloudy': 'Nuvoloso', 'fog': 'Nebbia', 'hail': 'Grandine', 'lightning': 'Fulmini', 'lightning-rainy': 'Temporale', 'partlycloudy': 'Poco Nuvoloso', 'pouring': 'Acquazzone', 'rainy': 'Pioggia', 'snowy': 'Neve', 'snowy-rainy': 'Nevischio', 'sunny': 'Soleggiato', 'windy': 'Ventoso', 'windy-variant': 'Vento Forte' };
-        document.getElementById('w-temp').textContent = (weatherEnt.attributes?.temperature !== undefined ? weatherEnt.attributes.temperature : '--') + '°C';
-        document.getElementById('w-hum').textContent = (weatherEnt.attributes?.humidity !== undefined ? weatherEnt.attributes.humidity : '--') + '%';
-        document.getElementById('w-wind').textContent = (weatherEnt.attributes?.wind_speed !== undefined ? weatherEnt.attributes.wind_speed : '--') + ' km/h';
-        document.getElementById('w-state').textContent = wLangMap[weatherEnt.state] || weatherEnt.state.replace('-', ' ');
+        setTxt('w-temp', (weatherEnt.attributes?.temperature !== undefined ? weatherEnt.attributes.temperature : '--') + '°C');
+        setTxt('w-hum', (weatherEnt.attributes?.humidity !== undefined ? weatherEnt.attributes.humidity : '--') + '%');
+        setTxt('w-wind', (weatherEnt.attributes?.wind_speed !== undefined ? weatherEnt.attributes.wind_speed : '--') + ' km/h');
+        setTxt('w-state', wLangMap[weatherEnt.state] || weatherEnt.state.replace('-', ' '));
         const wMap = { 'clear-night': '🌙', 'cloudy': '☁️', 'fog': '<div class=\"w-fog-anim\"><div class=\"fog-line\"></div><div class=\"fog-line\"></div><div class=\"fog-line\"></div><div class=\"fog-line\"></div><div class=\"fog-line\"></div></div>', 'hail': '<div class=\"w-fog-anim\"><div class=\"fog-line\"></div><div class=\"fog-line\"></div><div class=\"fog-line\"></div><div class=\"fog-line\"></div><div class=\"fog-line\"></div></div>', 'lightning': '⛈️', 'lightning-rainy': '⛈️', 'partlycloudy': '⛅', 'pouring': '🌧️', 'rainy': '🌧️', 'snowy': '❄️', 'snowy-rainy': '🌨️', 'sunny': '☀️', 'windy': '💨', 'windy-variant': '💨' };
         document.getElementById('w-icon').innerHTML = wMap[weatherEnt.state] || '☀️';
       }
@@ -11763,13 +11775,13 @@ function render() {
           });
           el.textContent = items.length ? (on + ' attivi / ' + items.length) : 'vuoto — aggiungi carichi';
       });
-      document.getElementById('v-solar').textContent = getDisplay('dm.energy_potenza_fotovoltaico'); document.getElementById('v-grid').textContent = getDisplay('dm.energy_potenza_scambio_rete'); document.getElementById('v-battery').textContent = getDisplay('dm.energy_potenza_batteria'); document.getElementById('v-battery-soc').textContent = getDisplay('dm.energy_stato_carica_batteria'); document.getElementById('v-home').textContent = getDisplay('dm.energy_potenza_consumo_casa'); 
+      setTxt('v-solar', getDisplay('dm.energy_potenza_fotovoltaico')); setTxt('v-grid', getDisplay('dm.energy_potenza_scambio_rete')); setTxt('v-battery', getDisplay('dm.energy_potenza_batteria')); setTxt('v-battery-soc', getDisplay('dm.energy_stato_carica_batteria')); setTxt('v-home', getDisplay('dm.energy_potenza_consumo_casa')); 
       const pwrSol = getPowerInWatts('dm.energy_potenza_fotovoltaico'); const pwrGri = getPowerInWatts('dm.energy_potenza_scambio_rete'); const pwrBat = getPowerInWatts('dm.energy_potenza_batteria'); const pwrWb = _nWb.w; const pwrBoiler = _nBoiler.w; const pwrClima = _nClima.w; const pwrLav = _nLav.w; const pwrCuc = _nCuc.w;
       setNode('n-solar', pwrSol > 20); setNode('n-grid', Math.abs(pwrGri) > 20); setNode('n-battery', Math.abs(pwrBat) > 20); setNode('n-home', true); setNode('n-wb', pwrWb > 5); setNode('n-boiler', pwrBoiler > 5); setNode('n-clima', pwrClima > 5); setNode('n-lav', pwrLav > 5); setNode('n-cuc', pwrCuc > 5);
       setLine('line-solar-home', pwrSol > 20); setLine('line-grid-home', pwrGri > 20); setLine('line-solar-grid', pwrGri < -20); setLine('line-battery-home', pwrBat > 20); setLine('line-solar-battery', pwrBat < -20); setLine('line-home-wb', pwrWb > 5); setLine('line-home-boiler', pwrBoiler > 5); setLine('line-home-clima', pwrClima > 5); setLine('line-home-lav', pwrLav > 5); setLine('line-home-cuc', pwrCuc > 5);
 
       const dSol = cdPNum('dm.energy_produzione_solare_oggi'); const dHome = cdPNum('dm.energy_consumo_casa_oggi'); const dBoiler = cdPNum('dm.energy_boiler_oggi'); const dWb = cdPNum('dm.ev_energia_wallbox_oggi'); const dClima = cdPNum('dm.energy_condizionatori_oggi'); const dLav = cdPNum('dm.energy_somma_lavanderia_oggi'); const dCuc = cdPNum('dm.energy_somma_cucina_oggi'); const dGridB = cdPRaw('dm.energy_energia_prelevata_oggi'); const dGridS = cdPRaw('dm.energy_energia_immessa_oggi'); const dBatC = cdPRaw('dm.energy_batteria_caricata_oggi'); const dBatD = cdPRaw('dm.energy_batteria_scaricata_oggi');
-      document.getElementById('v-solar-day').textContent = cdPVal('dm.energy_produzione_solare_oggi'); document.getElementById('v-home-day').textContent = cdPVal('dm.energy_consumo_casa_oggi'); document.getElementById('v-boiler-day').textContent = cdPVal('dm.energy_boiler_oggi'); document.getElementById('v-wb-day').textContent = cdPVal('dm.ev_energia_wallbox_oggi'); document.getElementById('v-clima-day').textContent = cdPVal('dm.energy_condizionatori_oggi'); document.getElementById('v-lav-day').textContent = cdPVal('dm.energy_somma_lavanderia_oggi'); document.getElementById('v-cuc-day').textContent = cdPVal('dm.energy_somma_cucina_oggi'); document.getElementById('v-grid-day').innerHTML = `<span style="color:#e11d48">↓ ${dGridB !== '—' ? dGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${dGridS !== '—' ? dGridS : 0} kWh</span>`; document.getElementById('v-battery-day').innerHTML = `<span style="color:#10b981">↓ ${dBatC !== '—' ? dBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${dBatD !== '—' ? dBatD : 0} kWh</span>`;
+      setTxt('v-solar-day', cdPVal('dm.energy_produzione_solare_oggi')); setTxt('v-home-day', cdPVal('dm.energy_consumo_casa_oggi')); setTxt('v-boiler-day', cdPVal('dm.energy_boiler_oggi')); setTxt('v-wb-day', cdPVal('dm.ev_energia_wallbox_oggi')); setTxt('v-clima-day', cdPVal('dm.energy_condizionatori_oggi')); setTxt('v-lav-day', cdPVal('dm.energy_somma_lavanderia_oggi')); setTxt('v-cuc-day', cdPVal('dm.energy_somma_cucina_oggi')); document.getElementById('v-grid-day').innerHTML = `<span style="color:#e11d48">↓ ${dGridB !== '—' ? dGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${dGridS !== '—' ? dGridS : 0} kWh</span>`; document.getElementById('v-battery-day').innerHTML = `<span style="color:#10b981">↓ ${dBatC !== '—' ? dBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${dBatD !== '—' ? dBatD : 0} kWh</span>`;
 
       /* v0.8.4 (#6): CASA come nella dashboard Energia di HA — bilancio dei flussi mostrati:
          solare − immessa + prelevata + batteria scaricata − batteria caricata. Così la mappa
@@ -11779,13 +11791,13 @@ function render() {
           const _gb = _n(dGridB), _gs = _n(dGridS), _bc = _n(dBatC), _bd = _n(dBatD);
           if (dSol > 0 || _gb !== null) {
               const bal = dSol - (_gs || 0) + (_gb || 0) + (_bd || 0) - (_bc || 0);
-              if (bal >= 0) document.getElementById('v-home-day').textContent = (bal >= 100 ? bal.toFixed(1) : bal.toFixed(2)) + ' kWh';
+              if (bal >= 0) setTxt('v-home-day', (bal >= 100 ? bal.toFixed(1) : bal.toFixed(2)) + ' kWh');
           }
       } catch(e) {}
       setNode('n-solar-day', dSol > 0.1); setNode('n-grid-day', parseFloat(dGridB) > 0.1 || parseFloat(dGridS) > 0.1); setNode('n-battery-day', parseFloat(dBatC) > 0.1 || parseFloat(dBatD) > 0.1); setNode('n-home-day', true); setNode('n-wb-day', dWb > 0.1); setNode('n-boiler-day', dBoiler > 0.1); setNode('n-clima-day', dClima > 0.1); setNode('n-lav-day', dLav > 0.1); setNode('n-cuc-day', dCuc > 0.1); setLine('line-solar-home-day', dSol > 0.1); setLine('line-grid-home-day', parseFloat(dGridB) > 0.1); setLine('line-solar-grid-day', parseFloat(dGridS) > 0.1); setLine('line-battery-home-day', parseFloat(dBatD) > 0.1); setLine('line-solar-battery-day', parseFloat(dBatC) > 0.1); setLine('line-home-wb-day', dWb > 0.1); setLine('line-home-boiler-day', dBoiler > 0.1); setLine('line-home-clima-day', dClima > 0.1); setLine('line-home-lav-day', dLav > 0.1); setLine('line-home-cuc-day', dCuc > 0.1);
 
       const mSol = cdPNum('dm.energy_produzione_solare_mese'); const mHome = cdPNum('dm.energy_consumo_casa_mese'); const mBoiler = cdPNum('dm.energy_boiler_mese'); const mWb = cdPNum('dm.ev_energia_wallbox_mese'); const mClima = cdPNum('dm.energy_condizionatori_mese'); const mLav = cdPNum('dm.energy_somma_lavanderia_mese'); const mCuc = cdPNum('dm.energy_somma_cucina_mese'); const mGridB = cdPRaw('dm.energy_rete_acquistata_mese'); const mGridS = cdPRaw('dm.energy_rete_venduta_mese'); const mBatC = cdPRaw('dm.energy_batteria_caricata_mese'); const mBatD = cdPRaw('dm.energy_batteria_usata_mese');
-      document.getElementById('v-solar-month').textContent = cdPVal('dm.energy_produzione_solare_mese'); document.getElementById('v-home-month').textContent = cdPVal('dm.energy_consumo_casa_mese'); document.getElementById('v-boiler-month').textContent = cdPVal('dm.energy_boiler_mese'); document.getElementById('v-wb-month').textContent = cdPVal('dm.ev_energia_wallbox_mese'); document.getElementById('v-clima-month').textContent = cdPVal('dm.energy_condizionatori_mese'); document.getElementById('v-lav-month').textContent = cdPVal('dm.energy_somma_lavanderia_mese'); document.getElementById('v-cuc-month').textContent = cdPVal('dm.energy_somma_cucina_mese'); document.getElementById('v-grid-month').innerHTML = `<span style="color:#e11d48">↓ ${mGridB !== '—' ? mGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${mGridS !== '—' ? mGridS : 0} kWh</span>`; document.getElementById('v-battery-month').innerHTML = `<span style="color:#10b981">↓ ${mBatC !== '—' ? mBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${mBatD !== '—' ? mBatD : 0} kWh</span>`;
+      setTxt('v-solar-month', cdPVal('dm.energy_produzione_solare_mese')); setTxt('v-home-month', cdPVal('dm.energy_consumo_casa_mese')); setTxt('v-boiler-month', cdPVal('dm.energy_boiler_mese')); setTxt('v-wb-month', cdPVal('dm.ev_energia_wallbox_mese')); setTxt('v-clima-month', cdPVal('dm.energy_condizionatori_mese')); setTxt('v-lav-month', cdPVal('dm.energy_somma_lavanderia_mese')); setTxt('v-cuc-month', cdPVal('dm.energy_somma_cucina_mese')); document.getElementById('v-grid-month').innerHTML = `<span style="color:#e11d48">↓ ${mGridB !== '—' ? mGridB : 0} kWh</span><br><span style="color:#10b981">↑ ${mGridS !== '—' ? mGridS : 0} kWh</span>`; document.getElementById('v-battery-month').innerHTML = `<span style="color:#10b981">↓ ${mBatC !== '—' ? mBatC : 0} kWh</span><br><span style="color:#e11d48">↑ ${mBatD !== '—' ? mBatD : 0} kWh</span>`;
 
       /* v0.8.4 (#6): CASA come nella dashboard Energia di HA — bilancio dei flussi mostrati:
          solare − immessa + prelevata + batteria scaricata − batteria caricata. Così la mappa
@@ -11795,7 +11807,7 @@ function render() {
           const _gb = _n(mGridB), _gs = _n(mGridS), _bc = _n(mBatC), _bd = _n(mBatD);
           if (mSol > 0 || _gb !== null) {
               const bal = mSol - (_gs || 0) + (_gb || 0) + (_bd || 0) - (_bc || 0);
-              if (bal >= 0) document.getElementById('v-home-month').textContent = (bal >= 100 ? bal.toFixed(1) : bal.toFixed(2)) + ' kWh';
+              if (bal >= 0) setTxt('v-home-month', (bal >= 100 ? bal.toFixed(1) : bal.toFixed(2)) + ' kWh');
           }
       } catch(e) {}
       setNode('n-solar-month', mSol > 0.1); setNode('n-grid-month', parseFloat(mGridB) > 0.1 || parseFloat(mGridS) > 0.1); setNode('n-battery-month', parseFloat(mBatC) > 0.1 || parseFloat(mBatD) > 0.1); setNode('n-home-month', true); setNode('n-wb-month', mWb > 0.1); setNode('n-boiler-month', mBoiler > 0.1); setNode('n-clima-month', mClima > 0.1); setNode('n-lav-month', mLav > 0.1); setNode('n-cuc-month', mCuc > 0.1); setLine('line-solar-home-month', mSol > 0.1); setLine('line-grid-home-month', parseFloat(mGridB) > 0.1); setLine('line-solar-grid-month', parseFloat(mGridS) > 0.1); setLine('line-battery-home-month', parseFloat(mBatD) > 0.1); setLine('line-solar-battery-month', parseFloat(mBatC) > 0.1); setLine('line-home-wb-month', mWb > 0.1); setLine('line-home-boiler-month', mBoiler > 0.1); setLine('line-home-clima-month', mClima > 0.1); setLine('line-home-lav-month', mLav > 0.1); setLine('line-home-cuc-month', mCuc > 0.1);
@@ -12065,7 +12077,7 @@ function render() {
           if ((lavFase === '—' || lavFase === '--' || !lavFase) && !isNaN(lavPw)) {
               lavFase = lavPw > 5 ? '🌀 In funzione (' + Math.round(lavPw) + ' W)' : 'Spenta';
           }
-          document.getElementById('v-lav-fase').textContent = lavFase; document.getElementById('v-lav-tempo').textContent = getDisplay('dm.lavatrice_tempo_rimanente');
+          setTxt('v-lav-fase', lavFase); setTxt('v-lav-tempo', getDisplay('dm.lavatrice_tempo_rimanente'));
           /* v274 (issue #2): lavatrici non smart — nascondi i controlli programma/centrifuga/temperatura
              se le relative select non sono configurate; il popup resta con stato + presa */
           if (typeof CD_REQUIRE_MAPPING !== 'undefined' && CD_REQUIRE_MAPPING) {
@@ -12084,13 +12096,13 @@ function render() {
           const acLav = STATES['dm.core_001']; const imgLav = document.getElementById('img-lavatrice'); if(imgLav && acLav && acLav.entity_id && acLav.entity_id !== 'dm.unmapped' && imgLav.style.display !== 'none') { imgLav.src = acLav.state === 'on' ? '/local/foto-pkg/lavatrice_on.gif' : '/local/foto-pkg/lavatrice_off.png'; }
       }
 
-      const tAlto = getRawState('dm.boiler_sonda_temperatura_3'); const tBasso = getRawState('dm.boiler_sonda_temperatura_2'); document.getElementById('syn-v-pannello').textContent = getDisplay('dm.boiler_sonda_temperatura_1'); document.getElementById('syn-v-balto').textContent = tAlto !== '—' ? tAlto + ' °C' : '—'; document.getElementById('syn-v-bbasso').textContent = tBasso !== '—' ? tBasso + ' °C' : '—'; document.getElementById('syn-v-delta').textContent = getDisplay('dm.boiler_delta_temperatura'); document.getElementById('syn-v-press').textContent = getDisplay('dm.boiler_pressione_acqua'); document.getElementById('syn-v-power').textContent = getDisplay('dm.boiler_potenza_resistenza_boiler'); document.documentElement.style.setProperty('--tank-top', getTempColor(tAlto)); document.documentElement.style.setProperty('--tank-bottom', getTempColor(tBasso));
+      const tAlto = getRawState('dm.boiler_sonda_temperatura_3'); const tBasso = getRawState('dm.boiler_sonda_temperatura_2'); setTxt('syn-v-pannello', getDisplay('dm.boiler_sonda_temperatura_1')); setTxt('syn-v-balto', tAlto !== '—' ? tAlto + ' °C' : '—'); setTxt('syn-v-bbasso', tBasso !== '—' ? tBasso + ' °C' : '—'); setTxt('syn-v-delta', getDisplay('dm.boiler_delta_temperatura')); setTxt('syn-v-press', getDisplay('dm.boiler_pressione_acqua')); setTxt('syn-v-power', getDisplay('dm.boiler_potenza_resistenza_boiler')); document.documentElement.style.setProperty('--tank-top', getTempColor(tAlto)); document.documentElement.style.setProperty('--tank-bottom', getTempColor(tBasso));
       const setActiveState = (id, isActive) => { const el = document.getElementById(id); if(el) el.classList.toggle('active', isActive); };
       const updateBoilerBtn = (id, isActive, tOn='ON', tOff='OFF') => { const el = document.getElementById(id); if(el) { el.classList.toggle('active', isActive); const st = el.querySelector('.state'); if(st) st.textContent = isActive ? tOn : tOff; } };
       const isPompaSolActive = getRawState('dm.boiler_stato_pompa_solare') === 'on'; setActiveState('syn-p-solare', isPompaSolActive); updateBoilerBtn('b-c-pompasol', isPompaSolActive); const sun = document.getElementById('syn-sun'); if(sun) sun.classList.toggle('active', isPompaSolActive); setLine('flow-sol-hot', isPompaSolActive); setLine('flow-sol-cold', isPompaSolActive);
       const isPannelloSolActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; const sPanel = document.querySelector('.syn-solar-panel'); if(sPanel) sPanel.classList.toggle('active', isPannelloSolActive);
       const isRicircoloActive = getRawState('dm.core_051') === 'on'; setActiveState('syn-p-ricircolo', isRicircoloActive); updateBoilerBtn('b-c-ricircolo', isRicircoloActive); setLine('flow-ricircolo', isRicircoloActive); 
-      const chiaveState = getRawState('valve.chiave_solare_termico'); const isChiaveOpen = chiaveState === 'open'; setActiveState('syn-v-chiave', isChiaveOpen); updateBoilerBtn('b-c-valvola', isChiaveOpen, 'APERTA', 'CHIUSA'); document.getElementById('txt-chiave').textContent = isChiaveOpen ? 'APERTA' : 'CHIUSA';
+      const chiaveState = getRawState('valve.chiave_solare_termico'); const isChiaveOpen = chiaveState === 'open'; setActiveState('syn-v-chiave', isChiaveOpen); updateBoilerBtn('b-c-valvola', isChiaveOpen, 'APERTA', 'CHIUSA'); setTxt('txt-chiave', isChiaveOpen ? 'APERTA' : 'CHIUSA');
       const isCtrlSolareActive = getRawState('dm.boiler_interruttore_solare_termico') === 'on'; updateBoilerBtn('b-c-solare', isCtrlSolareActive); 
       let isCoverOpen = false; let coverPos = 0; const coverObj = STATES['dm.boiler_valvola_di_sicurezza']; if(coverObj && coverObj.attributes) { coverPos = coverObj.attributes.current_position; if(coverPos !== undefined && coverPos > 0) isCoverOpen = true; } const synSafety = document.getElementById('syn-safety-icon'); if(synSafety) synSafety.classList.toggle('active', isCoverOpen); const synFaucet = document.getElementById('syn-faucet-wrap'); if(synFaucet) synFaucet.classList.toggle('open', isCoverOpen); const sBtn = document.getElementById('b-c-sicurezza'); if(sBtn) { sBtn.classList.toggle('active', isCoverOpen); const stNode = sBtn.querySelector('.state'); if(stNode) stNode.textContent = isCoverOpen ? `${coverPos}%` : 'CHIUSA'; }
       updateBoilerBtn('b-c-centralina', getRawState('dm.boiler_centralina_solare_termico') === 'on'); updateBoilerBtn('b-c-boiler', getRawState('dm.boiler_interruttore_boiler') === 'on'); updateBoilerBtn('b-c-pdc', getRawState('dm.core_050') === 'on'); updateBoilerBtn('b-c-boost', getRawState('dm.core_048') === 'on');
@@ -12185,11 +12197,11 @@ function render() {
 
       // RAM + temperatura display
       // ram display gestito nel ring JS
-      document.getElementById('v-srv-cputemp').textContent = (parseFloat(getRawState('dm.server_temperatura_cpu')) || 0).toFixed(0);
+      setTxt('v-srv-cputemp', (parseFloat(getRawState('dm.server_temperatura_cpu')) || 0).toFixed(0));
       // disk display gestito nel ring JS
-      document.getElementById('v-srv-pwr').textContent    = getDisplay('dm.server_potenza_raspberry_server');
-      document.getElementById('v-srv-dl').textContent     = getDisplay('dm.server_speedtest_download');
-      document.getElementById('v-srv-ul').textContent     = getDisplay('dm.server_speedtest_upload');
+      setTxt('v-srv-pwr', getDisplay('dm.server_potenza_raspberry_server'));
+      setTxt('v-srv-dl', getDisplay('dm.server_speedtest_download'));
+      setTxt('v-srv-ul', getDisplay('dm.server_speedtest_upload'));
 
       // Uptime — gestito nel blocco MiniPC sotto
       // (aggiornato dalla IIFE sotto)
@@ -14253,10 +14265,10 @@ function apriClimaPopup(entity, event) {
     };
     const [room, name] = names[entity] || ['🌡️ Clima', entity.split('.')[1]];
 
-    document.getElementById('cp-room').textContent     = room;
-    document.getElementById('cp-name').textContent     = name;
-    document.getElementById('cp-temp-val').textContent = temp !== '--' ? temp + '°' : '--°';
-    document.getElementById('cp-temp-curr').textContent = currTemp !== '--' ? 'Ambiente: ' + currTemp + '°' : 'Ambiente: --°';
+    setTxt('cp-room', room);
+    setTxt('cp-name', name);
+    setTxt('cp-temp-val', temp !== '--' ? temp + '°' : '--°');
+    setTxt('cp-temp-curr', currTemp !== '--' ? 'Ambiente: ' + currTemp + '°' : 'Ambiente: --°');
 
     // Sezioni visibili in base al tipo
     document.getElementById('cp-mode-section').style.display = isTermo ? 'none' : 'block';
@@ -14306,7 +14318,7 @@ function cpSetTemp(delta) {
     const clamped = Math.min(35, Math.max(10, newT));
     ws.send(JSON.stringify({ id: msgId++, type:'call_service', domain:'climate',
         service:'set_temperature', service_data:{ entity_id: cpCurrentEntity, temperature: clamped } }));
-    document.getElementById('cp-temp-val').textContent = clamped + '°';
+    setTxt('cp-temp-val', clamped + '°');
 }
 
 function cpSetMode(mode) {
@@ -14440,9 +14452,9 @@ async function edCaricaDettaglio() {
     const tEnd       = isCurrentMonth ? now.toISOString() : new Date(selYear, selMonth, 1).toISOString();
 
     // ── Reset stato visuale prima del fetch ──
-    document.getElementById('ed-dkpi-mese').textContent     = '⏳ —';
-    document.getElementById('ed-dkpi-mese-eur').textContent = '— €';
-    document.getElementById('ed-dkpi-media').textContent    = '— kWh';
+    setTxt('ed-dkpi-mese', '⏳ —');
+    setTxt('ed-dkpi-mese-eur', '— €');
+    setTxt('ed-dkpi-media', '— kWh');
     
     // ── Recupero valori per il PERIODO SELEZIONATO (non sempre mese corrente!) ──
     let valMese = 0, consCasa = 0, prelevatoRete = 0;
@@ -14491,10 +14503,10 @@ async function edCaricaDettaglio() {
     const costoEurDev  = kwhReteDev * COSTO_KWH;
 
     // ── Aggiorno UI ──
-    document.getElementById('ed-dkpi-mese').textContent     = valMese.toFixed(1) + ' kWh';
-    document.getElementById('ed-dkpi-mese-eur').textContent = '€ ' + (valMese * COSTO_KWH).toFixed(2);
-    document.getElementById('ed-dkpi-media').textContent    = media + ' kWh';
-    document.getElementById('ed-dkpi-media-sub').textContent= 'Media/giorno';
+    setTxt('ed-dkpi-mese', valMese.toFixed(1) + ' kWh');
+    setTxt('ed-dkpi-mese-eur', '€ ' + (valMese * COSTO_KWH).toFixed(2));
+    setTxt('ed-dkpi-media', media + ' kWh');
+    setTxt('ed-dkpi-media-sub', 'Media/giorno');
     
     const rispEurEl  = document.getElementById('ed-dkpi-risp-eur');
     const rispKwhEl  = document.getElementById('ed-dkpi-risp-kwh');
@@ -14602,8 +14614,8 @@ async function edCaricaDettaglio() {
             }
         }
 
-        document.getElementById('ed-dkpi-picco').textContent    = piccoVal > 0 ? piccoVal.toFixed(2)+' kWh' : '—';
-        document.getElementById('ed-dkpi-picco-sub').textContent = piccoDay !== '--' ? 'Giorno '+piccoDay : '—';
+        setTxt('ed-dkpi-picco', piccoVal > 0 ? piccoVal.toFixed(2)+' kWh' : '—');
+        setTxt('ed-dkpi-picco-sub', piccoDay !== '--' ? 'Giorno '+piccoDay : '—');
 
         if (edDevChart) { edDevChart.destroy(); edDevChart = null; }
         if (msgEl) msgEl.style.display = 'none';
@@ -14644,8 +14656,8 @@ async function edCaricaDettaglio() {
 
     } catch(e) {
         console.warn('edCaricaDettaglio error:', e);
-        document.getElementById('ed-dkpi-picco').textContent    = '—';
-        document.getElementById('ed-dkpi-picco-sub').textContent = 'Storico N/D';
+        setTxt('ed-dkpi-picco', '—');
+        setTxt('ed-dkpi-picco-sub', 'Storico N/D');
         if (msgEl) { msgEl.style.display='flex'; msgEl.textContent='❌ Storico non disponibile'; }
     }
 }

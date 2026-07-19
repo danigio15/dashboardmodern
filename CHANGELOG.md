@@ -6,6 +6,16 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.9.9] — 2026-07-19
+
+### Migliorato
+- **🔍 Ricerca entità e icona negli Avvisi** — nel tab Avvisi il campo entità ora ha la lente per cercarla per nome (come le altre sezioni), e per gli avvisi personalizzati c'è un **selettore di icone ricercabile** (scrivi "acqua", "porta", "fuoco"…). Il campo nome ("Nome dell'avviso") è sempre disponibile per dare un nome a qualsiasi avviso.
+
+## [0.9.9] — 2026-07-19 (EN)
+
+### Improved
+- **🔍 Entity and icon search in Alerts** — in the Alerts tab the entity field now has a magnifier to search it by name (like other sections), and custom alerts get a **searchable icon picker** (type "water", "door", "fire"…). The name field ("Alert name") is always available to name any alert.
+
 ## [0.9.8] — 2026-07-19
 
 ### Aggiunto

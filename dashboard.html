@@ -5884,7 +5884,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
 
     <div class="lav-dashboard-grid">
         <div class="lav-area-img">
-           <img id="img-lavatrice" src="/local/foto-pkg/lavatrice_off.png" style="max-width: 140px; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.15)); transition: 0.4s;" onerror="this.style.display='none'; this.parentElement.classList.add('img-fallback');">
+           <img id="img-lavatrice" src="" style="max-width: 140px; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.15)); transition: 0.4s;" onerror="this.style.display='none'; this.parentElement.classList.add('img-fallback');">
         </div>
 
         <div class="lav-area-quick">
@@ -6092,7 +6092,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.10.3';
+const DASHBOARD_VERSION = '0.10.4';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -9076,9 +9076,14 @@ function wzAddCamera() {
     wzRender();
 }
 function wzResetAll() {
-    if (!confirm('Cancellare TUTTA la configurazione salvata su questo dispositivo (token, sezioni, luci, entità, stanze, camere, tema)?')) return;
-    ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_luci_rooms','cd_luci_order','cd_luci_room_order','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements','cd_theme','cd_navbar_mode'].forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
-    location.reload();
+    if (!confirm('Cancellare TUTTA la configurazione salvata?\n\n⚠️ La config è sincronizzata tramite Home Assistant: verrà rimossa da TUTTI i dispositivi collegati. Dovrai rifare il wizard.')) return;
+    // 1) svuota la copia su Home Assistant, così la sincronizzazione non la ripristina al riavvio
+    try { if (typeof ws !== 'undefined' && ws && ws.readyState === 1) ws.send(JSON.stringify({ id: msgId++, type: 'frontend/set_user_data', key: 'dashboard_modern_config', value: { __ts: Date.now() } })); } catch(e) {}
+    // 2) pulisci tutte le chiavi locali + stato del sync
+    const keys = (typeof CD_SYNC_KEYS !== 'undefined' ? CD_SYNC_KEYS.slice() : []).concat(['cd_theme','cd_navbar_mode','cd_sync_ts','cd_sync_dirty']);
+    keys.forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    // 3) ricarica pulito (senza hash, per evitare loop con #reset)
+    setTimeout(() => location.replace(location.pathname), 450);
 }
 /* v298: applica la modalità barra fissa a livello CSS — funziona ovunque */
 function cdApplyNavFixedBody() {
@@ -10923,7 +10928,7 @@ function cdEmptyStateCheck() {
     const b = document.createElement('div');
     b.id = 'cd-empty-banner';
     b.style.cssText = 'margin:14px 0; padding:18px 20px; border-radius:20px; background:linear-gradient(135deg,#e0f2fe,#bae6fd); border:1px solid #7dd3fc; color:#0c4a6e; font-size:13.5px; line-height:1.65; box-shadow:0 4px 14px rgba(2,132,199,0.12);';
-    b.innerHTML = '<b style="font-size:15px;">👋 La dashboard è quasi pronta!</b><br>Non hai ancora collegato le tue entità, quindi le card sono nascoste.<br><b>Fai 7 tap veloci sul titolo in alto</b> per aprire la configurazione guidata e collegare luci, sensori e dispositivi.<br><span style="opacity:0.75; font-size:12px;">Suggerimento: nello step "Collega le tue entità" trovi tutte le sezioni con autocomplete.</span>';
+    b.innerHTML = '<b style="font-size:15px;">👋 La dashboard è quasi pronta!</b><br>Non hai ancora collegato le tue entità, quindi le card sono nascoste.<br><button onclick="apriSetupWizard()" style="margin-top:12px; width:100%; padding:13px; border:none; border-radius:14px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-weight:800; font-size:14px; letter-spacing:0.5px; cursor:pointer; box-shadow:0 6px 16px rgba(2,132,199,0.35);">⚙️ Configura la dashboard</button><br><span style="opacity:0.75; font-size:12px; display:block; margin-top:8px;">In alternativa: 7 tap veloci sul titolo, oppure aggiungi <b>#setup</b> all\'URL.</span>';
     home.insertBefore(b, home.firstChild);
 }
 document.addEventListener('DOMContentLoaded', () => setTimeout(cdEmptyStateCheck, 500));
@@ -12019,7 +12024,7 @@ function render() {
           if (btnMainPwr && mainPwrSwitch) { const isOn = mainPwrSwitch.state === 'on'; btnMainPwr.classList.toggle('active', isOn); txtMainPwr.textContent = isOn ? 'ACCESA' : 'SPENTA'; btnMainPwr.querySelector('.icon').textContent = isOn ? '⚡' : '🔌'; if(isOn) { btnMainPwr.style.setProperty('--btn-col', '#0ea5e9'); btnMainPwr.style.setProperty('--btn-bg', '#e0f2fe'); } else { btnMainPwr.style.setProperty('--btn-col', '#64748b'); btnMainPwr.style.setProperty('--btn-bg', '#fff'); } }
           const playSwitch = STATES['dm.lavatrice_avvio_ciclo']; const btnPlay = document.getElementById('lav-txt-play');
           if (btnPlay && playSwitch) { const isPlaying = playSwitch.state === 'on'; btnPlay.classList.toggle('active', isPlaying); btnPlay.textContent = isPlaying ? 'IN CORSO' : 'PAUSA'; btnPlay.querySelector('.icon').textContent = isPlaying ? '🔄' : '▶️'; if(isPlaying) { btnPlay.style.setProperty('--btn-col', '#ea580c'); btnPlay.style.setProperty('--btn-bg', '#ffedd5'); } else { btnPlay.style.setProperty('--btn-col', '#10b981'); btnPlay.style.setProperty('--btn-bg', '#d1fae5'); } }
-          const acLav = STATES['dm.core_001']; const imgLav = document.getElementById('img-lavatrice'); if(imgLav && acLav && imgLav.style.display !== 'none') { imgLav.src = acLav.state === 'on' ? '/local/foto-pkg/lavatrice_on.gif' : '/local/foto-pkg/lavatrice_off.png'; }
+          const acLav = STATES['dm.core_001']; const imgLav = document.getElementById('img-lavatrice'); if(imgLav && acLav && acLav.entity_id && acLav.entity_id !== 'dm.unmapped' && imgLav.style.display !== 'none') { imgLav.src = acLav.state === 'on' ? '/local/foto-pkg/lavatrice_on.gif' : '/local/foto-pkg/lavatrice_off.png'; }
       }
 
       const tAlto = getRawState('dm.boiler_sonda_temperatura_3'); const tBasso = getRawState('dm.boiler_sonda_temperatura_2'); document.getElementById('syn-v-pannello').textContent = getDisplay('dm.boiler_sonda_temperatura_1'); document.getElementById('syn-v-balto').textContent = tAlto !== '—' ? tAlto + ' °C' : '—'; document.getElementById('syn-v-bbasso').textContent = tBasso !== '—' ? tBasso + ' °C' : '—'; document.getElementById('syn-v-delta').textContent = getDisplay('dm.boiler_delta_temperatura'); document.getElementById('syn-v-press').textContent = getDisplay('dm.boiler_pressione_acqua'); document.getElementById('syn-v-power').textContent = getDisplay('dm.boiler_potenza_resistenza_boiler'); document.documentElement.style.setProperty('--tank-top', getTempColor(tAlto)); document.documentElement.style.setProperty('--tank-bottom', getTempColor(tBasso));
@@ -13864,6 +13869,7 @@ document.addEventListener('DOMContentLoaded', () => { const v = document.getElem
 /* v258: accesso di emergenza alla configurazione — aggiungi #setup all'URL e ricarica */
 document.addEventListener('DOMContentLoaded', () => {
     if (location.hash === '#setup') setTimeout(() => { try { apriSetupWizard(); } catch(e) {} }, 600);
+    if (location.hash === '#reset') setTimeout(() => { try { wzResetAll(); } catch(e) {} }, 600);
 });
 
 function renderTemperature() {

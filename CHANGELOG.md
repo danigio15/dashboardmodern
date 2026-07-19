@@ -6,6 +6,22 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.10.4] — 2026-07-19
+
+### Corretto
+- **Reset che non "torna indietro"** (issue #12) — il reset totale ora svuota anche la copia della configurazione salvata su Home Assistant e azzera lo stato di sincronizzazione, così le voci non si ripristinano da sole al riavvio. Prima cancellava solo il dispositivo locale e il sync le riportava.
+- **Dashboard vuota senza via d'uscita** (issue #11) — quando non ci sono entità collegate, il banner iniziale ora mostra un pulsante **⚙️ Configura la dashboard** che apre direttamente il wizard (non più solo "fai 7 tap").
+- **`#reset` d'emergenza** — aggiungendo `#reset` all'URL si esegue un reset totale (locale + Home Assistant) e si riparte dal wizard, come `#setup`.
+- **404 immagine lavatrice** — rimosso il caricamento automatico di `/local/foto-pkg/lavatrice_off.png` quando la lavatrice non è configurata (niente più 404 in console).
+
+## [0.10.4] — 2026-07-19 (EN)
+
+### Fixed
+- **Reset that no longer "comes back"** (issue #12) — the full reset now also clears the configuration copy saved on Home Assistant and resets the sync state, so entries don't restore themselves on reload. It previously cleared only the local device and sync brought them back.
+- **Empty dashboard with no way out** (issue #11) — when no entities are linked, the initial banner now shows a **⚙️ Set up the dashboard** button that opens the wizard directly (no longer just "tap 7 times").
+- **`#reset` emergency URL** — adding `#reset` to the URL performs a full reset (local + Home Assistant) and starts from the wizard, like `#setup`.
+- **Washing-machine image 404** — removed the automatic load of `/local/foto-pkg/lavatrice_off.png` when the washing machine isn't configured (no more 404 in the console).
+
 ## [0.10.3] — 2026-07-19
 
 ### Corretto

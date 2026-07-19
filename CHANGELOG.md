@@ -6,6 +6,18 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.10.1] — 2026-07-19
+
+### Corretto
+- **⭐ Card avvisi personalizzati** — ora mostra il **contatore delle entità attive** (non più solo lo stato "ON") e, toccandola, apre un **popup con l'elenco di quali entità** stanno soddisfando la condizione.
+- **Campo entità** negli Avvisi: rimossa la fastidiosa **lista automatica di tutte le entità di HA** (datalist nativa); resta solo la ricerca con la 🔍.
+
+## [0.10.1] — 2026-07-19 (EN)
+
+### Fixed
+- **⭐ Custom alert card** — now shows the **count of active entities** (instead of just the "ON" state) and, when tapped, opens a **popup listing which entities** currently meet the condition.
+- **Entity field** in Alerts: removed the annoying **native list of all HA entities** (datalist); only the 🔍 search remains.
+
 ## [0.10.0] — 2026-07-19
 
 ### Aggiunto

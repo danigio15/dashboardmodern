@@ -6086,7 +6086,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.10.0';
+const DASHBOARD_VERSION = '0.10.1';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6261,22 +6261,41 @@ function cdRenderCustomAvvisi() {
     const wrap = document.getElementById('glance-custom-wrap');
     if (!wrap) return;
     const active = [];
-    cdCfgList('cd_avvisi_custom').forEach(a => {
+    cdCfgList('cd_avvisi_custom').forEach((a, idx) => {
         const ents = a.entities || (a.entity ? [a.entity] : []);
-        for (const en of ents) {
-            const s = STATES[en];
-            if (s && cdAvvisoActive(a, s)) { active.push({ a, state: s.state, entity: en }); break; }
-        }
+        const matches = ents.filter(en => { const s = STATES[en]; return s && cdAvvisoActive(a, s); });
+        if (matches.length) active.push({ a, idx, count: matches.length });
     });
-    const sig = active.map(x => x.entity + ':' + x.state).join('|');
+    const sig = active.map(x => x.idx + ':' + x.count).join('|');
     if (wrap._sig === sig) return;
     wrap._sig = sig;
-    wrap.innerHTML = active.map(({ a, state, entity }) => {
-        const nm = String(a.name || entity).replace(/</g, '&lt;');
-        const disp = String(state).toUpperCase().slice(0, 12);
+    wrap.innerHTML = active.map(({ a, idx, count }) => {
+        const nm = String(a.name || 'Alert').replace(/</g, '&lt;');
         const ic = a.icon || '⚠️';
-        return `<div class="glance-card" style="--g-rgb: 245,158,11; display:flex;" onclick="apriStorico(event, '${entity}', '${nm.replace(/'/g, '&#39;')}')"><div class="g-info"><span class="g-name">${nm}</span><span class="g-val">${disp}</span></div><div class="g-icon-wrap anim-ping" style="color:#f59e0b;">${ic}</div></div>`;
+        return `<div class="glance-card" style="--g-rgb: 245,158,11; display:flex;" onclick="apriAvvisoCustom(${idx})"><div class="g-info"><span class="g-name">${nm}</span><span class="g-val">${count}</span></div><div class="g-icon-wrap anim-ping" style="color:#f59e0b;">${ic}</div></div>`;
     }).join('');
+}
+/* v0.10.1: popup listing WHICH entities of the alert are currently active */
+function apriAvvisoCustom(idx) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    const a = cdCfgList('cd_avvisi_custom')[idx];
+    if (!a) return;
+    currentPopupType = 'avviso_custom';
+    const ents = a.entities || (a.entity ? [a.entity] : []);
+    const matches = ents.filter(en => { const s = STATES[en]; return s && cdAvvisoActive(a, s); });
+    document.getElementById('details-title').innerHTML = (a.icon || '⚠️') + ' ' + String(a.name || 'Alert').toUpperCase();
+    const list = document.getElementById('details-list');
+    if (!matches.length) {
+        list.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-dim); font-weight:800; text-transform:uppercase; letter-spacing:1px; font-size:13px;">No active entity</div>';
+    } else {
+        list.innerHTML = matches.map(en => {
+            const s = STATES[en];
+            const nm = (s && s.attributes && s.attributes.friendly_name) || en;
+            const st = s ? String(s.state).toUpperCase() : '—';
+            return `<div class="detail-row"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;overflow:hidden;"><div class="d-icon" style="flex-shrink:0;">${a.icon || '⚠️'}</div><div class="d-info" style="min-width:0;flex:1;overflow:hidden;"><div class="d-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;">${nm}</div><div class="d-state"><span style="font-family:monospace; font-size:11px; color:var(--text-dim,#64748b);">${en}</span> · <span style="font-weight:900; color:#f59e0b;">${st}</span></div></div></div></div>`;
+        }).join('');
+    }
+    document.getElementById('details-modal').classList.add('show');
 }
 
 /* ═══ v254: SISTEMA OVERRIDE ENTITÀ (configurabile da UI, solo admin) ═══ */
@@ -7487,7 +7506,7 @@ function editorRenderAvvisi() {
           <option value="risc">🔥 Heating</option>
           <option value="custom"${editing ? ' selected' : ''}>⭐ Custom</option>
         </select>
-        <div style="display:flex; gap:6px;"><input id="ed-avv-ent" list="ed-entity-list" class="ed-input mono" style="flex:1;" placeholder="binary_sensor.finestra_x_contact"><button type="button" onclick="wzPickEntity('#ed-avv-ent')" style="flex:0 0 40px; height:40px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+        <div style="display:flex; gap:6px;"><input id="ed-avv-ent" class="ed-input mono" style="flex:1;" autocomplete="off" placeholder="binary_sensor.finestra_x_contact"><button type="button" onclick="wzPickEntity('#ed-avv-ent')" style="flex:0 0 40px; height:40px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
         <input id="ed-avv-name" class="ed-input" value="${editing ? esc(ed.name) : ''}" placeholder="Alert name (e.g. Open windows)">
         <div id="ed-avv-custom" style="display:${editing ? 'block' : 'none'};">
           <button type="button" class="ed-btn-add" style="background:linear-gradient(135deg,#0ea5e9,#0369a1); margin-bottom:8px;" onclick="edAvvAddEntity()">＋ Add this entity to the list</button>

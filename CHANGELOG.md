@@ -6,6 +6,38 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.9.7] — 2026-07-19
+
+### Aggiunto
+- **⭐ Avvisi personalizzati** — nel Quadro Avvisi ora puoi creare un avviso su **qualsiasi entità**, con **nome**, **condizione** (acceso/spento · uguale/diverso · maggiore/minore di un valore) e **icona** a scelta. Selezione dell'entità con ricerca integrata. L'avviso compare in Home quando la condizione è vera.
+- **🏷️ Logo del brand** nel wizard di setup, nell'header dell'Editor Dashboard e nella pagina Configurazione (SVG inline, nessun file esterno).
+
+### Corretto
+- **💡 Card luci che "tremavano"** — il popup Gestione Luci veniva ricostruito da zero a ogni aggiornamento di stato; ora l'aggiornamento è **incrementale** (solo stato/LED/testo delle card esistenti): niente più flicker.
+- **🖼️ Immagine auto (EV) che non compariva** — l'immagine personalizzata veniva sovrascritta dal ciclo di stato con quella di default; ora, se impostata, viene **mantenuta**.
+- **🔌 Linee "fantasma" nel Flow** — nelle mappe *Oggi* e *Mese* le linee dei carichi senza entità configurata restavano visibili in grigio. Ora un carico (boiler, wallbox, clima, lavanderia, cucina…) **compare solo se ha un'entità associata**.
+- **❄️🔥 Tab Clima** — se è configurata una sola tipologia (solo condizionatori o solo termosifoni) il selettore Freddo/Caldo sparisce e si apre **direttamente la zona giusta**.
+- **🌡️ Nomi delle stanze troncati su smartphone** — il testo delle card temperatura ora va a capo e resta leggibile su schermi stretti.
+
+### Migliorato
+- **🔍 Ricerca entità potenziata** — nell'editor il selettore entità ora carica l'**elenco completo** delle entità di Home Assistant (non solo quelle tracciate dalla dashboard), con **ricerca multi-parola**, ordinamento per pertinenza e **conteggio delle entità disponibili**.
+
+## [0.9.7] — 2026-07-19 (EN)
+
+### Added
+- **⭐ Custom alerts** — in the Alerts Panel you can now create an alert on **any entity**, with your own **name**, **condition** (on/off · equal/different · greater/less than a value) and **icon**. Entity selection with built-in search. The alert shows on Home when the condition is true.
+- **🏷️ Brand logo** in the setup wizard, in the Editor Dashboard header and on the Configuration page (inline SVG, no external asset).
+
+### Fixed
+- **💡 Flickering light cards** — the Lights popup was fully rebuilt on every state update; it now updates **incrementally** (only on/LED/state of existing cards): no more flicker.
+- **🖼️ EV car image not showing** — the custom image was overwritten by the state loop with the default one; when set, it is now **kept**.
+- **🔌 "Ghost" lines in the Flow** — in the *Today* and *Month* maps, lines for loads without a configured entity stayed visible in grey. A load (boiler, wallbox, climate, laundry, kitchen…) now **appears only if it has an entity mapped**.
+- **❄️🔥 Climate tabs** — if only one type is configured (only air conditioners or only radiators) the Cold/Hot switch disappears and the **right zone opens directly**.
+- **🌡️ Room names truncated on phones** — temperature card text now wraps and stays readable on narrow screens.
+
+### Improved
+- **🔍 More powerful entity search** — in the editor the entity picker now loads the **full list** of Home Assistant entities (not just those tracked by the dashboard), with **multi-word search**, relevance ranking and a **count of available entities**.
+
 ## [0.9.6] — 2026-07-18
 
 ### Migliorato

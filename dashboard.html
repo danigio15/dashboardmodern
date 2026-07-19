@@ -4549,7 +4549,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
 .tc2-badge { position:absolute; top:14px; right:14px; }
 .tc2-head { display:flex; align-items:center; gap:13px; margin-bottom:14px; padding-right:36px; }
 .tc2-ico { width:58px; height:58px; flex:0 0 58px; display:flex; align-items:center; justify-content:center; font-size:31px; line-height:1; border-radius:18px; background: linear-gradient(135deg, rgba(var(--tc-rgb),0.22), rgba(var(--tc-rgb),0.06)); box-shadow: inset 0 0 0 1.5px rgba(var(--tc-rgb),0.30); }
-.tc2-name { font-size:16px; font-weight:900; letter-spacing:0.2px; color:var(--text,#0f172a); min-width:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.25; }
+.tc2-name { flex:1 1 auto; font-size:16px; font-weight:900; letter-spacing:0.2px; color:var(--text,#0f172a); min-width:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.2; overflow-wrap:anywhere; word-break:break-word; }
 .tc2-body { display:flex; align-items:flex-end; justify-content:space-between; gap:10px; }
 .tc2-temp { display:flex; align-items:baseline; gap:3px; font-family:'Oswald',sans-serif; }
 .tc2 .temp-value { font-size:44px !important; font-weight:700 !important; line-height:1 !important; background: linear-gradient(135deg, rgb(var(--tc-rgb)), rgba(var(--tc-rgb),0.55)); -webkit-background-clip:text; background-clip:text; color:transparent !important; }
@@ -4557,7 +4557,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
 .tc2-hum { display:flex; align-items:center; gap:6px; padding:8px 12px; border-radius:14px; background: rgba(14,165,233,0.10); font-weight:900; font-size:13px; color:#0369a1; white-space:nowrap; }
 .tc2-hum .temp-hum-val { font-size:14px !important; font-weight:900 !important; color:inherit !important; }
 html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd3fc; }
-@media (max-width: 640px) { .tc2-ico { width:50px; height:50px; flex-basis:50px; font-size:27px; border-radius:15px; } .tc2 .temp-value { font-size:38px !important; } }
+@media (max-width: 640px) { .tc2-ico { width:46px; height:46px; flex-basis:46px; font-size:25px; border-radius:14px; } .tc2 .temp-value { font-size:38px !important; } .tc2-head { gap:10px; padding-right:8px; } .tc2-name { font-size:14.5px; } .tc2-badge { top:10px; right:10px; transform:scale(0.9); } }
 .temp-room-name { font-size: 15.5px !important; font-weight: 900 !important; letter-spacing: 0.2px !important; }
 .temp-room-icon-wrap { gap: 12px !important; align-items: center !important; }
 .temp-card { padding-top: 18px !important; }
@@ -4658,6 +4658,8 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
       </div>
       <!-- v245: la card antifurto è stata rimossa dal Quadro Avvisi.
            Lo stato dell'antifurto adesso vive nella pillola sopra (allarme-banner) -->
+      <!-- v0.9.7 (#4): avvisi personalizzati iniettati qui -->
+      <div id="glance-custom-wrap" style="display:contents;"></div>
     </div>
 
     <h3 class="section-title">Azioni Rapide Premium</h3>
@@ -5620,7 +5622,15 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
   <!-- ═══════════ PAGINA CONFIGURAZIONE (solo admin) ═══════════ -->
   <section class="page" id="page-config">
     <div class="cfg-hero">
-      <div class="cfg-hero-ico">⚙️</div>
+      <div class="cfg-hero-ico" style="background:none; box-shadow:none; width:auto; height:auto;">
+        <svg width="52" height="52" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+          <defs><linearGradient id="cdlgcfg" x1="0" y1="0" x2="48" y2="48"><stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#0369a1"/></linearGradient></defs>
+          <rect x="2" y="2" width="44" height="44" rx="13" fill="url(#cdlgcfg)"/>
+          <path d="M13 24.5 L24 15 L35 24.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M15.8 23 V34 H32.2 V23" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M25 23.5 L20.5 30.8 H24 L23 35 L28.8 27.2 H24.9 Z" fill="#fde047"/>
+        </svg>
+      </div>
       <div class="cfg-hero-txt">
         <div class="cfg-hero-title">CONFIGURAZIONE</div>
         <div class="cfg-hero-sub">Strumenti amministratore · <span id="cfg-ver"></span></div>
@@ -5696,7 +5706,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
 
       <!-- ZONA FREDDO: Condizionatori -->
       <div class="clima-zone clima-zone-freddo show">
-      <div class="clima-premium-grid" id="clima-grid-freddo"> id="clima-grid-freddo"
+      <div class="clima-premium-grid" id="clima-grid-freddo">
         <!-- v260: card generate da getClimaUnits() -->
       </div>
       <!-- /clima-zone-freddo -->
@@ -6043,7 +6053,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.9.6';
+const DASHBOARD_VERSION = '0.9.7';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6064,6 +6074,7 @@ window.CD_BAKED_CONFIG = {
   cd_gruppi_extra: {},
   cd_gruppi_removed: {},
   cd_avvisi_names_extra: {},
+  cd_avvisi_custom: [],
   cd_text_overrides: {},
   cd_hidden_elements: {}
 };
@@ -6078,6 +6089,66 @@ function cdCfg(key) {
 function cdCfgList(key) {
   const v = cdCfg(key);
   return Array.isArray(v) ? v : [];
+}
+
+/* v0.9.7 (#6): logo del brand (SVG inline, niente asset esterni) per wizard e config */
+function cdBrandLogo(size, withWordmark) {
+    size = size || 44;
+    const uid = 'cdlg' + Math.random().toString(36).slice(2, 7);
+    const mark = `<svg width="${size}" height="${size}" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex:0 0 auto; display:block;">
+        <defs><linearGradient id="${uid}" x1="0" y1="0" x2="48" y2="48"><stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#0369a1"/></linearGradient></defs>
+        <rect x="2" y="2" width="44" height="44" rx="13" fill="url(#${uid})"/>
+        <path d="M13 24.5 L24 15 L35 24.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15.8 23 V34 H32.2 V23" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M25 23.5 L20.5 30.8 H24 L23 35 L28.8 27.2 H24.9 Z" fill="#fde047"/>
+    </svg>`;
+    if (!withWordmark) return mark;
+    const fs = Math.round(size * 0.42);
+    return `<div style="display:flex; align-items:center; gap:12px;">${mark}<div style="display:flex; flex-direction:column; line-height:1.05;"><span style="font-family:'Oswald',sans-serif; font-weight:700; font-size:${fs}px; letter-spacing:0.5px; color:var(--text,#0f172a);">Dashboard</span><span style="font-family:'Oswald',sans-serif; font-weight:700; font-size:${fs}px; letter-spacing:2.5px; color:#0ea5e9;">MODERN</span></div></div>`;
+}
+
+/* v0.9.7 (#4): avvisi personalizzati — etichetta condizione, valutazione, render nel Quadro Avvisi */
+function cdAvvisoCondLabel(a) {
+    const v = (a && a.value != null) ? a.value : '';
+    switch (a && a.cond) {
+        case 'off': return 'spenta';
+        case 'eq':  return '= ' + v;
+        case 'neq': return '≠ ' + v;
+        case 'gt':  return '> ' + v;
+        case 'lt':  return '< ' + v;
+        default:    return 'attiva';
+    }
+}
+function cdAvvisoActive(a, stateObj) {
+    if (!a || !stateObj) return false;
+    const st = String(stateObj.state), stl = st.toLowerCase();
+    const num = parseFloat(st), val = parseFloat(a.value);
+    switch (a.cond) {
+        case 'off': return ['off','closed','false','no','0','unavailable','unknown','idle','standby'].includes(stl);
+        case 'eq':  return stl === String(a.value).toLowerCase();
+        case 'neq': return stl !== String(a.value).toLowerCase();
+        case 'gt':  return !isNaN(num) && !isNaN(val) && num > val;
+        case 'lt':  return !isNaN(num) && !isNaN(val) && num < val;
+        default:    return ['on','open','opened','true','yes','home','detected','heat','heating','cool','cooling','playing','active','armed','wet','motion','occupied','running'].includes(stl);
+    }
+}
+function cdRenderCustomAvvisi() {
+    const wrap = document.getElementById('glance-custom-wrap');
+    if (!wrap) return;
+    const active = [];
+    cdCfgList('cd_avvisi_custom').forEach(a => {
+        const s = STATES[a.entity];
+        if (s && cdAvvisoActive(a, s)) active.push({ a, state: s.state });
+    });
+    const sig = active.map(x => x.a.entity + ':' + x.state).join('|');
+    if (wrap._sig === sig) return;   // niente ridisegno se nulla è cambiato (evita flicker)
+    wrap._sig = sig;
+    wrap.innerHTML = active.map(({ a, state }) => {
+        const nm = String(a.name || a.entity).replace(/</g, '&lt;');
+        const disp = String(state).toUpperCase().slice(0, 12);
+        const ic = a.icon || '⚠️';
+        return `<div class="glance-card" style="--g-rgb: 245,158,11; display:flex;" onclick="apriStorico(event, '${a.entity}', '${nm.replace(/'/g, '&#39;')}')"><div class="g-info"><span class="g-name">${nm}</span><span class="g-val">${disp}</span></div><div class="g-icon-wrap anim-ping" style="color:#f59e0b;">${ic}</div></div>`;
+    }).join('');
 }
 
 /* ═══ v254: SISTEMA OVERRIDE ENTITÀ (configurabile da UI, solo admin) ═══ */
@@ -6690,7 +6761,7 @@ function apriConfigEntita() {
     modal.innerHTML = datalist + `
       <div class="modal-card ed-shell">
         <div class="ed-head">
-          <div class="ed-head-title"><span class="ed-head-icon">⚙️</span> EDITOR DASHBOARD</div>
+          <div class="ed-head-title">${cdBrandLogo(40)} EDITOR DASHBOARD</div>
           <div style="display:flex; gap:8px;">
             <div class="ed-head-close" title="Scarica la dashboard con token e configurazione integrati nel file" onclick="cdBakeDownload()">💾</div>
             <div class="ed-head-close" onclick="document.getElementById('editor-modal').remove()">✕</div>
@@ -7665,18 +7736,37 @@ function wzRender() {
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddQA()">＋ Aggiungi azione</button>
           </div>
         </details>` : ''}${WIZ.sections['home'] !== false ? `
-        <details class="ed-acc"><summary class="ed-acc-head">🔔 Quadro Avvisi <span class="ed-acc-n">${(GRUPPI_MONITORAGGIO['win']||[]).length + (GRUPPI_MONITORAGGIO['batt']||[]).length}</span></summary>
+        <details class="ed-acc"><summary class="ed-acc-head">🔔 Quadro Avvisi <span class="ed-acc-n">${(GRUPPI_MONITORAGGIO['win']||[]).length + (GRUPPI_MONITORAGGIO['batt']||[]).length + cdCfgList('cd_avvisi_custom').length}</span></summary>
           <div class="ed-acc-body">
-            <div class="ed-slot-lbl" style="margin-bottom:4px;">Sensori di apertura (porte/finestre) e batterie monitorati nella Home.</div>
+            <div class="ed-slot-lbl" style="margin-bottom:4px;">Aperture (porte/finestre) e batterie monitorate nella Home. Con <b>⭐ Personalizzato</b> crei un avviso su qualsiasi entità, con nome, condizione e icona a scelta.</div>
             ${['win','batt'].map(grp => (GRUPPI_MONITORAGGIO[grp]||[]).map(id => {
                 const nm = cdCfg('cd_avvisi_names_extra')[id] || AVVISI_NAMES[id] || id;
                 return `<div class="ed-row"><div style="font-size:15px;">${grp==='win'?'🚪':'🔋'}</div><div class="ed-row-main"><div class="ed-row-new">${nm}</div><div class="ed-row-old mono">${id}</div></div><div class="ed-del" onclick="wzDelAvviso('${grp}','${id}')">🗑️</div></div>`;
             }).join('')).join('')}
+            ${cdCfgList('cd_avvisi_custom').map((a, i) => `<div class="ed-row"><div style="font-size:15px;">${a.icon||'⚠️'}</div><div class="ed-row-main"><div class="ed-row-new">${(a.name||a.entity)} <span style="font-weight:700; color:var(--text-dim,#94a3b8); font-size:10.5px;">· ${cdAvvisoCondLabel(a)}</span></div><div class="ed-row-old mono">${a.entity}</div></div><div class="ed-del" onclick="wzDelAvvisoCustom(${i})">🗑️</div></div>`).join('')}
             <div style="display:flex; gap:8px; margin-bottom:8px; margin-top:6px;">
-              <select id="wz-av-grp" class="wz-input" style="margin-bottom:0; flex:0 0 46%;"><option value="win">🚪 Apertura</option><option value="batt">🔋 Batteria</option></select>
-              <input id="wz-av-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome (es. Finestra Studio)">
+              <select id="wz-av-grp" class="wz-input" style="margin-bottom:0; flex:0 0 46%;" onchange="var c=document.getElementById('wz-av-custom'); if(c) c.style.display = this.value==='custom' ? 'block' : 'none';"><option value="win">🚪 Apertura</option><option value="batt">🔋 Batteria</option><option value="custom">⭐ Personalizzato</option></select>
+              <input id="wz-av-name" class="wz-input" style="margin-bottom:0; flex:1;" placeholder="Nome (es. Perdita acqua)">
             </div>
             <div style="display:flex; gap:6px; margin-bottom:8px;"><input id="wz-av-ent" class="wz-input mono" autocomplete="off" placeholder="binary_sensor.finestra_studio_contact" style="margin-bottom:0; flex:1; font-family:monospace;"><button type="button" onclick="wzPickEntity('#wz-av-ent')" style="flex:0 0 40px; height:40px; border:none; border-radius:12px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+            <div id="wz-av-custom" style="display:none; background:rgba(148,163,184,0.09); border-radius:12px; padding:10px; margin-bottom:8px;">
+              <div class="ed-slot-lbl" style="margin-bottom:6px;">Mostra l'avviso quando l'entità è…</div>
+              <div style="display:flex; gap:8px;">
+                <select id="wz-av-cond" class="wz-input" style="margin-bottom:0; flex:1;" onchange="var v=document.getElementById('wz-av-val'); if(v) v.style.display = ['on','off'].includes(this.value) ? 'none' : 'block';">
+                  <option value="on">Accesa / Attiva / Aperta (on)</option>
+                  <option value="off">Spenta / Chiusa (off)</option>
+                  <option value="eq">Uguale a…</option>
+                  <option value="neq">Diversa da…</option>
+                  <option value="gt">Maggiore di…</option>
+                  <option value="lt">Minore di…</option>
+                </select>
+                <input id="wz-av-val" class="wz-input" style="margin-bottom:0; flex:0 0 34%; display:none;" placeholder="valore">
+              </div>
+              <div style="display:flex; gap:8px; margin-top:8px; align-items:center;">
+                <span class="ed-slot-lbl" style="margin:0;">Icona</span>
+                <input id="wz-av-icon" class="wz-input" style="margin-bottom:0; flex:0 0 74px; text-align:center; font-size:16px;" value="⚠️" placeholder="⚠️">
+              </div>
+            </div>
             <button class="ed-btn-add" style="width:100%;" onclick="wzAddAvviso()">＋ Aggiungi al Quadro Avvisi</button>
           </div>
         </details>` : ''}${WIZ.sections['home'] !== false ? `
@@ -7787,7 +7877,7 @@ function wzRender() {
         Per rendere la config multi-dispositivo: ⚙️ → Configura Entità → 📤 Esporta.</div>
         <button class="wz-btn wz-btn-green" onclick="wzFinish()">Salva e avvia la dashboard ✓</button>`;
 
-    card.innerHTML = `<div class="wz-ver">v${DASHBOARD_VERSION}</div><div class="wz-dots">${dots}</div>${body}
+    card.innerHTML = `<div class="wz-ver">v${DASHBOARD_VERSION}</div><div class="wz-logo-wrap" style="display:flex; justify-content:center; margin-bottom:16px;">${cdBrandLogo(46, true)}</div><div class="wz-dots">${dots}</div>${body}
         ${WIZ.step > 1 && WIZ.step < 6 ? '<div class="wz-back" onclick="WIZ.step--; wzRender();">← Indietro</div>' : ''}
         <div class="wz-skip" onclick="document.getElementById('setup-wizard').remove()">Chiudi senza salvare</div>
         <div class="wz-skip" style="color:#fca5a5;" onclick="wzResetAll()">🗑️ Reset totale configurazione (questo dispositivo)</div>`;
@@ -7799,7 +7889,7 @@ function wzRender() {
    La configurazione viene salvata anche nell'archivio utente di Home Assistant
    (frontend user_data): configuri una volta, la ritrovi su ogni dispositivo. */
 /* v301: cd_theme e cd_navbar_mode NON sono sincronizzati — sono preferenze del singolo dispositivo */
-const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_luci_rooms','cd_luci_order','cd_luci_room_order','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_text_overrides','cd_hidden_elements'];
+const CD_SYNC_KEYS = ['cd_connection','cd_branding','cd_sections','cd_section_names','cd_luci','cd_luci_rooms','cd_luci_order','cd_luci_room_order','cd_stanze','cd_cameras','cd_clima_units','cd_quick_actions','cd_devices','cd_ev_image','cd_entity_overrides','cd_subloads_extra','cd_subload_groups','cd_report_devices','cd_slot_labels','cd_flow_nodes','cd_gruppi_extra','cd_gruppi_removed','cd_avvisi_names_extra','cd_avvisi_custom','cd_text_overrides','cd_hidden_elements'];
 
 function cdSyncCollect() {
     const out = { _savedAt: Date.now() };
@@ -8159,8 +8249,39 @@ function cdSetIcon(sel, e) {
     const ov = document.getElementById('cd-icon-picker'); if (ov) ov.remove();
 }
 
+/* v0.9.7 (#9): il picker nell'editor vedeva solo le entità tracciate dalla dashboard
+   (_RAW_STATES ≈ poche decine). Qui carico da HA l'ELENCO COMPLETO con un get_states
+   dedicato e lo tengo in cache, così la ricerca copre TUTTE le entità disponibili. */
+let CD_PICKER_META = [];
+function cdLoadAllEntitiesForPicker(onReady) {
+    if (CD_PICKER_META && CD_PICKER_META.length) { if (onReady) onReady(CD_PICKER_META); return; }
+    let token = '';
+    try { token = (typeof WIZ !== 'undefined' && WIZ && WIZ.token) || (JSON.parse(localStorage.getItem('cd_connection') || '{}').token) || (typeof LONG_LIVED_TOKEN !== 'undefined' ? LONG_LIVED_TOKEN : ''); } catch(e) {}
+    const ha = (typeof cdResolveHaWs === 'function') ? cdResolveHaWs() : { ws: '', ok: false };
+    if (!ha.ok || !ha.ws || !token) { if (onReady) onReady(null); return; }
+    try {
+        const tws = new WebSocket(ha.ws);
+        let mid = 1;
+        tws.onmessage = (ev) => {
+            let m; try { m = JSON.parse(ev.data); } catch(_) { return; }
+            if (m.type === 'auth_required') { tws.send(JSON.stringify({ type: 'auth', access_token: token })); return; }
+            if (m.type === 'auth_ok')       { tws.send(JSON.stringify({ id: mid++, type: 'get_states' })); return; }
+            if (m.type === 'result' && Array.isArray(m.result)) {
+                CD_PICKER_META = m.result
+                    .map(s => ({ id: s.entity_id, name: (s.attributes && s.attributes.friendly_name) || s.entity_id }))
+                    .sort((a, b) => a.id.localeCompare(b.id));
+                try { tws.close(); } catch(_) {}
+                if (onReady) onReady(CD_PICKER_META);
+            }
+        };
+        tws.onerror = () => { if (onReady) onReady(null); };
+    } catch(e) { if (onReady) onReady(null); }
+}
+
 function wzPickEntity(ref) {
-    let M = (WIZ.allMeta && WIZ.allMeta.length) ? WIZ.allMeta : (WIZ.allEntities || []).map(id => ({ id, name: id }));
+    let M = (WIZ.allMeta && WIZ.allMeta.length) ? WIZ.allMeta
+          : (CD_PICKER_META && CD_PICKER_META.length) ? CD_PICKER_META
+          : (WIZ.allEntities || []).map(id => ({ id, name: id }));
     // v302: nell'editor (fuori dal wizard) le entità arrivano dagli stati live della dashboard
     if (!M.length) {
         try { M = Object.keys(_RAW_STATES).sort().map(id => ({ id, name: (_RAW_STATES[id].attributes && _RAW_STATES[id].attributes.friendly_name) || id })); } catch(e) {}
@@ -8181,17 +8302,46 @@ function wzPickEntity(ref) {
     window._cdEpRef = ref;
     cdEpFilter('');
     setTimeout(() => document.getElementById('cd-ep-search')?.focus(), 60);
+    // v0.9.7: carico TUTTE le entità di HA in background e aggiorno la lista appena pronte
+    if (!(WIZ.allMeta && WIZ.allMeta.length)) {
+        cdLoadAllEntitiesForPicker((full) => {
+            if (full && full.length && document.getElementById('cd-entpick')) {
+                window._cdEpAll = full;
+                const q = document.getElementById('cd-ep-search');
+                cdEpFilter(q ? q.value : '');
+            }
+        });
+    }
 }
 function cdEpFilter(q) {
     q = (q || '').trim().toLowerCase();
     const list = document.getElementById('cd-ep-list');
     if (!list) return;
     const M = window._cdEpAll || [];
-    const rows = (q ? M.filter(e => (e.id + ' ' + e.name).toLowerCase().includes(q)) : M).slice(0, 200);
-    list.innerHTML = rows.map(e => `
+    let rows;
+    if (!q) {
+        rows = M.slice(0, 300);
+    } else {
+        const terms = q.split(/\s+/).filter(Boolean);
+        const scored = [];
+        for (const e of M) {
+            const idl = e.id.toLowerCase(), nml = (e.name || '').toLowerCase();
+            const hay = idl + ' ' + nml;
+            if (!terms.every(t => hay.includes(t))) continue;   // tutte le parole devono comparire
+            let score = 0;
+            if (idl.startsWith(q) || nml.startsWith(q)) score += 100;
+            if (idl.includes(q)  || nml.includes(q))  score += 30;
+            score -= Math.min(idl.length, 60) * 0.1;             // a parità, id più corti prima
+            scored.push([score, e]);
+        }
+        scored.sort((a, b) => b[0] - a[0]);
+        rows = scored.slice(0, 300).map(s => s[1]);
+    }
+    const head = `<div style="font-size:10.5px; color:var(--text-dim,#64748b); font-weight:700; padding:1px 4px 5px;">${M.length} entità disponibili${q ? ' · ' + rows.length + ' risultati' : ''}</div>`;
+    list.innerHTML = head + (rows.map(e => `
       <div onclick="cdEpChoose('${e.id}')" style="padding:9px 12px; border-radius:12px; background:rgba(148,163,184,0.08); cursor:pointer; font-size:12.5px; color:var(--text,#0f172a);">
         <b>${e.name}</b><br><span style="font-family:monospace; font-size:10px; color:var(--text-dim,#64748b);">${e.id}</span>
-      </div>`).join('') || '<div style="text-align:center; padding:20px; color:var(--text-dim); font-weight:700;">Nessun risultato</div>';
+      </div>`).join('') || '<div style="text-align:center; padding:20px; color:var(--text-dim); font-weight:700;">Nessun risultato</div>');
 }
 function cdEpChoose(id) {
     const ref = window._cdEpRef;
@@ -8564,6 +8714,18 @@ function wzAddAvviso() {
     const name = (document.getElementById('wz-av-name').value || '').trim();
     const ent = (document.getElementById('wz-av-ent').value || '').trim();
     if (!ent.includes('.')) { alert('Inserisci una entità valida'); return; }
+    if (grp === 'custom') {
+        const cond  = (document.getElementById('wz-av-cond') || {}).value || 'on';
+        const value = ((document.getElementById('wz-av-val') || {}).value || '').trim();
+        const icon  = (((document.getElementById('wz-av-icon') || {}).value) || '⚠️').trim() || '⚠️';
+        if (['eq','neq','gt','lt'].includes(cond) && value === '') { alert('Inserisci il valore per la condizione scelta'); return; }
+        const list = cdCfgList('cd_avvisi_custom');
+        list.push({ entity: ent, name: name || ent, icon, cond, value });
+        localStorage.setItem('cd_avvisi_custom', JSON.stringify(list));
+        try { cdMarkDirty(); cdSyncPush && cdSyncPush(); } catch(e){}
+        wzRender();
+        return;
+    }
     const extG = cdCfg('cd_gruppi_extra');
     if (!extG[grp]) extG[grp] = [];
     if (!extG[grp].includes(ent)) extG[grp].push(ent);
@@ -8575,6 +8737,14 @@ function wzAddAvviso() {
         localStorage.setItem('cd_avvisi_names_extra', JSON.stringify(extN));
     }
     if (GRUPPI_MONITORAGGIO[grp] && !GRUPPI_MONITORAGGIO[grp].includes(ent)) GRUPPI_MONITORAGGIO[grp].push(ent);
+    wzRender();
+}
+function wzDelAvvisoCustom(i) {
+    const list = cdCfgList('cd_avvisi_custom');
+    if (i < 0 || i >= list.length) return;
+    list.splice(i, 1);
+    localStorage.setItem('cd_avvisi_custom', JSON.stringify(list));
+    try { cdMarkDirty(); cdSyncPush && cdSyncPush(); } catch(e){}
     wzRender();
 }
 function wzDelAvviso(grp, id) {
@@ -9604,7 +9774,7 @@ function apriGestioneLuci(isClick = false, luciFilter = null, customTitle = null
   // Card luce verticale compatta (griglia 2 colonne)
   // showZona: nelle card delle stanze mono-luce mostro la zona come nome principale
   const cardHtml = (l, showZona) => `
-    <div class="lgx-card ${l.isOn ? 'is-on' : ''}" onclick="toggle('${l.id}')">
+    <div class="lgx-card ${l.isOn ? 'is-on' : ''}" data-luce="${l.id}" onclick="toggle('${l.id}')">
       <div class="lgx-glow"></div>
       <div class="lgx-row-top">
         <div class="lgx-orb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg></div>
@@ -9637,6 +9807,36 @@ function apriGestioneLuci(isClick = false, luciFilter = null, customTitle = null
   list.innerHTML = html;
   list.scrollTop = scrollTop;
   document.getElementById('details-modal').classList.add('show');
+}
+
+/* v0.9.7 (#8): aggiornamento INCREMENTALE del popup luci — niente più list.innerHTML
+   a ogni tick (che ricostruiva tutto e faceva "tremare" le card). Qui tocco solo
+   la classe accesa/LED/testo delle card esistenti e la barra in alto. */
+function updateGestioneLuci() {
+  const modal = document.getElementById('details-modal');
+  if (!modal || !modal.classList.contains('show') || currentPopupType !== 'gestione_luci') return;
+  const list = document.getElementById('details-list');
+  if (!list) return;
+  const cards = list.querySelectorAll('.lgx-card[data-luce]');
+  if (!cards.length) { apriGestioneLuci(false, window._luciPopupFilter, window._luciPopupTitle); return; }
+  let onCount = 0;
+  cards.forEach(card => {
+    const id = card.getAttribute('data-luce');
+    const s = STATES[id];
+    const isOn = !!(s && s.state === 'on');
+    if (isOn) onCount++;
+    card.classList.toggle('is-on', isOn);
+    const led = card.querySelector('.lgx-led');
+    if (led) led.classList.toggle('on', isOn);
+    const st = card.querySelector('.lgx-state');
+    if (st) { const t = isOn ? 'ACCESA' : 'SPENTA'; if (st.textContent !== t) st.textContent = t; }
+  });
+  // barra in alto: conteggio + pulsante "Spegni tutte"
+  const bar = list.querySelector('.lgx-bar');
+  if (bar) {
+    const newBar = `<div class="lgx-bar-l"><span class="lgx-dot ${onCount>0?'active':''}"></span>${onCount>0 ? '<b>'+onCount+'</b><span>'+(onCount===1?'accesa':'accese')+'</span>' : '<span>Tutte spente</span>'}</div>${onCount>0 ? '<div class="lgx-alloff" onclick="event.stopPropagation(); luciTutteOff()">Spegni tutte</div>' : ''}`;
+    if (bar.innerHTML !== newBar) bar.innerHTML = newBar;
+  }
 }
 
 // v255: spegni tutte le luci accese in un colpo
@@ -10157,6 +10357,24 @@ function cdUpdateLoadNode(nodeId, lineId, valId, key, defEntity) {
     return live;
 }
 
+/* v0.9.7: un carico compare SOLO se l'utente ha inserito un'entità.
+   La mappa istantanea lo fa già (cdUpdateLoadNode); questi helper estendono
+   la regola alle mappe Oggi e Mese, dove prima le linee restavano grigie "fantasma". */
+function cdRefMapped(ref) {
+    if (!ref) return false;
+    if (typeof ENTITY_OVERRIDES !== 'undefined' && ENTITY_OVERRIDES[ref]) return true;
+    const s = STATES[ref];
+    return !!(s && s.entity_id && s.entity_id !== 'dm.unmapped');
+}
+function cdSetPeriodLoad(base, mapped) {
+    ['n-' + base + '-day', 'n-' + base + '-month',
+     'line-home-' + base + '-day', 'line-home-' + base + '-month',
+     'm-line-home-' + base + '-day', 'm-line-home-' + base + '-month'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = mapped ? '' : 'none';
+    });
+}
+
 /* v292: primo stato REALMENTE mappato di una lista di riferimenti — i "ghost"
    (ref non configurati) non devono cortocircuitare i fallback. */
 function cdFirstMapped() {
@@ -10372,8 +10590,17 @@ function buildClimaCards() {
         </div>`;
     };
     const units = getClimaUnits();
-    if (gF) gF.innerHTML = units.filter(u => u.type !== 'termo').map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1; justify-content:center; flex-wrap:wrap;">Nessun condizionatore configurato</div>';
-    if (gC) gC.innerHTML = units.filter(u => u.type === 'termo').map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1; justify-content:center; flex-wrap:wrap;">Nessun termosifone configurato</div>';
+    const uFreddo = units.filter(u => u.type !== 'termo');
+    const uCaldo  = units.filter(u => u.type === 'termo');
+    if (gF) gF.innerHTML = uFreddo.map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1; justify-content:center; flex-wrap:wrap;">Nessun condizionatore configurato</div>';
+    if (gC) gC.innerHTML = uCaldo.map(card).join('') || '<div class="ed-empty" style="grid-column:1/-1; justify-content:center; flex-wrap:wrap;">Nessun termosifone configurato</div>';
+    /* v0.9.7: se è configurata una sola tipologia, niente tab — si apre direttamente la zona giusta */
+    try {
+        const sw = document.querySelector('.clima-page-mode-switch');
+        if (uFreddo.length && !uCaldo.length)      { if (sw) sw.style.display = 'none'; setClimaPageMode('freddo', true); }
+        else if (uCaldo.length && !uFreddo.length) { if (sw) sw.style.display = 'none'; setClimaPageMode('caldo',  true); }
+        else if (sw) sw.style.display = '';
+    } catch(e) {}
     try { if (Object.keys(_RAW_STATES).length) updateClimaCards(); } catch(e) {}
 }
 document.addEventListener('DOMContentLoaded', () => {
@@ -10496,10 +10723,12 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e) {}
 });
 /* v258: immagine auto configurabile (cd_ev_image = URL) */
+let CD_EV_IMAGE = '';
 document.addEventListener('DOMContentLoaded', () => {
     try {
         const img = cdCfg('cd_ev_image');
         const url = (typeof img === 'string' && img) ? img : (img && img.url) || '';
+        CD_EV_IMAGE = url || '';
         if (url) ['ev-mod-car-img','ev-new-car-img'].forEach(id => { const el = document.getElementById(id); if (el) el.src = url; });
     } catch(e) {}
 });
@@ -10933,6 +11162,7 @@ function render() {
       setGlance('risc',  cdCount('risc',  s => ['heat','heating','on'].includes(s.state)));
       setGlance('win',   cdCount('win',   s => s.state === 'on'));
       setGlance('batt',  cdCount('batt',  s => { const v = parseFloat(s.state); return !isNaN(v) && v <= 20; }));
+      try { cdRenderCustomAvvisi(); } catch(e) {}
       
       // ── Card Antifurto: stile coerente con altre card Quadro Avvisi ──
       // Logica: dm.home_interruttore_antifurto = ON → priorità ALLARME SCATTATO (rosso, urgente)
@@ -11067,6 +11297,15 @@ function render() {
           }
       } catch(e) {}
       setNode('n-solar-month', mSol > 0.1); setNode('n-grid-month', parseFloat(mGridB) > 0.1 || parseFloat(mGridS) > 0.1); setNode('n-battery-month', parseFloat(mBatC) > 0.1 || parseFloat(mBatD) > 0.1); setNode('n-home-month', true); setNode('n-wb-month', mWb > 0.1); setNode('n-boiler-month', mBoiler > 0.1); setNode('n-clima-month', mClima > 0.1); setNode('n-lav-month', mLav > 0.1); setNode('n-cuc-month', mCuc > 0.1); setLine('line-solar-home-month', mSol > 0.1); setLine('line-grid-home-month', parseFloat(mGridB) > 0.1); setLine('line-solar-grid-month', parseFloat(mGridS) > 0.1); setLine('line-battery-home-month', parseFloat(mBatD) > 0.1); setLine('line-solar-battery-month', parseFloat(mBatC) > 0.1); setLine('line-home-wb-month', mWb > 0.1); setLine('line-home-boiler-month', mBoiler > 0.1); setLine('line-home-clima-month', mClima > 0.1); setLine('line-home-lav-month', mLav > 0.1); setLine('line-home-cuc-month', mCuc > 0.1);
+      /* v0.9.7: nascondo linee/nodi Oggi+Mese dei carichi non configurati (niente linea fantasma) */
+      try {
+          const _lm = (inst, dRef, mRef) => inst || cdRefMapped(dRef) || cdRefMapped(mRef) || cdPNum(dRef) > 0.001 || cdPNum(mRef) > 0.001;
+          cdSetPeriodLoad('boiler', _lm(_nBoiler.mapped, 'dm.energy_boiler_oggi', 'dm.energy_boiler_mese'));
+          cdSetPeriodLoad('wb',     _lm(_nWb.mapped, 'dm.ev_energia_wallbox_oggi', 'dm.ev_energia_wallbox_mese'));
+          cdSetPeriodLoad('clima',  _lm(_nClima.mapped, 'dm.energy_condizionatori_oggi', 'dm.energy_condizionatori_mese'));
+          cdSetPeriodLoad('lav',    _lm(_nLav.mapped, 'dm.energy_somma_lavanderia_oggi', 'dm.energy_somma_lavanderia_mese'));
+          cdSetPeriodLoad('cuc',    _lm(_nCuc.mapped, 'dm.energy_somma_cucina_oggi', 'dm.energy_somma_cucina_mese'));
+      } catch(e) {}
       const statiEV = {'A':'Non Connessa','B':'🔌 Collegata','C':'⚡ In Carica','D':'⚡ In Carica','F':'⚠️ Errore'}; 
       const codeEV = getRawState('dm.ev_stato_ricarica'); 
       const socCarNum = parseFloat(getRawState('dm.ev_batteria_auto')) || 0; 
@@ -11216,12 +11455,17 @@ function render() {
       const canvas  = document.getElementById('lm-charge-canvas');
       const isChargingEV = ['B','C','D'].includes(codeEV);
       if (heroCard) heroCard.classList.toggle('lm-charging', isChargingEV);
-      // Cambia foto idle ↔ plugged
+      // Cambia foto idle ↔ plugged (solo con l'immagine di default; se l'utente ne ha impostata una sua la mantengo)
       if (carImg) {
-          const newSrc = isChargingEV ? '/local/ev/plugged_black.png' : '/local/ev/idle.png';
-          if (carImg.src !== newSrc && !carImg.src.endsWith(newSrc.split('/').pop())) {
-              carImg.style.opacity = '0';
-              setTimeout(() => { carImg.src = newSrc; carImg.style.opacity = '1'; }, 400);
+          if (CD_EV_IMAGE) {
+              const custPart = CD_EV_IMAGE.split('/').pop();
+              if (!carImg.src.endsWith(custPart)) { carImg.style.opacity = '1'; carImg.src = CD_EV_IMAGE; }
+          } else {
+              const newSrc = isChargingEV ? '/local/ev/plugged_black.png' : '/local/ev/idle.png';
+              if (carImg.src !== newSrc && !carImg.src.endsWith(newSrc.split('/').pop())) {
+                  carImg.style.opacity = '0';
+                  setTimeout(() => { carImg.src = newSrc; carImg.style.opacity = '1'; }, 400);
+              }
           }
       }
       // Canvas particelle
@@ -11306,7 +11550,7 @@ function render() {
       const evccMode = getRawState('dm.ev_modalita_ricarica_evcc'); document.querySelectorAll('.evcc-mode-btn').forEach(btn => btn.classList.remove('active')); if(evccMode && evccMode !== '—') { const md = evccMode.toLowerCase(); const b1 = document.getElementById('m-btn-' + md); if(b1) b1.classList.add('active'); const b2 = document.getElementById('p-btn-' + md); if(b2) b2.classList.add('active'); }
 
       if(currentPopupType && currentPopupType.startsWith('subloads_')) { renderSubLoads(currentPopupType.replace('subloads_', '')); }
-      if(currentPopupType === 'gestione_luci' && document.getElementById('details-modal').classList.contains('show')) { apriGestioneLuci(false, window._luciPopupFilter, window._luciPopupTitle); }
+      if(currentPopupType === 'gestione_luci' && document.getElementById('details-modal').classList.contains('show')) { updateGestioneLuci(); }
 
       if(document.getElementById('lavatrice-modal').classList.contains('show')) {
           updateSelectOptions('dm.lavatrice_programma', 'sel-lav-prog'); updateSelectOptions('dm.lavatrice_temperatura', 'sel-lav-temp'); updateSelectOptions('dm.lavatrice_centrifuga', 'sel-lav-cent');
@@ -11554,9 +11798,9 @@ function setTemp(entity, direction) {
 
 // v254: gestione modalità Freddo/Caldo nella pagina Clima
 let currentClimaPageMode = 'freddo';
-function setClimaPageMode(mode) {
+function setClimaPageMode(mode, silent) {
     if (mode !== 'freddo' && mode !== 'caldo') return;
-    if (navigator.vibrate) navigator.vibrate(8);
+    if (!silent && navigator.vibrate) navigator.vibrate(8);
     currentClimaPageMode = mode;
     const btnFreddo = document.getElementById('clima-page-mode-freddo');
     const btnCaldo  = document.getElementById('clima-page-mode-caldo');

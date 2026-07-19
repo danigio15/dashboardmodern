@@ -6,6 +6,16 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.10.6] — 2026-07-19
+
+### Corretto
+- **Aggiornamento invisibile all'apertura** — il controllo versione ora parte **immediatamente** all'apertura e il contenuto resta coperto da un breve overlay finché non si sa se aggiornare. Se c'è una nuova versione la pagina si ricarica **sotto** l'overlay: non si vede più la versione vecchia comparire e poi cambiare. Se non ci sono aggiornamenti, l'overlay sparisce subito.
+
+## [0.10.6] — 2026-07-19 (EN)
+
+### Fixed
+- **Invisible update on open** — the version check now runs **immediately** on open and the content stays covered by a brief overlay until we know whether to update. If a new version exists, the page reloads **under** the overlay: you no longer see the old version appear and then change. If there's no update, the overlay disappears right away.
+
 ## [0.10.5] — 2026-07-19
 
 ### Corretto

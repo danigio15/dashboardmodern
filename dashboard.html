@@ -4603,6 +4603,9 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
 </style>
 </head>
 <body>
+<script>(function(){try{var p=localStorage.getItem('cd_theme')||'auto';var d=p==='dark'||(p==='auto'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<style>#cd-boot-overlay{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:#e8edf3;transition:opacity .26s ease}html[data-theme="dark"] #cd-boot-overlay{background:#0b1220}#cd-boot-overlay .s{width:44px;height:44px;border:4px solid rgba(14,165,233,.22);border-top-color:#0ea5e9;border-radius:50%;animation:cdBootSpin .8s linear infinite}@keyframes cdBootSpin{to{transform:rotate(360deg)}}</style>
+<div id="cd-boot-overlay"><div class="s"></div></div>
 <div class="animated-mesh-bg"></div>
 
 <header>
@@ -6092,7 +6095,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.10.5';
+const DASHBOARD_VERSION = '0.10.6';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -10871,37 +10874,45 @@ document.addEventListener('DOMContentLoaded', () => {
    Al load (e ogni 6h) legge il proprio sorgente dal server con cache disabilitata:
    se la versione sul disco è diversa da quella in esecuzione, ricarica con ?v=nuova
    (query diversa = il browser scarica il file fresco). L'URL della plancia non cambia mai. ═══ */
-async function cdCheckUpdate() {
+let _cdBootDone = false;
+function cdHideBoot() {
+    if (_cdBootDone) return; _cdBootDone = true;
+    const o = document.getElementById('cd-boot-overlay');
+    if (o) { o.style.opacity = '0'; setTimeout(() => { if (o.parentNode) o.remove(); }, 260); }
+}
+async function cdCheckUpdate(isBoot) {
     try {
         const resp = await fetch(location.pathname + '?_upd=' + Date.now(), { cache: 'no-store' });
-        if (!resp.ok) return;
+        if (!resp.ok) { if (isBoot) cdHideBoot(); return; }
         const src = await resp.text();
         const m = src.match(/const DASHBOARD_VERSION = '([^']+)'/);
-        if (!m || m[1] === DASHBOARD_VERSION) return;
+        if (!m || m[1] === DASHBOARD_VERSION) { if (isBoot) cdHideBoot(); return; }
         const target = m[1];
         const params = new URLSearchParams(location.search);
         if (params.get('v') === target) {
-            console.warn('[Dashboard] Nuova versione ' + target + ' disponibile ma la cache non si aggiorna. Svuota la cache del browser/app.');
+            console.warn('[Dashboard] Nuova versione ' + target + ' ma la cache non si aggiorna. Svuota la cache del browser/app.');
+            if (isBoot) cdHideBoot();
             return;
         }
         console.log('[Dashboard] Aggiornamento ' + DASHBOARD_VERSION + ' \u2192 ' + target + ': ricarico\u2026');
-        cdShowUpdateOverlay(target);
+        if (!isBoot && !document.getElementById('cd-boot-overlay')) cdShowUpdateOverlay(target);
         params.set('v', target);
-        setTimeout(() => location.replace(location.pathname + '?' + params.toString() + location.hash), 650);
-    } catch(e) {}
+        location.replace(location.pathname + '?' + params.toString() + location.hash);
+    } catch(e) { if (isBoot) cdHideBoot(); }
 }
 function cdShowUpdateOverlay(target) {
-    if (document.getElementById('cd-update-overlay')) return;
+    if (document.getElementById('cd-update-overlay') || document.getElementById('cd-boot-overlay')) return;
     const dark = document.documentElement.getAttribute('data-theme') === 'dark';
     const o = document.createElement('div');
     o.id = 'cd-update-overlay';
-    o.style.cssText = 'position:fixed; inset:0; z-index:2147483647; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; font-family:Oswald,sans-serif; opacity:0; transition:opacity 0.2s ease; background:' + (dark ? 'rgba(8,12,22,0.94)' : 'rgba(232,237,243,0.97)') + '; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);';
+    o.style.cssText = 'position:fixed; inset:0; z-index:2147483647; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; font-family:Oswald,sans-serif; background:' + (dark ? 'rgba(8,12,22,0.94)' : 'rgba(232,237,243,0.97)') + '; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);';
     o.innerHTML = '<div style="width:46px; height:46px; border:4px solid ' + (dark ? 'rgba(56,189,248,0.22)' : 'rgba(14,165,233,0.22)') + '; border-top-color:#0ea5e9; border-radius:50%; animation:cdSpin 0.8s linear infinite;"></div><div style="font-size:15px; font-weight:800; letter-spacing:1px; color:' + (dark ? '#7dd3fc' : '#0369a1') + '; text-transform:uppercase;">Aggiornamento a v' + target + '\u2026</div><style>@keyframes cdSpin{to{transform:rotate(360deg)}}</style>';
     document.body.appendChild(o);
-    requestAnimationFrame(() => { o.style.opacity = '1'; });
 }
-document.addEventListener('DOMContentLoaded', () => setTimeout(cdCheckUpdate, 1200));
-setInterval(cdCheckUpdate, 6 * 3600 * 1000);
+/* controllo IMMEDIATO all'apertura: contenuto coperto dall'overlay di boot finch\u00e9 non so se aggiornare, cos\u00ec il cambio non si vede mai */
+cdCheckUpdate(true);
+document.addEventListener('DOMContentLoaded', () => setTimeout(cdHideBoot, 2500));
+setInterval(() => cdCheckUpdate(false), 6 * 3600 * 1000);
 
 
 /* ═══ v260: AUTO-HIDE (build pubblica) — gli elementi le cui entità di sezione

@@ -6130,6 +6130,98 @@ function cdCfgList(key) {
   return Array.isArray(v) ? v : [];
 }
 
+/* v0.9.8: PICKER ICONE ricercabile (per avvisi personalizzati e altre sezioni) */
+const DM_ICONS = [
+  {e:'⚠️',k:'warning avviso attenzione allarme alert generico'},
+  {e:'🔔',k:'campana notifica avviso bell'},
+  {e:'🚨',k:'allarme sirena emergenza alarm'},
+  {e:'💧',k:'acqua perdita allagamento water leak umidita goccia'},
+  {e:'🌊',k:'acqua allagamento flood onda'},
+  {e:'🔥',k:'fuoco incendio caldo fire heat fiamma'},
+  {e:'🌡️',k:'temperatura termometro temperature clima'},
+  {e:'❄️',k:'freddo gelo neve cold snow condizionatore'},
+  {e:'💨',k:'vento gas fumo aria wind soffio'},
+  {e:'🚪',k:'porta apertura door ingresso'},
+  {e:'🪟',k:'finestra window'},
+  {e:'🔋',k:'batteria battery carica'},
+  {e:'🔌',k:'presa spina corrente plug power energia'},
+  {e:'💡',k:'luce lampadina light illuminazione'},
+  {e:'🏃',k:'movimento presenza motion presence corsa'},
+  {e:'👤',k:'presenza persona presence person'},
+  {e:'🚶',k:'movimento persona motion walk'},
+  {e:'🌫️',k:'fumo nebbia smoke fog gas'},
+  {e:'🛡️',k:'sicurezza antifurto allarme security shield scudo'},
+  {e:'🔒',k:'serratura chiuso lock bloccato'},
+  {e:'🔓',k:'aperto sblocco unlock'},
+  {e:'📹',k:'telecamera camera videocamera tvcc'},
+  {e:'🎥',k:'video telecamera camera'},
+  {e:'🔊',k:'audio suono volume sound alto'},
+  {e:'🔇',k:'muto silenzio mute'},
+  {e:'🏠',k:'casa home abitazione'},
+  {e:'🚗',k:'auto macchina car veicolo'},
+  {e:'🌙',k:'notte luna night'},
+  {e:'☀️',k:'sole giorno sun day'},
+  {e:'⚡',k:'energia corrente potenza power fulmine'},
+  {e:'🔆',k:'luminosita brightness luce'},
+  {e:'📶',k:'segnale wifi rete signal network'},
+  {e:'📡',k:'antenna segnale signal'},
+  {e:'🌧️',k:'pioggia rain meteo'},
+  {e:'🧊',k:'ghiaccio congelatore freezer ice frigo'},
+  {e:'♨️',k:'caldaia boiler vapore heat termosifone'},
+  {e:'🚿',k:'doccia acqua shower bagno'},
+  {e:'🛁',k:'vasca bagno bath'},
+  {e:'🍳',k:'cucina fornello kitchen stove'},
+  {e:'🧺',k:'lavanderia bucato laundry cesto'},
+  {e:'🧯',k:'estintore fire extinguisher sicurezza'},
+  {e:'⏰',k:'sveglia allarme timer alarm orologio'},
+  {e:'✅',k:'ok attivo verde active check'},
+  {e:'❌',k:'errore no rosso error croce'},
+  {e:'❗',k:'importante attenzione exclamation'},
+  {e:'🟢',k:'verde acceso attivo green'},
+  {e:'🔴',k:'rosso spento allarme red'},
+  {e:'🟡',k:'giallo attenzione yellow'},
+  {e:'🐶',k:'cane animale dog pet'},
+  {e:'🐱',k:'gatto animale cat pet'},
+  {e:'🌱',k:'pianta giardino irrigazione plant garden'},
+  {e:'💦',k:'acqua irrigazione water spruzzi'},
+  {e:'🌬️',k:'ventilatore aria fan air'},
+  {e:'📬',k:'posta cassetta mailbox lettera'},
+  {e:'🔦',k:'torcia luce flashlight'},
+  {e:'📈',k:'grafico consumo salita graph up'},
+  {e:'📉',k:'grafico discesa graph down'},
+  {e:'🅿️',k:'parcheggio garage parking'},
+  {e:'🚰',k:'acqua rubinetto water tap'},
+  {e:'🔧',k:'manutenzione chiave tool riparazione'}
+];
+function dmIconPicker(targetSel) {
+    const ov = document.createElement('div');
+    ov.id = 'dm-iconpick';
+    ov.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:100001; display:flex; align-items:center; justify-content:center; padding:16px;';
+    ov.innerHTML = `<div style="background:var(--card-bg,#fff); border-radius:22px; padding:18px; width:min(420px,100%); max-height:78vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+        <div style="font-weight:900; font-size:14.5px; margin-bottom:8px; color:var(--text,#0f172a);">😀 Scegli l'icona</div>
+        <input id="dm-icon-search" class="ed-input" style="margin-bottom:8px;" placeholder="🔍 Cerca (es. acqua, porta, fuoco)…" oninput="dmIconFilter(this.value)">
+        <div id="dm-icon-grid" style="overflow-y:auto; flex:1; display:grid; grid-template-columns:repeat(auto-fill,minmax(46px,1fr)); gap:6px;"></div>
+        <button type="button" style="margin-top:10px; padding:11px; border:none; border-radius:12px; background:#94a3b8; color:#fff; font-weight:800; cursor:pointer;" onclick="document.getElementById('dm-iconpick').remove()">Chiudi</button>
+      </div>`;
+    document.body.appendChild(ov);
+    window._dmIconTarget = targetSel;
+    dmIconFilter('');
+    setTimeout(() => document.getElementById('dm-icon-search')?.focus(), 60);
+}
+function dmIconFilter(q) {
+    q = (q || '').trim().toLowerCase();
+    const grid = document.getElementById('dm-icon-grid');
+    if (!grid) return;
+    const rows = q ? DM_ICONS.filter(x => x.k.includes(q) || x.e === q) : DM_ICONS;
+    grid.innerHTML = rows.map(x => `<button type="button" onclick="dmIconChoose('${x.e}')" style="font-size:24px; padding:8px 0; border:1px solid var(--card-border,#e2e8f0); border-radius:12px; background:rgba(148,163,184,0.08); cursor:pointer;">${x.e}</button>`).join('') || '<div style="grid-column:1/-1; text-align:center; padding:16px; color:var(--text-dim); font-weight:700;">Nessuna icona</div>';
+}
+function dmIconChoose(e) {
+    const sel = window._dmIconTarget;
+    const ov = document.getElementById('dm-iconpick');
+    if (ov) ov.remove();
+    if (sel && sel.startsWith('#')) { const el = document.getElementById(sel.slice(1)); if (el) el.value = e; }
+}
+
 /* v0.9.7 (#6): logo del brand (SVG inline, niente asset esterni) per wizard e config */
 function cdBrandLogo(size, withWordmark) {
     size = size || 44;
@@ -7400,8 +7492,8 @@ function editorRenderAvvisi() {
           <option value="risc">🔥 Riscaldamento</option>
           <option value="custom">⭐ Personalizzato</option>
         </select>
-        <input id="ed-avv-ent" list="ed-entity-list" class="ed-input mono" placeholder="binary_sensor.finestra_x_contact">
-        <input id="ed-avv-name" class="ed-input" placeholder="Nome pulito (es. Finestra Studio)">
+        <div style="display:flex; gap:6px;"><input id="ed-avv-ent" list="ed-entity-list" class="ed-input mono" style="flex:1;" placeholder="binary_sensor.finestra_x_contact"><button type="button" onclick="wzPickEntity('#ed-avv-ent')" style="flex:0 0 40px; height:40px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+        <input id="ed-avv-name" class="ed-input" placeholder="Nome dell'avviso (es. Finestra Studio)">
         <div id="ed-avv-custom" style="display:none;">
           <select id="ed-avv-cond" class="ed-input" onchange="var v=document.getElementById('ed-avv-val'); if(v) v.style.display = ['on','off'].includes(this.value) ? 'none' : 'block';">
             <option value="on">Accesa / Attiva / Aperta (on)</option>
@@ -7412,7 +7504,7 @@ function editorRenderAvvisi() {
             <option value="lt">Minore di…</option>
           </select>
           <input id="ed-avv-val" class="ed-input" placeholder="valore" style="display:none;">
-          <input id="ed-avv-icon" class="ed-input" value="⚠️" placeholder="Icona (es. ⚠️ 💧 🌡️)">
+          <div style="display:flex; gap:6px;"><input id="ed-avv-icon" class="ed-input" style="flex:1;" value="⚠️" placeholder="Icona (es. ⚠️ 💧 🌡️)"><button type="button" onclick="dmIconPicker('#ed-avv-icon')" style="flex:0 0 40px; height:40px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
         </div>
         <button class="ed-btn-add" onclick="edAddAvviso()">＋ Aggiungi avviso</button>
       </div>`;

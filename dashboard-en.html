@@ -6086,7 +6086,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.10.2';
+const DASHBOARD_VERSION = '0.10.3';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6266,7 +6266,7 @@ function cdRenderCustomAvvisi() {
         const matches = ents.filter(en => { const s = STATES[en]; return s && cdAvvisoActive(a, s); });
         if (matches.length) active.push({ a, idx, count: matches.length });
     });
-    const sig = active.map(x => x.idx + ':' + x.count).join('|');
+    const sig = active.map(x => x.idx + ':' + x.count + ':' + (x.a.icon || '') + ':' + (x.a.name || '')).join('|');
     if (wrap._sig === sig) return;
     wrap._sig = sig;
     wrap.innerHTML = active.map(({ a, idx, count }) => {

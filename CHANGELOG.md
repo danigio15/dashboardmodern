@@ -6,6 +6,16 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.10.3] — 2026-07-19
+
+### Corretto
+- **Modifica icona/nome degli avvisi personalizzati** — cambiando solo l'icona (o il nome) la card in Home non si aggiornava (restava la vecchia icona): la guardia anti-flicker non considerava questi campi. Ora la modifica si vede subito.
+
+## [0.10.3] — 2026-07-19 (EN)
+
+### Fixed
+- **Editing a custom alert's icon/name** — changing only the icon (or name) didn't update the Home card (it kept the old icon): the anti-flicker guard ignored those fields. The change now shows immediately.
+
 ## [0.10.2] — 2026-07-19
 
 ### Corretto

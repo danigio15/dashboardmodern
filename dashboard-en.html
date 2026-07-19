@@ -781,6 +781,45 @@ header { display: flex; align-items: center; justify-content: space-between; mar
 
 /* ================= COMPONENTI DETTAGLI / POPUP MINORI ================= */
 .cam-popup-body { display: flex; flex-direction: column; gap: 15px; }
+/* ===== v0.9.8 (#cam): motore telecamere multi-strategia (WebRTC→HLS→MJPEG→Polling) ===== */
+.cam-zoom-container video, .cam-zoom-container img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; background:#000; z-index:2; }
+.cam-video-loader-overlay { position:absolute; inset:0; z-index:4; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; color:#cbd5e1; font-family:'Oswald',sans-serif; font-size:13px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; background:rgba(15,23,42,0.55); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); pointer-events:none; transition:opacity 0.3s ease; }
+.cam-video-loader-overlay.hidden { opacity:0; pointer-events:none; }
+.cam-video-loader-overlay::before, .cam-video-loader-overlay::after { content:''; position:absolute; width:28px; height:28px; border:2px solid rgba(103,232,249,0.65); pointer-events:none; }
+.cam-video-loader-overlay::before { top:22px; left:22px; border-right:none; border-bottom:none; }
+.cam-video-loader-overlay::after { bottom:22px; right:22px; border-left:none; border-top:none; }
+.cam-popup-spinner { width:220px; height:4px; position:relative; background:rgba(255,255,255,0.05); border-radius:4px; overflow:hidden; }
+.cam-popup-spinner::before { content:''; position:absolute; top:0; bottom:0; left:0; width:30%; background:linear-gradient(90deg, transparent 0%, #06b6d4 40%, #67e8f9 50%, #06b6d4 60%, transparent 100%); box-shadow:0 0 20px rgba(103,232,249,0.7), 0 0 40px rgba(6,182,212,0.4); border-radius:4px; animation:camScanLine 1.4s cubic-bezier(0.65,0,0.35,1) infinite; }
+@keyframes camScanLine { 0% { left:-30%; } 100% { left:100%; } }
+.cam-mode-badge { display:inline-block; padding:3px 9px; border-radius:100px; font-size:10px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; margin-right:6px; vertical-align:middle; }
+.cam-mode-badge.webrtc { background:#d1fae5; color:#065f46; }
+.cam-mode-badge.hls { background:#ede9fe; color:#5b21b6; }
+.cam-mode-badge.mjpeg { background:#fef3c7; color:#92400e; }
+.cam-mode-badge.polling { background:#dbeafe; color:#1e40af; }
+.cam-fs-btn { margin-top:12px; width:100%; padding:15px; background:linear-gradient(135deg,#06b6d4 0%,#0284c7 100%); color:#fff; border:none; border-radius:16px; font-family:'Oswald',sans-serif; font-size:15px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; cursor:pointer; box-shadow:0 8px 20px rgba(6,182,212,0.35); transition:all 0.3s cubic-bezier(0.165,0.84,0.44,1); display:flex; align-items:center; justify-content:center; gap:10px; }
+.cam-fs-btn:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(6,182,212,0.45); }
+.cam-fs-btn:active { transform:scale(0.97); }
+.cam-audio-btn { margin-top:10px; width:100%; padding:15px; background:linear-gradient(135deg,#10b981 0%,#059669 100%); color:#fff; border:none; border-radius:16px; font-family:'Oswald',sans-serif; font-size:15px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 8px 20px rgba(16,185,129,0.35); transition:all 0.3s cubic-bezier(0.165,0.84,0.44,1); }
+.cam-audio-btn:active { transform:scale(0.97); }
+.cam-audio-panel { margin-top:10px; background:#fff; border:1px solid var(--card-border); border-radius:14px; padding:10px 14px; display:flex; flex-direction:column; gap:0; transition:gap 0.3s ease, padding 0.3s ease; }
+.cam-audio-panel.expanded { gap:10px; padding:12px 14px 14px; }
+.cam-audio-panel-row { display:flex; align-items:center; gap:10px; }
+.cam-audio-status { font-family:'Oswald',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; flex-shrink:0; min-width:90px; }
+.cam-audio-status.active { color:#059669; }
+.cam-audio-status.muted { color:#94a3b8; }
+.cam-audio-status.no-track { color:#d97706; }
+.cam-audio-volume { -webkit-appearance:none; appearance:none; flex:1; height:6px; border-radius:4px; background:#e2e8f0; outline:none; }
+.cam-audio-volume::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:linear-gradient(135deg,#10b981 0%,#059669 100%); cursor:pointer; box-shadow:0 2px 6px rgba(16,185,129,0.4); }
+.cam-audio-volume::-moz-range-thumb { width:20px; height:20px; border:none; border-radius:50%; background:linear-gradient(135deg,#10b981 0%,#059669 100%); cursor:pointer; }
+.cam-audio-toggle-btn { background:#f1f5f9; border:none; border-radius:8px; width:34px; height:34px; font-size:16px; cursor:pointer; transition:all 0.3s ease; flex-shrink:0; }
+.cam-audio-info-btn { background:transparent; border:1px solid var(--card-border); border-radius:8px; width:28px; height:28px; font-size:11px; font-weight:700; color:var(--text-dim); cursor:pointer; flex-shrink:0; font-family:'Oswald',sans-serif; }
+.cam-audio-info-btn.active { background:#06b6d4; color:#fff; border-color:#06b6d4; }
+.cam-audio-diag { font-size:10px; font-family:'Monaco',monospace; color:var(--text-dim); font-weight:700; letter-spacing:0.4px; text-transform:uppercase; max-height:0; overflow:hidden; opacity:0; transition:max-height 0.3s ease, opacity 0.25s ease; }
+.cam-audio-panel.expanded .cam-audio-diag { max-height:60px; opacity:1; }
+.cam-audio-mini-banner { position:absolute; top:14px; left:50%; transform:translateX(-50%) translateY(-12px); background:rgba(15,23,42,0.88); color:#f0fdfa; font-family:'Oswald',sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:8px 14px; border-radius:999px; border:1px solid rgba(103,232,249,0.4); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:6; opacity:0; pointer-events:auto; cursor:pointer; transition:opacity 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1); white-space:nowrap; }
+.cam-audio-mini-banner.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.cam-popup-error { width:100%; border-radius:22px; background:linear-gradient(135deg,#7f1d1d 0%,#991b1b 100%); padding:28px 22px; color:#fee2e2; font-family:'Oswald',sans-serif; font-size:14px; font-weight:700; letter-spacing:0.8px; text-align:center; border:1px solid rgba(255,255,255,0.12); box-shadow:0 10px 30px rgba(220,38,38,0.30); }
+.cam-popup-hint { margin-top:12px; color:var(--text-dim); font-size:11px; font-weight:700; text-align:center; letter-spacing:0.5px; }
 .cam-popup-instructions { font-size: 11px; color: var(--text-dim); text-transform: uppercase; font-weight: 800; text-align: center; margin-bottom: 5px; letter-spacing: 1px; }
 
 /* IL NUOVO CONTAINER DELLA CAM - NIENTE PANZOOM SU VIDEO */
@@ -6047,7 +6086,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.9.7';
+const DASHBOARD_VERSION = '0.9.8';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -7324,20 +7363,38 @@ function editorRenderAvvisi() {
             </div>`;
         });
     });
+    const customList = cdCfgList('cd_avvisi_custom');
+    if (customList.length) {
+        const cinner = customList.map((a, i) => `<div class="ed-row"><div class="ed-row-main"><div class="ed-row-new">${a.icon||'⚠️'} ${(a.name||a.entity)} <span style="color:var(--text-dim,#94a3b8); font-size:11px; font-weight:700;">· ${cdAvvisoCondLabel(a)}</span></div><div class="ed-row-old mono">${a.entity}</div></div><div class="ed-del" onclick="edDelAvvisoCustom(${i})">🗑️</div></div>`).join('');
+        rows += `<details class="ed-acc" open><summary class="ed-acc-head">⭐ Custom <span class="ed-acc-n">${customList.length}</span></summary><div class="ed-acc-body"><div class="ed-list">${cinner}</div></div></details>`;
+    }
     if (!rows) rows = '<div class="ed-empty">No alerts configured</div>';
     return `
       <div class="ed-intro">Aggiungi sensori al Quadro Avvisi (Aperture, Batterie, Luci, Clima, Riscaldamento) con un nome pulito.</div>
       <div class="ed-list">${rows}</div>
       <div class="ed-form">
-        <select id="ed-avv-grp" class="ed-input">
+        <select id="ed-avv-grp" class="ed-input" onchange="var c=document.getElementById('ed-avv-custom'); if(c) c.style.display = this.value==='custom' ? 'block' : 'none';">
           <option value="win">🚪 Aperture (contact)</option>
           <option value="batt">🔋 Batterie (%)</option>
           <option value="luci">💡 Luci</option>
           <option value="clima">❄️ Climate</option>
           <option value="risc">🔥 Heating</option>
+          <option value="custom">⭐ Custom</option>
         </select>
         <input id="ed-avv-ent" list="ed-entity-list" class="ed-input mono" placeholder="binary_sensor.finestra_x_contact">
         <input id="ed-avv-name" class="ed-input" placeholder="Nome pulito (es. Finestra Studio)">
+        <div id="ed-avv-custom" style="display:none;">
+          <select id="ed-avv-cond" class="ed-input" onchange="var v=document.getElementById('ed-avv-val'); if(v) v.style.display = ['on','off'].includes(this.value) ? 'none' : 'block';">
+            <option value="on">On / Active / Open (on)</option>
+            <option value="off">Off / Closed (off)</option>
+            <option value="eq">Equal to…</option>
+            <option value="neq">Different from…</option>
+            <option value="gt">Greater than…</option>
+            <option value="lt">Less than…</option>
+          </select>
+          <input id="ed-avv-val" class="ed-input" placeholder="value" style="display:none;">
+          <input id="ed-avv-icon" class="ed-input" value="⚠️" placeholder="Icon (e.g. ⚠️ 💧 🌡️)">
+        </div>
         <button class="ed-btn-add" onclick="edAddAvviso()">＋ Aggiungi avviso</button>
       </div>`;
 }
@@ -7346,6 +7403,19 @@ function edAddAvviso() {
     const ent = (document.getElementById('ed-avv-ent').value||'').trim();
     const name = (document.getElementById('ed-avv-name').value||'').trim();
     if (!ent.includes('.')) { alert('Enter a valid entity'); return; }
+    if (grp === 'custom') {
+        const cond  = (document.getElementById('ed-avv-cond') || {}).value || 'on';
+        const value = ((document.getElementById('ed-avv-val') || {}).value || '').trim();
+        const icon  = (((document.getElementById('ed-avv-icon') || {}).value) || '⚠️').trim() || '⚠️';
+        if (['eq','neq','gt','lt'].includes(cond) && value === '') { alert('Enter the value for the chosen condition'); return; }
+        const list = cdCfgList('cd_avvisi_custom');
+        list.push({ entity: ent, name: name || ent, icon, cond, value });
+        localStorage.setItem('cd_avvisi_custom', JSON.stringify(list));
+        try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+        editorSwitch('avvisi');
+        edToast('Custom alert added');
+        return;
+    }
     const extG = edGetExtra('cd_gruppi_extra');
     if (!extG[grp]) extG[grp] = [];
     if (!extG[grp].includes(ent)) extG[grp].push(ent);
@@ -7374,6 +7444,15 @@ function edDelAvviso(grp, id) {
     }
     // Applica subito in memoria
     if (GRUPPI_MONITORAGGIO[grp]) GRUPPI_MONITORAGGIO[grp] = GRUPPI_MONITORAGGIO[grp].filter(x => x !== id);
+    editorSwitch('avvisi');
+    edToast('Alert removed');
+}
+function edDelAvvisoCustom(i) {
+    const list = cdCfgList('cd_avvisi_custom');
+    if (i < 0 || i >= list.length) return;
+    list.splice(i, 1);
+    localStorage.setItem('cd_avvisi_custom', JSON.stringify(list));
+    try { cdMarkDirty(); cdSyncPush(); } catch(e){}
     editorSwitch('avvisi');
     edToast('Alert removed');
 }
@@ -9581,6 +9660,7 @@ function apriMenuLaterale() {
 function forceClose(id) { 
   document.getElementById(id).classList.remove('show'); 
   if(id === 'details-modal') {
+      try { dmCamCleanup(); } catch(e) {}
       currentPopupType = null; 
       currentActiveCam = null;
       
@@ -10684,64 +10764,253 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 function apriCamera(camId, title) {
-    if(navigator.vibrate) navigator.vibrate(10);
+    if (navigator.vibrate) navigator.vibrate(10);
     currentPopupType = 'camera_view';
     const list = document.getElementById('details-list');
     document.getElementById('details-title').innerHTML = '📹 ' + title;
+    document.getElementById('details-modal').classList.add('show');
+    let cam = null;
+    getCameras().forEach((c, i) => { if (camSlug(c, i) === camId) cam = c; });
+    if (!cam) { list.innerHTML = '<div class="cam-popup-error">⚠️ Camera not found</div>'; return; }
+    dmCamOpen(cam, title, list);
+}
 
-    // v258: mappa id→stream derivata dalla config camere
-    const camMappings = {};
-    getCameras().forEach((cam, i) => { camMappings[camSlug(cam, i)] = cam.stream || (cam.entity ? cam.entity.split('.')[1] : ''); });
-    
-    const streamName = camMappings[camId];
+/* ═══ v0.9.8: MULTI-STRATEGY CAMERA ENGINE (from Casa Donato) ═══
+   Cascade native WebRTC → HLS → MJPEG → Polling snapshot, with automatic
+   fallback, audio, fullscreen and iOS WebView-compatible refresh.
+   Reuses Modern primitives: ws, msgId, pendingWsCallbacks, STATES,
+   LONG_LIVED_TOKEN, HA_HTTP_URL, toggleFullScreenCam. */
+let _dmCurrentCam = null, _dmPc = null, _dmWs = null, _dmHls = null;
+let _dmPollInt = null, _dmPollBlob = null, _dmPollFail = 0;
+const _dmCamBlobs = {};
+function dmIsWebRTC() { return typeof RTCPeerConnection !== 'undefined'; }
 
-    if (!streamName) {
-        list.innerHTML = '<div style="text-align:center; padding:20px; color:white;">⚠️ Errore flusso non trovato</div>';
-        document.getElementById('details-modal').classList.add('show');
+function dmStreamName(cam) { return cam.stream || (cam.entity ? cam.entity.split('.')[1] : ''); }
+
+async function dmCamOpen(cam, title, content) {
+    dmCamCleanup();
+    _dmCurrentCam = cam;
+    const streamName = dmStreamName(cam);
+    if (!streamName) { content.innerHTML = '<div class="cam-popup-error">⚠️ Stream not configured for this camera</div>'; return; }
+    const camState = STATES[cam.entity] && STATES[cam.entity].state;
+    if (camState === 'unavailable' || camState === 'unknown') {
+        content.innerHTML = `<div class="cam-popup-error">⚠️ Camera offline<br><span style="font-weight:500;opacity:.85;font-size:12px;text-transform:none;letter-spacing:0;">${cam.entity} not responding (state: ${camState || 'sconosciuto'})</span></div>`;
         return;
     }
-
-    const linkId    = "waw-" + streamName + "-" + Math.floor(Math.random() * 100000);
-    // &volume=1 forza audio attivo all'avvio (best effort, gestito da AlexxIT WebRTC)
-    const playerUrl = `${HA_HTTP_URL}/webrtc/embed?url=${linkId}&media=video,audio&volume=1`;
-
-    // Chiediamo ad HA di registrare la sessione WebRTC via WebSocket
-    if(ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-            id: msgId++,
-            type: "call_service",
-            domain: "webrtc",
-            service: "create_link",
-            service_data: {
-                url: streamName,
-                link_id: linkId,
-                open_limit: 10,
-                time_to_live: 14400
-            }
-        }));
+    const strategies = [];
+    if (dmIsWebRTC()) strategies.push({ name: 'WebRTC', run: () => dmCamWebRTC(cam, streamName, content) });
+    strategies.push({ name: 'HLS',     run: () => dmCamHLS(cam, content) });
+    strategies.push({ name: 'MJPEG',   run: () => dmCamMJPEG(cam, content) });
+    strategies.push({ name: 'Polling', run: () => Promise.resolve(dmCamPolling(cam, content)) });
+    for (const st of strategies) {
+        try { await st.run(); console.log('[Cam] ✓ ' + st.name); return; }
+        catch (err) { console.warn('[Cam] ' + st.name + ' fallito:', err && err.message || err); dmCleanupWebRTC(); dmCleanupHLS(); }
     }
-
-    list.innerHTML = `
-      <div class="cam-popup-body">
-         <div id="video-iframe-container" class="cam-zoom-container" style="background:#000; position:relative; padding-top: 56.25%; border-radius: 22px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
-            
-            <iframe 
-                src="${playerUrl}" 
-                allow="autoplay; fullscreen; microphone" 
-                style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; z-index:2;">
-            </iframe>
-
-            <button id="close-fullscreen-btn" style="display:none; position:absolute; top:20px; right:20px; z-index:10; background:rgba(15,23,42,0.8); border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:50%; width:45px; height:45px; font-size:18px; font-weight:bold; cursor:pointer; align-items:center; justify-content:center; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); box-shadow:0 10px 25px rgba(0,0,0,0.5);" onclick="toggleFullScreenCam()">✕</button>
-
-         </div>
-         <div style="margin-top:15px; color: #94a3b8; font-size: 12px; text-align:center;">
-            💡 Tocca lo schermo per l'audio • WebRTC v5 (audio fix)
-         </div>
-         <button id="toggle-fs-main-btn" class="d-action" style="margin-top:10px; width:100%; padding:15px;" onclick="toggleFullScreenCam()">🔲 SCHERMO INTERO</button>
-      </div>`;
-    
-    document.getElementById('details-modal').classList.add('show');
+    content.innerHTML = '<div class="cam-popup-error">⚠️ Unable to open camera<br><span style="font-weight:500;opacity:.85;font-size:12px;text-transform:none;letter-spacing:0;">No streaming strategy worked</span></div>';
 }
+
+const _DM_FS_BTNS = `<button id="close-fullscreen-btn" class="close-fullscreen-btn" style="display:none; position:absolute; top:16px; right:16px; z-index:99999; background:rgba(15,23,42,0.85); border:2px solid rgba(255,255,255,0.4); color:#fff; border-radius:50%; width:52px; height:52px; font-size:22px; font-weight:bold; cursor:pointer; align-items:center; justify-content:center; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); box-shadow:0 10px 25px rgba(0,0,0,0.6);" onclick="toggleFullScreenCam()">✕</button>`;
+
+async function dmCamWebRTC(cam, streamName, content) {
+    content.innerHTML = `<div class="cam-popup-body"><div id="video-iframe-container" class="cam-zoom-container" style="position:relative; padding-top:56.25%;"><video id="cam-video" autoplay playsinline></video><div id="cam-audio-mini" class="cam-audio-mini-banner" onclick="dmUnlockAudioWebRTC()">🔇 Tap per audio</div><div id="cam-video-loader" class="cam-video-loader-overlay"><div class="cam-popup-spinner"></div><div>Connecting WebRTC…</div></div>${_DM_FS_BTNS}</div><button id="toggle-fs-main-btn" class="cam-fs-btn" onclick="toggleFullScreenCam()">🔲 Fullscreen</button></div>`;
+    const videoEl = document.getElementById('cam-video');
+    const loaderEl = document.getElementById('cam-video-loader');
+    videoEl.volume = 1.0; videoEl.muted = false;
+    const started = new Promise((resolve, reject) => {
+        let done = false;
+        const ok = () => { if (done) return; done = true; if (loaderEl) loaderEl.classList.add('hidden'); resolve(); };
+        videoEl.addEventListener('playing', ok, { once: true });
+        videoEl.addEventListener('loadeddata', ok, { once: true });
+        setTimeout(() => { if (done) return; done = true; reject(new Error('WebRTC video did not start within 3s')); }, 3000);
+    });
+    await dmStartWebRTC(streamName, videoEl);
+    await started;
+}
+
+async function dmCamHLS(cam, content) {
+    if (!ws || ws.readyState !== WebSocket.OPEN) throw new Error('HA WebSocket not active');
+    const reqId = msgId++;
+    const hlsUrl = await new Promise((resolve, reject) => {
+        const tid = setTimeout(() => { if (pendingWsCallbacks[reqId]) { delete pendingWsCallbacks[reqId]; reject(new Error('Timeout HLS')); } }, 5000);
+        pendingWsCallbacks[reqId] = (m) => { clearTimeout(tid); if (m.success && m.result && m.result.url) resolve(m.result.url); else reject(new Error((m.error && m.error.message) || 'HLS not available')); };
+        ws.send(JSON.stringify({ id: reqId, type: 'camera/stream', entity_id: cam.entity, format: 'hls' }));
+    });
+    content.innerHTML = `<div class="cam-popup-body"><div id="video-iframe-container" class="cam-zoom-container" style="position:relative; padding-top:56.25%;"><video id="cam-hls" autoplay playsinline controls></video><div id="cam-audio-mini" class="cam-audio-mini-banner" onclick="dmUnlockAudio()">🔇 Tap per audio</div><div id="cam-video-loader" class="cam-video-loader-overlay"><div class="cam-popup-spinner"></div><div>Connecting…</div></div>${_DM_FS_BTNS}</div><button id="toggle-fs-main-btn" class="cam-fs-btn" onclick="toggleFullScreenCam()">🔲 Fullscreen</button><div id="cam-audio-panel" class="cam-audio-panel"><div class="cam-audio-panel-row"><div id="cam-audio-status" class="cam-audio-status muted">🔊 Audio</div><button class="cam-audio-toggle-btn" onclick="dmToggleAudio()" title="Mute/unmute">🔊</button><input id="cam-audio-volume" class="cam-audio-volume" type="range" min="0" max="100" value="100" oninput="dmSetVolume(this.value)"><button class="cam-audio-info-btn" onclick="dmToggleDiag(this)" title="Diagnostics">ℹ</button></div><div id="cam-audio-diag" class="cam-audio-diag">Waiting…</div></div></div>`;
+    const videoEl = document.getElementById('cam-hls');
+    const loaderEl = document.getElementById('cam-video-loader');
+    videoEl.volume = 1.0; videoEl.muted = false;
+    const supportsNative = videoEl.canPlayType('application/vnd.apple.mpegurl') !== '';
+    if (supportsNative) { videoEl.src = hlsUrl; }
+    else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+        _dmHls = new Hls({ lowLatencyMode: true, backBufferLength: 10, maxBufferLength: 8 });
+        _dmHls.loadSource(hlsUrl); _dmHls.attachMedia(videoEl);
+        _dmHls.on(Hls.Events.MANIFEST_PARSED, () => dmTryPlayUnmuted(videoEl));
+        _dmHls.on(Hls.Events.ERROR, (e, data) => console.error('[HLS]', data));
+    } else { throw new Error('HLS not supported and hls.js missing'); }
+    dmTryPlayUnmuted(videoEl);
+    await new Promise((resolve, reject) => {
+        let done = false;
+        const onReady = () => { if (done) return; done = true; if (loaderEl) loaderEl.classList.add('hidden');
+            const iv = setInterval(() => { if (!document.getElementById('cam-hls')) { clearInterval(iv); return; } dmUpdateAudioStatus(); }, 500);
+            dmUpdateAudioStatus(); resolve(); };
+        ['loadedmetadata','canplay','loadeddata','playing'].forEach(ev => videoEl.addEventListener(ev, onReady, { once: true }));
+        videoEl.addEventListener('error', () => { if (done) return; done = true; reject(new Error('Video error')); }, { once: true });
+        setTimeout(() => { if (done) return; done = true; reject(new Error('HLS: no frame within 10s')); }, 10000);
+    });
+}
+
+async function dmCamMJPEG(cam, content) {
+    let streamUrl = null;
+    const state = STATES[cam.entity];
+    if (state && state.attributes && state.attributes.entity_picture) {
+        streamUrl = state.attributes.entity_picture.replace('/api/camera_proxy/', '/api/camera_proxy_stream/');
+    }
+    if (!streamUrl) {
+        try { streamUrl = await dmGetSignedPath('/api/camera_proxy_stream/' + cam.entity, 14400); }
+        catch (e) { throw new Error('No MJPEG URL: ' + (e.message || e)); }
+    }
+    content.innerHTML = `<div class="cam-popup-body"><div id="video-iframe-container" class="cam-zoom-container" style="position:relative; padding-top:56.25%;"><img id="cam-mjpeg" src="${streamUrl}" alt="${cam.entity}"><div id="cam-video-loader" class="cam-video-loader-overlay"><div class="cam-popup-spinner"></div><div>Connecting stream…</div></div>${_DM_FS_BTNS}</div><button id="toggle-fs-main-btn" class="cam-fs-btn" onclick="toggleFullScreenCam()">🔲 Fullscreen</button><div class="cam-popup-hint"><span class="cam-mode-badge mjpeg">MJPEG</span> Continuous live stream</div></div>`;
+    const mjpegEl = document.getElementById('cam-mjpeg');
+    const loaderEl = document.getElementById('cam-video-loader');
+    await new Promise((resolve, reject) => {
+        let done = false;
+        mjpegEl.onload = () => { if (done) return; done = true; if (loaderEl) loaderEl.classList.add('hidden'); resolve(); };
+        mjpegEl.onerror = () => { if (done) return; done = true; reject(new Error('MJPEG load error')); };
+        setTimeout(() => { if (done) return; done = true; reject(new Error('MJPEG: no frame within 3s')); }, 3000);
+    });
+}
+
+async function dmCamPolling(cam, content) {
+    const buildUrl = () => {
+        const state = STATES[cam.entity];
+        if (!state || !state.attributes || !state.attributes.entity_picture) return null;
+        const path = state.attributes.entity_picture;
+        return path + (path.includes('?') ? '&' : '?') + 't=' + Date.now();
+    };
+    if (!buildUrl()) { content.innerHTML = `<div class="cam-popup-error">⚠️ Stream unavailable<br><span style="font-weight:500;opacity:.85;font-size:12px;text-transform:none;letter-spacing:0;">Camera ${cam.entity} does not expose snapshots</span></div>`; return; }
+    const slug = camSlug(cam, 0);
+    content.innerHTML = `<div class="cam-popup-body"><div id="video-iframe-container" class="cam-zoom-container" style="position:relative; padding-top:56.25%;"><img id="cam-polling" alt="${cam.entity}"><div id="cam-video-loader" class="cam-video-loader-overlay"><div class="cam-popup-spinner"></div><div>Loading…</div></div>${_DM_FS_BTNS}</div><button id="toggle-fs-main-btn" class="cam-fs-btn" onclick="toggleFullScreenCam()">🔲 Fullscreen</button><button id="cam-audio-activate-btn" class="cam-audio-btn" onclick="dmAttivaAudio()">🔊 Attiva audio</button><div class="cam-popup-hint"><span class="cam-mode-badge polling">SNAPSHOT</span> Preview ~2 fps · Tap "Enable audio" for audio + video</div></div>`;
+    const imgEl = document.getElementById('cam-polling');
+    const loaderEl = document.getElementById('cam-video-loader');
+    if (_dmPollInt) clearInterval(_dmPollInt);
+    _dmPollFail = 0;
+    const loadFrame = async () => {
+        if (!document.getElementById('cam-polling')) { clearInterval(_dmPollInt); _dmPollInt = null; return; }
+        if (_dmPollFail >= 5) { clearInterval(_dmPollInt); _dmPollInt = null; content.innerHTML = '<div class="cam-popup-error">⚠️ Camera not responding<br><span style="font-weight:500;opacity:.85;font-size:12px;text-transform:none;letter-spacing:0;">5 attempts failed — check the camera connection</span></div>'; return; }
+        const url = buildUrl(); if (!url) return;
+        const blob = await dmLoadImageBlob(url);
+        if (!blob || !imgEl.isConnected) { _dmPollFail++; return; }
+        _dmPollFail = 0;
+        if (_dmPollBlob && _dmPollBlob.startsWith('blob:')) URL.revokeObjectURL(_dmPollBlob);
+        _dmPollBlob = blob; imgEl.src = blob;
+        if (loaderEl) loaderEl.classList.add('hidden');
+    };
+    await loadFrame();
+    _dmPollInt = setInterval(loadFrame, 500);
+}
+
+async function dmStartWebRTC(streamName, videoEl) {
+    dmCleanupWebRTC();
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }], bundlePolicy: 'max-bundle' });
+    _dmPc = pc;
+    pc.ontrack = (e) => { if (videoEl.srcObject !== e.streams[0]) videoEl.srcObject = e.streams[0]; dmTryPlayUnmuted(videoEl); };
+    pc.addTransceiver('video', { direction: 'recvonly' });
+    pc.addTransceiver('audio', { direction: 'recvonly' });
+    const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    let signedPath;
+    try { signedPath = await dmGetSignedPath('/api/webrtc/ws?url=' + encodeURIComponent(streamName), 60); }
+    catch (e) { dmCleanupWebRTC(); throw new Error('Unable to sign WebRTC URL: ' + (e.message || e)); }
+    const camWs = new WebSocket(`${wsProto}//${location.host}${signedPath}`);
+    _dmWs = camWs;
+    pc.onicecandidate = (e) => { if (camWs.readyState === WebSocket.OPEN) camWs.send(JSON.stringify({ type: 'webrtc/candidate', value: e.candidate ? e.candidate.candidate : '' })); };
+    return new Promise((resolve, reject) => {
+        let settled = false;
+        const fail = (err) => { if (settled) return; settled = true; clearTimeout(tid); reject(err); };
+        const done = () => { if (settled) return; settled = true; clearTimeout(tid); resolve(pc); };
+        const tid = setTimeout(() => fail(new Error('WebRTC timeout (10s)')), 10000);
+        camWs.onopen = async () => { try { const offer = await pc.createOffer(); await pc.setLocalDescription(offer); camWs.send(JSON.stringify({ type: 'webrtc/offer', value: offer.sdp })); } catch (err) { fail(err); } };
+        camWs.onmessage = async (ev) => {
+            let msg; try { msg = JSON.parse(ev.data); } catch (e) { return; }
+            if (msg.type === 'webrtc/answer') { try { await pc.setRemoteDescription({ type: 'answer', sdp: msg.value }); done(); } catch (err) { fail(err); } }
+            else if (msg.type === 'webrtc/candidate') { if (msg.value) { try { await pc.addIceCandidate({ candidate: msg.value, sdpMid: '0' }); } catch (err) {} } }
+            else if (msg.type === 'error') { fail(new Error(msg.value || 'WebRTC server error')); }
+        };
+        camWs.onerror = () => fail(new Error('WebRTC WebSocket unreachable'));
+        camWs.onclose = (e) => { if (!settled) { if (e.code === 4401 || e.code === 4403) fail(new Error('WebRTC auth rejected')); else fail(new Error('WS chiusa prima dell handshake (code ' + e.code + ')')); } };
+    });
+}
+
+function dmGetSignedPath(unsignedPath, expires = 60) {
+    return new Promise((resolve, reject) => {
+        if (!ws || ws.readyState !== WebSocket.OPEN) { reject(new Error('HA WebSocket not active')); return; }
+        const reqId = msgId++;
+        const tid = setTimeout(() => { if (pendingWsCallbacks[reqId]) { delete pendingWsCallbacks[reqId]; reject(new Error('Sign path timeout')); } }, 4000);
+        pendingWsCallbacks[reqId] = (m) => { clearTimeout(tid); if (m.success && m.result && m.result.path) resolve(m.result.path); else reject(new Error((m.error && m.error.message) || 'sign_path failed')); };
+        ws.send(JSON.stringify({ id: reqId, type: 'auth/sign_path', path: unsignedPath, expires: expires }));
+    });
+}
+
+async function dmLoadImageBlob(path, timeoutMs = 3000) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+        const resp = await fetch(path, { credentials: 'include', headers: { 'Authorization': 'Bearer ' + LONG_LIVED_TOKEN }, signal: ctrl.signal });
+        if (!resp.ok) return null;
+        return URL.createObjectURL(await resp.blob());
+    } catch (e) { return null; } finally { clearTimeout(timer); }
+}
+
+function dmTryPlayUnmuted(videoEl) {
+    if (!videoEl) return;
+    videoEl.muted = false; videoEl.volume = 1.0;
+    const pp = videoEl.play();
+    if (pp && typeof pp.then === 'function') {
+        pp.then(() => dmHideAudioMini()).catch(() => { videoEl.muted = true; videoEl.play().catch(() => {}); dmShowAudioMini(); });
+    }
+}
+function dmShowAudioMini() { const b = document.getElementById('cam-audio-mini'); if (!b) return; b.classList.add('show'); clearTimeout(b._t); b._t = setTimeout(() => b.classList.remove('show'), 6000); }
+function dmHideAudioMini() { const b = document.getElementById('cam-audio-mini'); if (b) { b.classList.remove('show'); clearTimeout(b._t); } }
+function dmUpdateAudioStatus() {
+    const v = document.getElementById('cam-hls'), st = document.getElementById('cam-audio-status'), dg = document.getElementById('cam-audio-diag');
+    if (!v || !st) return;
+    let tracks = 'n/a';
+    try { if (v.audioTracks) tracks = v.audioTracks.length; else if (_dmHls && _dmHls.audioTracks) tracks = _dmHls.audioTracks.length; } catch (e) {}
+    const vol = Math.round(v.volume * 100);
+    if (v.muted || vol === 0) { st.textContent = '🔇 Muto'; st.className = 'cam-audio-status muted'; }
+    else if (tracks === 0) { st.textContent = '⚠ No audio'; st.className = 'cam-audio-status no-track'; }
+    else { st.textContent = '🔊 ' + vol + '%'; st.className = 'cam-audio-status active'; }
+    if (dg) dg.textContent = 'Tracks: ' + tracks + ' · muted=' + v.muted + ' · vol=' + vol + '% · state=' + v.readyState;
+}
+
+window.dmUnlockAudio = function () { const v = document.getElementById('cam-hls'); if (v) { v.muted = false; v.volume = 1.0; v.play().catch(() => {}); } dmHideAudioMini(); if (navigator.vibrate) navigator.vibrate(20); dmUpdateAudioStatus(); };
+window.dmUnlockAudioWebRTC = function () { const v = document.getElementById('cam-video'); if (v) { v.muted = false; v.volume = 1.0; v.play().catch(() => {}); } dmHideAudioMini(); if (navigator.vibrate) navigator.vibrate(20); };
+window.dmToggleAudio = function () { const v = document.getElementById('cam-hls'); if (!v) return; v.muted = !v.muted; if (!v.muted && v.volume === 0) v.volume = 1.0; v.play().catch(() => {}); if (!v.muted) dmHideAudioMini(); dmUpdateAudioStatus(); };
+window.dmSetVolume = function (val) { const v = document.getElementById('cam-hls'); if (!v) return; const x = Math.max(0, Math.min(100, parseInt(val, 10) || 0)) / 100; v.volume = x; v.muted = (x === 0); v.play().catch(() => {}); dmUpdateAudioStatus(); };
+window.dmToggleDiag = function (btn) { const p = document.getElementById('cam-audio-panel'); if (!p) return; const ex = p.classList.toggle('expanded'); if (btn) btn.classList.toggle('active', ex); };
+window.dmAttivaAudio = async function () {
+    const cam = _dmCurrentCam; if (!cam) return;
+    if (navigator.vibrate) navigator.vibrate(15);
+    if (_dmPollInt) { clearInterval(_dmPollInt); _dmPollInt = null; }
+    if (_dmPollBlob && _dmPollBlob.startsWith('blob:')) { URL.revokeObjectURL(_dmPollBlob); _dmPollBlob = null; }
+    const content = document.getElementById('details-list'); if (!content) return;
+    content.innerHTML = '<div class="cam-popup-body"><div class="cam-zoom-container" style="position:relative;padding-top:56.25%;"><div class="cam-video-loader-overlay"><div class="cam-popup-spinner"></div><div>Starting HLS audio…</div></div></div></div>';
+    try { await dmCamHLS(cam, content); const v = document.getElementById('cam-hls'); if (v) { v.muted = false; v.volume = 1.0; await v.play().catch(() => {}); } }
+    catch (e) { content.innerHTML = `<div class="cam-popup-error">⚠️ Audio unavailable<br><span style="font-weight:500;opacity:.85;font-size:12px;text-transform:none;letter-spacing:0;">${e.message || e}</span></div>`; setTimeout(() => { const c = document.getElementById('details-list'); if (c) dmCamPolling(cam, c); }, 3500); }
+};
+
+function dmCleanupWebRTC() { if (_dmPc) { try { _dmPc.close(); } catch (e) {} _dmPc = null; } if (_dmWs) { try { _dmWs.close(); } catch (e) {} _dmWs = null; } }
+function dmCleanupHLS() { if (_dmHls) { try { _dmHls.destroy(); } catch (e) {} _dmHls = null; } }
+function dmCamCleanup() {
+    dmCleanupWebRTC(); dmCleanupHLS();
+    const mj = document.getElementById('cam-mjpeg'); if (mj) mj.src = '';
+    const hv = document.getElementById('cam-hls'); if (hv) { hv.removeAttribute('src'); try { hv.load(); } catch (e) {} }
+    const wv = document.getElementById('cam-video'); if (wv) { try { wv.srcObject = null; } catch (e) {} }
+    if (_dmPollInt) { clearInterval(_dmPollInt); _dmPollInt = null; }
+    if (_dmPollBlob && _dmPollBlob.startsWith('blob:')) { URL.revokeObjectURL(_dmPollBlob); _dmPollBlob = null; }
+    const pl = document.getElementById('cam-polling'); if (pl) pl.src = '';
+    _dmCurrentCam = null;
+}
+
 function renderVideoHls(url) {
     const video = document.getElementById('popup-cam-video');
     const fallbackImg = document.getElementById('popup-cam-fallback-img');

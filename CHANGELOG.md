@@ -6,6 +6,22 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.9.8] — 2026-07-19
+
+### Aggiunto
+- **📹 Nuovo motore telecamere multi-strategia** — riscritta tutta la parte streaming: cascata automatica **WebRTC nativo → HLS → MJPEG → Polling snapshot**. Il sistema prova le strategie in ordine e si ferma alla prima che funziona, con **audio**, **schermo intero** (iOS/Android) e refresh compatibile con la WebView dell'app HA. Sostituisce il vecchio player a iframe `/webrtc/embed`. La configurazione delle telecamere (nome, entità) resta invariata.
+
+### Corretto
+- **⭐ Avvisi personalizzati nel tab giusto** — l'opzione "Personalizzato" ora compare nel tab **Avvisi** dell'editor (prima era finita in un blocco diverso e non si vedeva). Crea un avviso su qualsiasi entità con nome, condizione e icona a scelta.
+
+## [0.9.8] — 2026-07-19 (EN)
+
+### Added
+- **📹 New multi-strategy camera engine** — the whole streaming part was rewritten: automatic cascade **native WebRTC → HLS → MJPEG → Polling snapshot**. The system tries strategies in order and stops at the first that works, with **audio**, **fullscreen** (iOS/Android) and HA app WebView-compatible refresh. Replaces the old `/webrtc/embed` iframe player. Camera configuration (name, entity) stays unchanged.
+
+### Fixed
+- **⭐ Custom alerts in the right tab** — the "Custom" option now appears in the editor's **Alerts** tab (previously it ended up in a different block and wasn't visible). Create an alert on any entity with your own name, condition and icon.
+
 ## [0.9.7] — 2026-07-19
 
 ### Aggiunto

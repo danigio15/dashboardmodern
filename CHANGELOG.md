@@ -6,6 +6,16 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.10.5] — 2026-07-19
+
+### Corretto
+- **Aggiornamento automatico più pulito** — dopo una nuova versione la dashboard non mostra più per qualche secondo i dati vecchi seguiti da un ricaricamento "a scatto": ora il controllo è più rapido (1,2s invece di 4s) e durante il reload compare un **overlay di aggiornamento** ordinato ("Aggiornamento a vX…"), così la transizione alla versione corrente è fluida.
+
+## [0.10.5] — 2026-07-19 (EN)
+
+### Fixed
+- **Smoother auto-update** — after a new version the dashboard no longer shows stale data for a few seconds followed by a jarring reload: the check is now faster (1.2s instead of 4s) and a clean **update overlay** ("Updating to vX…") appears during the reload, making the transition to the current version seamless.
+
 ## [0.10.4] — 2026-07-19
 
 ### Corretto

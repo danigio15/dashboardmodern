@@ -6092,7 +6092,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.10.4';
+const DASHBOARD_VERSION = '0.10.5';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -10881,16 +10881,26 @@ async function cdCheckUpdate() {
         const target = m[1];
         const params = new URLSearchParams(location.search);
         if (params.get('v') === target) {
-            // Già ricaricato con la nuova versione ma il browser serve ancora la vecchia: cache ostinata
             console.warn('[Dashboard] Nuova versione ' + target + ' disponibile ma la cache non si aggiorna. Svuota la cache del browser/app.');
             return;
         }
-        console.log('[Dashboard] Aggiornamento ' + DASHBOARD_VERSION + ' → ' + target + ': ricarico…');
+        console.log('[Dashboard] Aggiornamento ' + DASHBOARD_VERSION + ' \u2192 ' + target + ': ricarico\u2026');
+        cdShowUpdateOverlay(target);
         params.set('v', target);
-        location.replace(location.pathname + '?' + params.toString() + location.hash);
+        setTimeout(() => location.replace(location.pathname + '?' + params.toString() + location.hash), 650);
     } catch(e) {}
 }
-document.addEventListener('DOMContentLoaded', () => setTimeout(cdCheckUpdate, 4000));
+function cdShowUpdateOverlay(target) {
+    if (document.getElementById('cd-update-overlay')) return;
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const o = document.createElement('div');
+    o.id = 'cd-update-overlay';
+    o.style.cssText = 'position:fixed; inset:0; z-index:2147483647; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; font-family:Oswald,sans-serif; opacity:0; transition:opacity 0.2s ease; background:' + (dark ? 'rgba(8,12,22,0.94)' : 'rgba(232,237,243,0.97)') + '; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);';
+    o.innerHTML = '<div style="width:46px; height:46px; border:4px solid ' + (dark ? 'rgba(56,189,248,0.22)' : 'rgba(14,165,233,0.22)') + '; border-top-color:#0ea5e9; border-radius:50%; animation:cdSpin 0.8s linear infinite;"></div><div style="font-size:15px; font-weight:800; letter-spacing:1px; color:' + (dark ? '#7dd3fc' : '#0369a1') + '; text-transform:uppercase;">Aggiornamento a v' + target + '\u2026</div><style>@keyframes cdSpin{to{transform:rotate(360deg)}}</style>';
+    document.body.appendChild(o);
+    requestAnimationFrame(() => { o.style.opacity = '1'; });
+}
+document.addEventListener('DOMContentLoaded', () => setTimeout(cdCheckUpdate, 1200));
 setInterval(cdCheckUpdate, 6 * 3600 * 1000);
 
 

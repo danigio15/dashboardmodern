@@ -6,6 +6,16 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.10.2] — 2026-07-19
+
+### Corretto
+- **Popup avvisi personalizzati** — si apriva un attimo poi si svuotava ("Nessun elemento attivo"): il refresh automatico lo ridisegnava con la funzione sbagliata. Ora resta popolato e **si aggiorna live** con l'elenco delle entità attive.
+
+## [0.10.2] — 2026-07-19 (EN)
+
+### Fixed
+- **Custom alert popup** — it opened for a moment then went empty ("No active entity"): the auto-refresh redrew it with the wrong function. It now stays populated and **updates live** with the list of active entities.
+
 ## [0.10.1] — 2026-07-19
 
 ### Corretto

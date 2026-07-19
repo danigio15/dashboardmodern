@@ -6086,7 +6086,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.10.1';
+const DASHBOARD_VERSION = '0.10.2';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6275,27 +6275,40 @@ function cdRenderCustomAvvisi() {
         return `<div class="glance-card" style="--g-rgb: 245,158,11; display:flex;" onclick="apriAvvisoCustom(${idx})"><div class="g-info"><span class="g-name">${nm}</span><span class="g-val">${count}</span></div><div class="g-icon-wrap anim-ping" style="color:#f59e0b;">${ic}</div></div>`;
     }).join('');
 }
-/* v0.10.1: popup listing WHICH entities of the alert are currently active */
+/* v0.10.2: popup listing WHICH entities are active — refreshes live without going empty */
 function apriAvvisoCustom(idx) {
     if (navigator.vibrate) navigator.vibrate(10);
     const a = cdCfgList('cd_avvisi_custom')[idx];
     if (!a) return;
     currentPopupType = 'avviso_custom';
+    window._avvPopupIdx = idx;
+    document.getElementById('details-modal').classList.add('show');
+    _avvRenderPopup(a, idx, true);
+}
+function updateAvvisoCustom() {
+    const idx = window._avvPopupIdx;
+    const a = cdCfgList('cd_avvisi_custom')[idx];
+    if (a) _avvRenderPopup(a, idx, false);
+}
+function _avvRenderPopup(a, idx, force) {
+    const list = document.getElementById('details-list');
+    if (!list) return;
     const ents = a.entities || (a.entity ? [a.entity] : []);
     const matches = ents.filter(en => { const s = STATES[en]; return s && cdAvvisoActive(a, s); });
     document.getElementById('details-title').innerHTML = (a.icon || '⚠️') + ' ' + String(a.name || 'Alert').toUpperCase();
-    const list = document.getElementById('details-list');
+    const sig = 'avv' + idx + '|' + matches.map(en => en + ':' + (STATES[en] && STATES[en].state)).join(',');
+    if (!force && list._avvSig === sig) return;
+    list._avvSig = sig;
     if (!matches.length) {
         list.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-dim); font-weight:800; text-transform:uppercase; letter-spacing:1px; font-size:13px;">No active entity</div>';
-    } else {
-        list.innerHTML = matches.map(en => {
-            const s = STATES[en];
-            const nm = (s && s.attributes && s.attributes.friendly_name) || en;
-            const st = s ? String(s.state).toUpperCase() : '—';
-            return `<div class="detail-row"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;overflow:hidden;"><div class="d-icon" style="flex-shrink:0;">${a.icon || '⚠️'}</div><div class="d-info" style="min-width:0;flex:1;overflow:hidden;"><div class="d-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;">${nm}</div><div class="d-state"><span style="font-family:monospace; font-size:11px; color:var(--text-dim,#64748b);">${en}</span> · <span style="font-weight:900; color:#f59e0b;">${st}</span></div></div></div></div>`;
-        }).join('');
+        return;
     }
-    document.getElementById('details-modal').classList.add('show');
+    list.innerHTML = matches.map(en => {
+        const s = STATES[en];
+        const nm = (s && s.attributes && s.attributes.friendly_name) || en;
+        const st = s ? String(s.state).toUpperCase() : '—';
+        return `<div class="detail-row"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;overflow:hidden;"><div class="d-icon" style="flex-shrink:0;">${a.icon || '⚠️'}</div><div class="d-info" style="min-width:0;flex:1;overflow:hidden;"><div class="d-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;">${nm}</div><div class="d-state"><span style="font-family:monospace; font-size:11px; color:var(--text-dim,#64748b);">${en}</span> · <span style="font-weight:900; color:#f59e0b;">${st}</span></div></div></div></div>`;
+    }).join('');
 }
 
 /* ═══ v254: SISTEMA OVERRIDE ENTITÀ (configurabile da UI, solo admin) ═══ */
@@ -12149,7 +12162,8 @@ function render() {
       if (invStatus) invStatus.textContent = isGrid ? 'ON-GRID' : 'ALERT';
       if (invBadge)  invBadge.className    = 'srv-status-badge ' + (isGrid ? 'online' : 'offline');
       
-      if(currentPopupType && document.getElementById('details-modal').classList.contains('show') && !currentPopupType.startsWith('subloads_') && currentPopupType !== 'gestione_luci' && currentPopupType !== 'camera_view') { apriDettagli(null, currentPopupType); }
+      if(currentPopupType && document.getElementById('details-modal').classList.contains('show') && !currentPopupType.startsWith('subloads_') && currentPopupType !== 'gestione_luci' && currentPopupType !== 'camera_view' && currentPopupType !== 'avviso_custom') { apriDettagli(null, currentPopupType); }
+      else if(currentPopupType === 'avviso_custom' && document.getElementById('details-modal').classList.contains('show')) { updateAvvisoCustom(); }
 
       updateClimaCards(); // v274: autonomo — si aggiorna anche se altre sezioni falliscono
       updateDeviceCards(); // v280: dispositivi personalizzati

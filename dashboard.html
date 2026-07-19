@@ -5272,7 +5272,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
       <!-- Foto sfondo - cambia tra idle e plugged -->
       <img id="ev-mod-car-img" class="lm-hero-bg"
            src=""
-           onerror="this.onerror=null;this.src=''"
+           onerror="this.onerror=null; this.dataset.evFailed='1'; this.src=''; this.style.display='none';"
            alt=""
            style="transition:opacity 0.4s ease;">
       <div class="lm-hero-top">
@@ -6095,7 +6095,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.10.6';
+const DASHBOARD_VERSION = '0.10.7';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -9851,37 +9851,56 @@ setTimeout(updateEditButtonVisibility, 6000);
 
 function apriMenuLaterale() {
     if(navigator.vibrate) navigator.vibrate(10);
+    // Standalone (file aperto direttamente, non dentro un pannello HA): apri il menu Dashboard Modern
+    if (window.parent === window) { cdOpenAppMenu(); return; }
+    // Dentro Home Assistant come pannello/iframe: toggola la sidebar nativa di HA
     try {
-        if (window.parent !== window) {
-            const ParentCustomEvent = window.parent.CustomEvent;
-            const toggleEvent = new ParentCustomEvent('hass-toggle-menu', { bubbles: true, composed: true });
-            const pDoc = window.parent.document;
-            const haElement = pDoc.querySelector('home-assistant');
-            if (haElement) {
-                haElement.dispatchEvent(toggleEvent);
-                if (haElement.shadowRoot) {
-                    const main = haElement.shadowRoot.querySelector('home-assistant-main');
-                    if (main) main.dispatchEvent(toggleEvent);
-                }
-            } else {
-                pDoc.body.dispatchEvent(toggleEvent);
-            }
+        const ParentCustomEvent = window.parent.CustomEvent || CustomEvent;
+        const toggleEvent = new ParentCustomEvent('hass-toggle-menu', { bubbles: true, composed: true });
+        const pDoc = window.parent.document;
+        const haElement = pDoc.querySelector('home-assistant');
+        if (haElement) {
+            haElement.dispatchEvent(toggleEvent);
+            if (haElement.shadowRoot) { const main = haElement.shadowRoot.querySelector('home-assistant-main'); if (main) main.dispatchEvent(toggleEvent); }
         } else {
-            const toggleEvent = new CustomEvent('hass-toggle-menu', { bubbles: true, composed: true });
-            const ha = document.querySelector('home-assistant');
-            if (ha) {
-                ha.dispatchEvent(toggleEvent);
-                if (ha.shadowRoot) {
-                    const main = ha.shadowRoot.querySelector('home-assistant-main');
-                    if (main) main.dispatchEvent(toggleEvent);
-                }
-            } else {
-                document.body.dispatchEvent(toggleEvent);
-            }
+            pDoc.body.dispatchEvent(toggleEvent);
+            cdOpenAppMenu();   // fallback: nessuna sidebar HA trovata -> menu DM
         }
     } catch(err) {
-        console.error("Accesso bloccato dal browser. Impossibile manipolare l'iframe padre.", err);
+        cdOpenAppMenu();       // cross-origin: non possiamo toccare l'iframe padre -> menu DM
     }
+}
+/* v0.10.7 (issue #11): menu accessibile dall'hamburger con accesso SEMPRE garantito a config/wizard/reset */
+function cdOpenAppMenu() {
+    const ex = document.getElementById('cd-app-menu');
+    if (ex) { ex.remove(); return; }
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const ov = document.createElement('div');
+    ov.id = 'cd-app-menu';
+    ov.style.cssText = 'position:fixed; inset:0; z-index:100000; background:rgba(15,23,42,0.5); display:flex; align-items:flex-end; justify-content:center;';
+    const close = () => ov.remove();
+    ov.addEventListener('click', (e) => { if (e.target === ov) close(); });
+    const card = document.createElement('div');
+    card.style.cssText = 'width:100%; max-width:480px; border-radius:24px 24px 0 0; padding:10px 8px 22px; box-shadow:0 -10px 40px rgba(0,0,0,0.3); animation:cdMenuUp .28s cubic-bezier(0.16,1,0.3,1); background:' + (dark ? '#0f172a' : '#fff') + '; color:' + (dark ? '#e2e8f0' : '#0f172a') + ';';
+    const mkItem = (icon, label, fn, color) => {
+        const btn = document.createElement('button');
+        btn.style.cssText = 'display:flex; align-items:center; gap:14px; width:100%; padding:15px 18px; border:none; background:transparent; color:' + (color || 'inherit') + '; font-size:15px; font-weight:800; cursor:pointer; text-align:left;';
+        btn.innerHTML = '<span style="font-size:20px; width:24px; text-align:center;">' + icon + '</span>' + label;
+        btn.addEventListener('click', () => { close(); try { fn(); } catch(e) {} });
+        return btn;
+    };
+    const grip = document.createElement('div');
+    grip.style.cssText = 'width:42px; height:4px; border-radius:99px; background:rgba(148,163,184,0.4); margin:8px auto 12px;';
+    card.appendChild(grip);
+    card.appendChild(mkItem('⚙️', 'Configurazione / Editor', () => apriConfigEntita()));
+    card.appendChild(mkItem('🧙', 'Riconfigura (wizard)', () => apriSetupWizard()));
+    card.appendChild(mkItem('🔄', 'Reset totale', () => wzResetAll(), '#dc2626'));
+    card.appendChild(mkItem('✕', 'Chiudi', () => {}, 'opacity:0.55'));
+    const st = document.createElement('style');
+    st.textContent = '@keyframes cdMenuUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}';
+    card.appendChild(st);
+    ov.appendChild(card);
+    document.body.appendChild(ov);
 }
 
 // ================= GESTIONE MODALS E PULIZIA RISORSE ================= //
@@ -11928,11 +11947,13 @@ function render() {
           if (CD_EV_IMAGE) {
               const custPart = CD_EV_IMAGE.split('/').pop();
               if (!carImg.src.endsWith(custPart)) { carImg.style.opacity = '1'; carImg.src = CD_EV_IMAGE; }
-          } else {
+          } else if (!carImg.dataset.evFailed) {
+              // v0.10.7: se le immagini di default /local/ev/*.png non esistono, dopo il primo 404
+              // l'onerror marca evFailed e non riproviamo più (niente spam di 404 in console)
               const newSrc = isChargingEV ? '/local/ev/plugged_black.png' : '/local/ev/idle.png';
               if (carImg.src !== newSrc && !carImg.src.endsWith(newSrc.split('/').pop())) {
                   carImg.style.opacity = '0';
-                  setTimeout(() => { carImg.src = newSrc; carImg.style.opacity = '1'; }, 400);
+                  setTimeout(() => { if (!carImg.dataset.evFailed) { carImg.src = newSrc; carImg.style.opacity = '1'; } }, 400);
               }
           }
       }

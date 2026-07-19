@@ -6,6 +6,18 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.10.7] — 2026-07-19
+
+### Corretto
+- **Menu hamburger che "non faceva nulla"** (issue #11) — aprendo la dashboard come file standalone (non come pannello HA), il pulsante ☰ tentava solo di aprire la sidebar nativa di Home Assistant, che lì non esiste, quindi non succedeva niente e non c'era una via ovvia verso la configurazione. Ora, in modalità standalone (o se la sidebar HA non è raggiungibile), l'hamburger apre un **menu con accesso garantito a: ⚙️ Configurazione/Editor · 🧙 Riconfigura (wizard) · 🔄 Reset totale**. Dentro un pannello HA continua a togglare la sidebar come prima.
+- **404 ripetuti dell'immagine auto EV** (segnalati nell'issue #11) — quando le immagini di default `/local/ev/idle.png` e `/local/ev/plugged_black.png` non sono presenti, il loop di render continuava a reimpostarle a ogni aggiornamento, riempiendo la console di errori 404. Ora, al primo 404, l'immagine viene nascosta e non viene più ritentata (una sola richiesta, niente spam). Quelle immagini sono opzionali (decorative).
+
+## [0.10.7] — 2026-07-19 (EN)
+
+### Fixed
+- **Hamburger menu that "did nothing"** (issue #11) — when opening the dashboard as a standalone file (not as an HA panel), the ☰ button only tried to open Home Assistant's native sidebar, which doesn't exist there, so nothing happened and there was no obvious route to configuration. Now, in standalone mode (or when the HA sidebar isn't reachable), the hamburger opens a **menu with guaranteed access to: ⚙️ Configuration/Editor · 🧙 Reconfigure (wizard) · 🔄 Full reset**. Inside an HA panel it still toggles the sidebar as before.
+- **Repeated EV car image 404s** (reported in issue #11) — when the default images `/local/ev/idle.png` and `/local/ev/plugged_black.png` are missing, the render loop kept re-setting them on every update, flooding the console with 404 errors. Now, after the first 404, the image is hidden and no longer retried (a single request, no spam). Those images are optional (decorative).
+
 ## [0.10.6] — 2026-07-19
 
 ### Corretto

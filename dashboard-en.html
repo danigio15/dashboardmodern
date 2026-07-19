@@ -6089,7 +6089,7 @@ body.cd-nav-fixed { padding-bottom: 96px !important; }
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.10.7';
+const DASHBOARD_VERSION = '0.10.8';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -7114,7 +7114,7 @@ function edAddReportDevice() {
 function edAddLuce() {
     const nm = (document.getElementById('ed-lu-name').value || '').trim();
     const id = (document.getElementById('ed-lu-ent').value || '').trim();
-    if (!nm || !id.startsWith('light.')) { alert('Enter a name and entity dm.core_022'); return; }
+    if (!nm || !/^(light|switch|group|input_boolean|fan)\./.test(id)) { alert('Enter a name and a valid entity (e.g. light.living or switch.kitchen)'); return; }
     let L = {}; try { L = JSON.parse(localStorage.getItem('cd_luci')) || {}; } catch(e) {}
     L[id] = nm;
     localStorage.setItem('cd_luci', JSON.stringify(L));
@@ -9044,6 +9044,7 @@ function wzAddCamera() {
 }
 function wzResetAll() {
     if (!confirm('Delete ALL saved configuration?\n\n⚠️ The config is synced through Home Assistant: it will be removed from ALL linked devices. You will have to run the wizard again.')) return;
+    window._cdResetting = true;   // stop render loops during teardown (no null errors)
     // 1) clear the copy on Home Assistant so sync won't restore it on reload
     try { if (typeof ws !== 'undefined' && ws && ws.readyState === 1) ws.send(JSON.stringify({ id: msgId++, type: 'frontend/set_user_data', key: 'dashboard_modern_config', value: { __ts: Date.now() } })); } catch(e) {}
     // 2) clear all local keys + sync state
@@ -9956,6 +9957,16 @@ function renderSubLoads(type) {
     document.getElementById('subloads-list').innerHTML = html;
 }
 
+/* v0.10.8: elenco luci = chiavi cd_luci (QUALSIASI dominio: light., switch., group., …) unite
+   al gruppo autodetect. Così le luci comandate da switch e quelle del config.js compaiono. */
+function cdLightList() {
+    try {
+        const cfg = Object.keys(cdCfg('cd_luci') || {});
+        if (!GRUPPI_MONITORAGGIO.luci) GRUPPI_MONITORAGGIO.luci = [];
+        cfg.forEach(id => { if (!GRUPPI_MONITORAGGIO.luci.includes(id)) GRUPPI_MONITORAGGIO.luci.push(id); });
+        return GRUPPI_MONITORAGGIO.luci.slice();
+    } catch(e) { return (GRUPPI_MONITORAGGIO.luci || []).slice(); }
+}
 function apriGestioneLuci(isClick = false, luciFilter = null, customTitle = null) {
   window._luciPopupFilter = luciFilter || null;
   window._luciPopupTitle = customTitle || null;
@@ -9974,7 +9985,7 @@ function apriGestioneLuci(isClick = false, luciFilter = null, customTitle = null
   const _hasRooms = (typeof cdLuciRoomsCfg === 'function') && (Object.keys(cdLuciRoomsCfg()).length || cdLuciRoomOrder().length);
   const _roomOrder = _hasRooms ? cdLuciRoomList() : [];
   const _lightOrder = _hasRooms ? cdLuciOrderCfg() : {};
-  (window._luciPopupFilter || GRUPPI_MONITORAGGIO['luci']).forEach(id => {
+  (window._luciPopupFilter || cdLightList()).forEach(id => {
     const sObj = STATES[id]; if(!sObj) return;
     let nm = LUCI_NAMES[id] || sObj.attributes?.friendly_name || id;
     let zona = nm, dett = '';
@@ -10074,7 +10085,7 @@ function updateGestioneLuci() {
 // v255: spegni tutte le luci accese in un colpo
 function luciTutteOff() {
   if(navigator.vibrate) navigator.vibrate(15);
-  (window._luciPopupFilter || GRUPPI_MONITORAGGIO['luci']).forEach(id => {
+  (window._luciPopupFilter || cdLightList()).forEach(id => {
     const s = STATES[id];
     if (s && s.state === 'on') {
       const eid = resolveEntity(id);
@@ -10626,6 +10637,7 @@ const CD_TOTAL_DERIVATIONS = [
 ];
 
 async function cdDeriveFromTotals() {
+    if (window._cdResetting) return;
     try {
         if (typeof HA_HTTP_URL === 'undefined' || typeof LONG_LIVED_TOKEN === 'undefined' || !LONG_LIVED_TOKEN) return;
         const now = new Date();
@@ -11495,6 +11507,7 @@ const errorImgSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/
 if(window.camInterval) clearInterval(window.camInterval);
 
 function refreshCameras() {
+    if (window._cdResetting) return;
   // Il setTimeout risolve il bug del click sul menu in basso
   setTimeout(() => {
     if (!document.getElementById('page-security').classList.contains('active')) return;
@@ -11545,6 +11558,7 @@ const setNode = (id, active) => { const el = document.getElementById(id); if(el)
 const updateSelectOptions = (entityId, elementId) => { const s = STATES[entityId]; const el = document.getElementById(elementId); if(s && s.attributes && s.attributes.options && el) { if(el.children.length === 0 || el.dataset.populated !== "true") { el.innerHTML = ''; s.attributes.options.forEach(opt => { const o = document.createElement('option'); o.value = opt; o.textContent = opt; el.appendChild(o); }); el.dataset.populated = "true"; } el.value = s.state; } };
 
 function render() {
+    if (window._cdResetting) return;
   if (Object.keys(STATES).length === 0) return;
   if (!render._perKick) { render._perKick = 1; setTimeout(() => { try { cdRefreshPeriodDeltas(true); } catch(e){} }, 1500); }
   try {
@@ -11589,6 +11603,7 @@ function render() {
           if (val) val.textContent = v;
           if (card) card.style.display = v > 0 ? 'flex' : 'none';
       };
+      try { cdLightList(); } catch(e) {}
       setGlance('luci',  cdCount('luci',  s => s.state === 'on'));
       setGlance('clima', cdCount('clima', s => !['off','unavailable','unknown'].includes(s.state)));
       setGlance('risc',  cdCount('risc',  s => ['heat','heating','on'].includes(s.state)));
@@ -13469,6 +13484,7 @@ const CD_DAY_FROM_MONTH = {
     'dm.energy_batteria_scaricata_oggi': 'dm.energy_batteria_usata_mese',
 };
 async function cdRefreshPeriodDeltas(force) {
+    if (window._cdResetting) return;
     try {
         if (!ws || ws.readyState !== WebSocket.OPEN) return;
         if (!force && Date.now() - _cdPerLast < 240000) return;

@@ -6,6 +6,24 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.10.8] — 2026-07-19
+
+### Aggiunto
+- **💡 Luci comandate da `switch.`** (segnalato nell'issue #11) — l'editor Luci ora accetta come luce anche entità `switch.`, `group.`, `input_boolean.` e `fan.`, non più solo `light.`. Chi controlla le luci tramite relè/interruttori (Shelly, Sonoff…) può finalmente aggiungerle. L'accensione/spegnimento usa automaticamente il servizio giusto del dominio.
+- Le luci configurate (da editor **o dal file config**) di **qualsiasi dominio** ora compaiono nel popup Gestione Luci e nel conteggio, anche se non sono `light.` (prima le `switch.` del config.js venivano ignorate).
+
+### Corretto
+- **Errori dopo "Reset Totale"** (segnalato nell'issue #11) — durante il reset i cicli di render continuavano a girare su elementi ormai rimossi, generando una cascata di `TypeError: Cannot read/set properties of null` (`render`, `refreshCameras`, `cdRefreshPeriodDeltas`, `cdDeriveFromTotals`). Ora il reset ferma i loop prima di ricaricare: niente più errori in console.
+
+## [0.10.8] — 2026-07-19 (EN)
+
+### Added
+- **💡 Lights controlled by `switch.`** (reported in issue #11) — the Lights editor now accepts `switch.`, `group.`, `input_boolean.` and `fan.` entities as lights, not just `light.`. Users who control lights via relays/switches (Shelly, Sonoff…) can finally add them. Turning on/off automatically uses the correct domain service.
+- Configured lights (from the editor **or the config file**) of **any domain** now appear in the Lights popup and count, even if they aren't `light.` (previously `switch.` lights from config.js were ignored).
+
+### Fixed
+- **Errors after "Full reset"** (reported in issue #11) — during the reset the render loops kept running on already-removed elements, causing a cascade of `TypeError: Cannot read/set properties of null` (`render`, `refreshCameras`, `cdRefreshPeriodDeltas`, `cdDeriveFromTotals`). The reset now stops the loops before reloading: no more console errors.
+
 ## [0.10.7] — 2026-07-19
 
 ### Corretto

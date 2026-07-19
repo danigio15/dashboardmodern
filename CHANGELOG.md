@@ -6,6 +6,16 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.10.0] — 2026-07-19
+
+### Aggiunto
+- **⭐ Avvisi personalizzati potenziati** — ora un avviso può monitorare **più entità** (lista con ➕/✕: scatta se una qualsiasi soddisfa la condizione), lo puoi **modificare dopo la creazione** (✏️) e la condizione supporta lo **stato/valore inserito a mano** (es. `heat`, `23.5`, `open`).
+
+## [0.10.0] — 2026-07-19 (EN)
+
+### Added
+- **⭐ Enhanced custom alerts** — an alert can now watch **multiple entities** (list with ➕/✕: fires if any one meets the condition), you can **edit it after creation** (✏️), and the condition supports a **manually entered state/value** (e.g. `heat`, `23.5`, `open`).
+
 ## [0.9.9] — 2026-07-19
 
 ### Migliorato

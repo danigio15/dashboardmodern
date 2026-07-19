@@ -6092,7 +6092,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.9.9';
+const DASHBOARD_VERSION = '0.10.0';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6268,17 +6268,20 @@ function cdRenderCustomAvvisi() {
     if (!wrap) return;
     const active = [];
     cdCfgList('cd_avvisi_custom').forEach(a => {
-        const s = STATES[a.entity];
-        if (s && cdAvvisoActive(a, s)) active.push({ a, state: s.state });
+        const ents = a.entities || (a.entity ? [a.entity] : []);
+        for (const en of ents) {
+            const s = STATES[en];
+            if (s && cdAvvisoActive(a, s)) { active.push({ a, state: s.state, entity: en }); break; }
+        }
     });
-    const sig = active.map(x => x.a.entity + ':' + x.state).join('|');
+    const sig = active.map(x => x.entity + ':' + x.state).join('|');
     if (wrap._sig === sig) return;   // niente ridisegno se nulla è cambiato (evita flicker)
     wrap._sig = sig;
-    wrap.innerHTML = active.map(({ a, state }) => {
-        const nm = String(a.name || a.entity).replace(/</g, '&lt;');
+    wrap.innerHTML = active.map(({ a, state, entity }) => {
+        const nm = String(a.name || entity).replace(/</g, '&lt;');
         const disp = String(state).toUpperCase().slice(0, 12);
         const ic = a.icon || '⚠️';
-        return `<div class="glance-card" style="--g-rgb: 245,158,11; display:flex;" onclick="apriStorico(event, '${a.entity}', '${nm.replace(/'/g, '&#39;')}')"><div class="g-info"><span class="g-name">${nm}</span><span class="g-val">${disp}</span></div><div class="g-icon-wrap anim-ping" style="color:#f59e0b;">${ic}</div></div>`;
+        return `<div class="glance-card" style="--g-rgb: 245,158,11; display:flex;" onclick="apriStorico(event, '${entity}', '${nm.replace(/'/g, '&#39;')}')"><div class="g-info"><span class="g-name">${nm}</span><span class="g-val">${disp}</span></div><div class="g-icon-wrap anim-ping" style="color:#f59e0b;">${ic}</div></div>`;
     }).join('');
 }
 
@@ -6920,7 +6923,7 @@ function editorSwitch(tab) {
     if (tab === 'sost')   body.innerHTML = editorRenderSost();
     if (tab === 'load')   body.innerHTML = editorRenderLoad();
     if (tab === 'luci')   body.innerHTML = editorRenderLuci();
-    if (tab === 'avvisi') body.innerHTML = editorRenderAvvisi();
+    if (tab === 'avvisi') { body.innerHTML = editorRenderAvvisi(); try { edAvvRenderEnts(); } catch(e){} }
     if (tab === 'testi')  body.innerHTML = editorRenderTesti();
     if (tab === 'hide')   body.innerHTML = editorRenderHide();
     if (tab === 'export') body.innerHTML = editorRenderExport();
@@ -7452,6 +7455,8 @@ function cdLuciMove(id, dir) {
 }
 
 
+let _avvNewEntities = [];
+let _avvEditIdx = null;
 function editorRenderAvvisi() {
     const extN = edGetExtra('cd_avvisi_names_extra');
     const GRP_LBL = { win: '🚪 Aperture', batt: '🔋 Batterie', luci: '💡 Luci', clima: '❄️ Clima', risc: '🔥 Riscaldamento' };
@@ -7473,15 +7478,23 @@ function editorRenderAvvisi() {
         rows += `<details class="ed-acc"><summary class="ed-acc-head">${glbl} <span class="ed-acc-n">${ids.length}</span></summary>
             <div class="ed-acc-body"><div class="ed-list">${inner}</div></div></details>`;
     });
-    /* v0.9.7 (#4): avvisi PERSONALIZZATI su qualsiasi entità, con condizione e icona a scelta */
+    /* v0.10.0 (#4): avvisi PERSONALIZZATI — più entità, modifica e stato a mano */
     const customList = cdCfgList('cd_avvisi_custom');
     if (customList.length) {
-        const cinner = customList.map((a, i) => `<div class="ed-row"><div class="ed-row-main"><div class="ed-row-new">${a.icon||'⚠️'} ${(a.name||a.entity)} <span style="color:var(--text-dim,#94a3b8); font-size:11px; font-weight:700;">· ${cdAvvisoCondLabel(a)}</span></div><div class="ed-row-old mono">${a.entity}</div></div><div class="ed-del" onclick="edDelAvvisoCustom(${i})">🗑️</div></div>`).join('');
+        const cinner = customList.map((a, i) => {
+            const ents = a.entities || (a.entity ? [a.entity] : []);
+            return `<div class="ed-row"><div class="ed-row-main"><div class="ed-row-new">${a.icon||'⚠️'} ${(a.name||ents[0]||'')} <span style="color:var(--text-dim,#94a3b8); font-size:11px; font-weight:700;">· ${cdAvvisoCondLabel(a)}${ents.length>1?' · '+ents.length+' entità':''}</span></div><div class="ed-row-old mono">${ents.join(', ')}</div></div><div class="ed-del" onclick="edEditAvvisoCustom(${i})" style="color:#0ea5e9;" title="Modifica">✏️</div><div class="ed-del" onclick="edDelAvvisoCustom(${i})" title="Elimina">🗑️</div></div>`;
+        }).join('');
         rows += `<details class="ed-acc" open><summary class="ed-acc-head">⭐ Personalizzati <span class="ed-acc-n">${customList.length}</span></summary><div class="ed-acc-body"><div class="ed-list">${cinner}</div></div></details>`;
     }
     if (!rows) rows = '<div class="ed-empty">Nessun avviso configurato</div>';
+    const editing = (_avvEditIdx !== null && customList[_avvEditIdx]);
+    const ed = editing ? customList[_avvEditIdx] : {};
+    const esc = (x) => String(x == null ? '' : x).replace(/"/g, '&quot;');
+    const cOpt = (v, l) => `<option value="${v}"${(editing && ed.cond === v) ? ' selected' : ''}>${l}</option>`;
+    const showVal = editing && ['eq','neq','gt','lt'].includes(ed.cond);
     return `
-      <div class="ed-intro">Aggiungi sensori al Quadro Avvisi (Aperture, Batterie, Luci, Clima, Riscaldamento) con un nome pulito, oppure crea un avviso <b>⭐ Personalizzato</b> su qualsiasi entità, con condizione e icona a scelta.</div>
+      <div class="ed-intro">Aggiungi sensori al Quadro Avvisi con un nome pulito, oppure crea un avviso <b>⭐ Personalizzato</b> su una o <b>più entità</b>, con condizione, <b>stato/valore a mano</b> e icona a scelta. Col ✏️ puoi <b>modificare</b> un avviso già creato.</div>
       <div class="ed-list">${rows}</div>
       <div class="ed-form">
         <select id="ed-avv-grp" class="ed-input" onchange="var c=document.getElementById('ed-avv-custom'); if(c) c.style.display = this.value==='custom' ? 'block' : 'none';">
@@ -7490,43 +7503,53 @@ function editorRenderAvvisi() {
           <option value="luci">💡 Luci</option>
           <option value="clima">❄️ Clima</option>
           <option value="risc">🔥 Riscaldamento</option>
-          <option value="custom">⭐ Personalizzato</option>
+          <option value="custom"${editing ? ' selected' : ''}>⭐ Personalizzato</option>
         </select>
         <div style="display:flex; gap:6px;"><input id="ed-avv-ent" list="ed-entity-list" class="ed-input mono" style="flex:1;" placeholder="binary_sensor.finestra_x_contact"><button type="button" onclick="wzPickEntity('#ed-avv-ent')" style="flex:0 0 40px; height:40px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
-        <input id="ed-avv-name" class="ed-input" placeholder="Nome dell'avviso (es. Finestra Studio)">
-        <div id="ed-avv-custom" style="display:none;">
+        <input id="ed-avv-name" class="ed-input" value="${editing ? esc(ed.name) : ''}" placeholder="Nome dell'avviso (es. Finestre aperte)">
+        <div id="ed-avv-custom" style="display:${editing ? 'block' : 'none'};">
+          <button type="button" class="ed-btn-add" style="background:linear-gradient(135deg,#0ea5e9,#0369a1); margin-bottom:8px;" onclick="edAvvAddEntity()">＋ Aggiungi questa entità alla lista</button>
+          <div id="ed-avv-ents" style="margin-bottom:8px;"></div>
           <select id="ed-avv-cond" class="ed-input" onchange="var v=document.getElementById('ed-avv-val'); if(v) v.style.display = ['on','off'].includes(this.value) ? 'none' : 'block';">
-            <option value="on">Accesa / Attiva / Aperta (on)</option>
-            <option value="off">Spenta / Chiusa (off)</option>
-            <option value="eq">Uguale a…</option>
-            <option value="neq">Diversa da…</option>
-            <option value="gt">Maggiore di…</option>
-            <option value="lt">Minore di…</option>
+            ${cOpt('on','Accesa / Attiva / Aperta (on)')}
+            ${cOpt('off','Spenta / Chiusa (off)')}
+            ${cOpt('eq','Uguale a… (stato a mano)')}
+            ${cOpt('neq','Diversa da…')}
+            ${cOpt('gt','Maggiore di…')}
+            ${cOpt('lt','Minore di…')}
           </select>
-          <input id="ed-avv-val" class="ed-input" placeholder="valore" style="display:none;">
-          <div style="display:flex; gap:6px;"><input id="ed-avv-icon" class="ed-input" style="flex:1;" value="⚠️" placeholder="Icona (es. ⚠️ 💧 🌡️)"><button type="button" onclick="dmIconPicker('#ed-avv-icon')" style="flex:0 0 40px; height:40px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
+          <input id="ed-avv-val" class="ed-input" value="${editing ? esc(ed.value) : ''}" placeholder="stato o valore a mano (es. heat, 23.5, open)" style="display:${showVal ? 'block' : 'none'};">
+          <div style="display:flex; gap:6px;"><input id="ed-avv-icon" class="ed-input" style="flex:1;" value="${editing ? esc(ed.icon || '⚠️') : '⚠️'}" placeholder="Icona (es. ⚠️ 💧 🌡️)"><button type="button" onclick="dmIconPicker('#ed-avv-icon')" style="flex:0 0 40px; height:40px; border:none; border-radius:10px; background:linear-gradient(135deg,#0ea5e9,#0369a1); color:#fff; font-size:15px; cursor:pointer;">🔍</button></div>
         </div>
-        <button class="ed-btn-add" onclick="edAddAvviso()">＋ Aggiungi avviso</button>
+        <button class="ed-btn-add" onclick="edAddAvviso()">${editing ? '💾 Salva modifiche' : '＋ Aggiungi avviso'}</button>
+        ${editing ? '<button type="button" class="ed-btn-add" style="background:#94a3b8; margin-top:6px;" onclick="edAvvCancelEdit()">✖ Annulla modifica</button>' : ''}
       </div>`;
 }
+
 function edAddAvviso() {
     const grp = document.getElementById('ed-avv-grp').value;
     const ent = (document.getElementById('ed-avv-ent').value||'').trim();
     const name = (document.getElementById('ed-avv-name').value||'').trim();
-    if (!ent.includes('.')) { alert('Inserisci una entità valida'); return; }
     if (grp === 'custom') {
         const cond  = (document.getElementById('ed-avv-cond') || {}).value || 'on';
         const value = ((document.getElementById('ed-avv-val') || {}).value || '').trim();
         const icon  = (((document.getElementById('ed-avv-icon') || {}).value) || '⚠️').trim() || '⚠️';
-        if (['eq','neq','gt','lt'].includes(cond) && value === '') { alert('Inserisci il valore per la condizione scelta'); return; }
+        const entities = _avvNewEntities.slice();
+        if (ent.includes('.') && !entities.includes(ent)) entities.push(ent);
+        if (!entities.length) { alert('Aggiungi almeno un\'entità (premi ➕ Aggiungi questa entità alla lista)'); return; }
+        if (['eq','neq','gt','lt'].includes(cond) && value === '') { alert('Inserisci lo stato/valore per la condizione scelta'); return; }
+        const item = { entities, name: name || entities[0], icon, cond, value };
         const list = cdCfgList('cd_avvisi_custom');
-        list.push({ entity: ent, name: name || ent, icon, cond, value });
+        const wasEdit = (_avvEditIdx !== null && list[_avvEditIdx]);
+        if (wasEdit) list[_avvEditIdx] = item; else list.push(item);
         localStorage.setItem('cd_avvisi_custom', JSON.stringify(list));
         try { cdMarkDirty(); cdSyncPush(); } catch(e){}
+        _avvEditIdx = null; _avvNewEntities = [];
         editorSwitch('avvisi');
-        edToast('Avviso personalizzato aggiunto');
+        edToast(wasEdit ? 'Avviso aggiornato' : 'Avviso personalizzato aggiunto');
         return;
     }
+    if (!ent.includes('.')) { alert('Inserisci una entità valida'); return; }
     const extG = edGetExtra('cd_gruppi_extra');
     if (!extG[grp]) extG[grp] = [];
     if (!extG[grp].includes(ent)) extG[grp].push(ent);
@@ -7567,6 +7590,30 @@ function edDelAvvisoCustom(i) {
     editorSwitch('avvisi');
     edToast('Avviso rimosso');
 }
+function edAvvRenderEnts() {
+    const box = document.getElementById('ed-avv-ents');
+    if (!box) return;
+    if (!_avvNewEntities.length) { box.innerHTML = '<div style="font-size:11px; color:var(--text-dim); font-weight:700; padding:2px 2px 0;">Nessuna entità nella lista — scrivi/scegli un\'entità e premi ➕</div>'; return; }
+    box.innerHTML = _avvNewEntities.map((en, i) => `<span style="display:inline-flex; align-items:center; gap:7px; background:rgba(14,165,233,0.12); color:#0369a1; border-radius:100px; padding:5px 11px; font-size:11.5px; font-weight:800; margin:0 6px 6px 0; font-family:monospace;">${en}<span onclick="edAvvRemoveEntity(${i})" style="cursor:pointer; font-weight:900; font-family:sans-serif;">✕</span></span>`).join('');
+}
+function edAvvAddEntity() {
+    const inp = document.getElementById('ed-avv-ent');
+    const v = ((inp && inp.value) || '').trim();
+    if (!v.includes('.')) { alert('Inserisci una entità valida'); return; }
+    if (!_avvNewEntities.includes(v)) _avvNewEntities.push(v);
+    if (inp) inp.value = '';
+    edAvvRenderEnts();
+}
+function edAvvRemoveEntity(i) { _avvNewEntities.splice(i, 1); edAvvRenderEnts(); }
+function edEditAvvisoCustom(i) {
+    const list = cdCfgList('cd_avvisi_custom');
+    const a = list[i]; if (!a) return;
+    _avvEditIdx = i;
+    _avvNewEntities = (a.entities || (a.entity ? [a.entity] : [])).slice();
+    editorSwitch('avvisi');
+    setTimeout(() => { const el = document.getElementById('ed-avv-cond'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 90);
+}
+function edAvvCancelEdit() { _avvEditIdx = null; _avvNewEntities = []; editorSwitch('avvisi'); }
 
 /* ─────────── TAB 4: TESTI (rinomina qualsiasi etichetta visibile) ─────────── */
 function editorRenderTesti() {

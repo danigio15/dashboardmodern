@@ -6,6 +6,22 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.10.10] — 2026-07-19
+
+### Corretto
+- **Dati che non compaiono nelle card con poche sezioni** (es. MiniPC mostrava "—" ma il popup aveva i valori) — `render()` è un unico blocco: un errore su un elemento rimosso dall'auto-hide interrompeva TUTTO il resto (incluse le card successive). Oltre a `.textContent` (già null-safe), ora sono null-safe anche le scritture `.innerHTML` (meteo, energia oggi/mese) tramite `setHtml`, e il controllo su `lavatrice-modal`. Con configurazioni minimali le card si aggiornano di nuovo.
+
+### Cambiato
+- **Reset Totale ora riparte DAVVERO da zero** — prima, dopo il reset, la configurazione **integrata nel file** (baked) ripopolava le vecchie entità. Ora il Reset imposta uno stato "fresh start" che fa ignorare **sia** la config integrata **sia** il token integrato: si riparte dal wizard come a una prima installazione. (La configurazione del file torna utilizzabile ripristinando lo storage del browser.)
+
+## [0.10.10] — 2026-07-19 (EN)
+
+### Fixed
+- **Data not showing on cards with few sections** (e.g. MiniPC showed "—" but the popup had the values) — `render()` is a single block: an error on an element removed by auto-hide aborted ALL the rest (including later cards). In addition to `.textContent` (already null-safe), `.innerHTML` writes (weather, daily/monthly energy) are now null-safe via `setHtml`, as is the `lavatrice-modal` check. With minimal configurations the cards update again.
+
+### Changed
+- **Full reset now really starts from zero** — previously, after a reset, the configuration **baked into the file** repopulated the old entities. The reset now sets a "fresh start" state that ignores **both** the baked config **and** the baked token: you start from the wizard as on a first install. (The file configuration becomes usable again by clearing the browser storage.)
+
 ## [0.10.9] — 2026-07-19
 
 ### Corretto

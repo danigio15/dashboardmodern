@@ -6,6 +6,18 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it/) e il version
 
 ---
 
+## [0.11.1] — 2026-07-20
+
+### Aggiunto
+- **🧺 Elettrodomestici come sezione principale** — nuova voce nella navbar principale con pagina interna dedicata, sotto-sezioni Panoramica, Cucina, Lavanderia, Casa, Consumi e Automazioni, KPI riepilogativi e card responsive con stato, potenza, energia, durata, comando on/off e storico.
+- **Configurazione centralizzata estesa** — la nuova pagina riusa `cd_appliances` e supporta campi opzionali `category`, `power`, `energy`/`energy_today`, `duration`, `switch`, `history` e `automations`; se mancano entità mostra stati vuoti senza errori JavaScript.
+
+## [0.11.1] — 2026-07-20 (EN)
+
+### Added
+- **🧺 Appliances as a main section** — new main navbar entry with a dedicated internal page, Overview, Kitchen, Laundry, Home, Consumption and Automations sub-sections, summary KPIs and responsive cards with state, power, energy, usage duration, on/off command and history.
+- **Extended centralized configuration** — the new page reuses `cd_appliances` and supports optional `category`, `power`, `energy`/`energy_today`, `duration`, `switch`, `history` and `automations`; missing entities render as elegant empty states without JavaScript errors.
+
 ## [0.11.0] — 2026-07-19
 
 ### Aggiunto

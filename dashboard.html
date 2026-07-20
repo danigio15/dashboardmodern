@@ -4442,6 +4442,35 @@ html[data-theme="dark"] .appl-card.on .appl-pwr { background: rgba(125,211,252,0
 .appl-st.run { color: #10b981; }
 .appl-st.standby { color: #f59e0b; }
 .appl-st.off { color: var(--text-dim); }
+.appl-main-hero { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 28px; padding: 24px; box-shadow: var(--shadow-sculpted); display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:20px; }
+.appl-main-title { font-family:'Oswald',sans-serif; font-size:28px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:1px; }
+.appl-main-sub { font-size:12px; font-weight:800; color:var(--text-dim); text-transform:uppercase; letter-spacing:1.3px; margin-top:4px; line-height:1.35; }
+.appl-main-view { display:none; } .appl-main-view.active { display:block; }
+.appl-page-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; margin-bottom:28px; }
+.appl-wide-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:24px; padding:18px; box-shadow:var(--shadow-sculpted); overflow:hidden; position:relative; transition:transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease, border-color .22s ease; }
+.appl-wide-card::before { content:""; position:absolute; inset:-1px; background:radial-gradient(circle at top right, rgba(14,165,233,.16), transparent 42%); opacity:0; transition:opacity .22s ease; pointer-events:none; }
+.appl-wide-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-hover); }
+.appl-wide-card:hover::before, .appl-wide-card.on::before { opacity:1; }
+.appl-wide-card:active { transform:scale(.985); }
+.appl-wide-card.on { background:linear-gradient(135deg,#e0f2fe,#bae6fd); border-color:#7dd3fc; }
+html[data-theme="dark"] .appl-wide-card.on { background:linear-gradient(135deg,#0c4a6e,#075985); border-color:#0ea5e9; }
+.appl-wide-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.appl-wide-name { font-size:16px; font-weight:900; color:var(--text); }
+.appl-wide-cat { font-size:10px; font-weight:900; color:var(--text-dim); text-transform:uppercase; letter-spacing:1.3px; margin-top:3px; }
+.appl-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0; }
+.appl-metric { background:rgba(148,163,184,0.10); border:1px solid var(--card-border); border-radius:14px; padding:9px; min-width:0; }
+.appl-metric-lbl { font-size:9px; font-weight:900; color:var(--text-dim); text-transform:uppercase; letter-spacing:.8px; }
+.appl-metric-val { font-size:13px; font-weight:900; color:var(--text); margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.appl-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.appl-action-btn { border:none; border-radius:12px; padding:9px 12px; font-size:11px; font-weight:900; cursor:pointer; background:rgba(14,165,233,0.14); color:#0369a1; }
+.appl-action-btn.disabled { opacity:.45; pointer-events:none; filter:grayscale(1); }
+.appl-empty { grid-column:1/-1; text-align:center; padding:28px; color:var(--text-dim); font-weight:800; background:var(--card-bg); border:1px dashed var(--card-border); border-radius:24px; }
+.appl-consumption-list { display:flex; flex-direction:column; gap:10px; }
+.appl-cons-row { display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center; padding:12px; border-radius:16px; border:1px solid var(--card-border); background:var(--surface-2); }
+.appl-cons-bar { height:8px; border-radius:100px; background:rgba(148,163,184,.18); overflow:hidden; margin-top:7px; }
+.appl-cons-fill { height:100%; border-radius:100px; background:linear-gradient(90deg,#0ea5e9,#16a34a); }
+@media (max-width:640px){ .appl-main-hero{flex-direction:column;align-items:stretch;padding:18px;border-radius:22px}.appl-page-grid{grid-template-columns:1fr}.appl-metrics{grid-template-columns:1fr 1fr}.appl-main-config{width:100%;} }
+
 .dev-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 14px 15px; cursor: pointer; box-shadow: var(--shadow-sculpted); transition: transform 0.15s, box-shadow 0.2s; position: relative; overflow: hidden; }
 .dev-card:active { transform: scale(0.97); }
 .dev-card.on { background: linear-gradient(135deg, #e0f2fe, #bae6fd); border-color: #7dd3fc; }
@@ -4652,6 +4681,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
   <nav class="tabs bottom-nav-bar">
     <button class="tab active" data-tab="home"><span class="icon">🏠</span><span class="text">Home</span></button>
     <button class="tab" data-tab="energy"><span class="icon">⚡</span><span class="text">Energia</span></button>
+    <button class="tab" data-tab="appliances-main"><span class="icon">🧺</span><span class="text">Elettrodomestici</span></button>
     <button class="tab" data-tab="ev"><span class="icon">🚗</span><span class="text">Auto</span></button>
     <button class="tab" data-tab="boiler"><span class="icon">🌞</span><span class="text">Solare Termico</span></button>
     <button class="tab" data-tab="clima"><span class="icon">❄️</span><span class="text">Clima</span></button>
@@ -4731,6 +4761,33 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
     <h3 class="section-title" id="appliances-title" style="display:none;">Elettrodomestici</h3>
     <div class="appliances-grid" id="appliances-grid"><!-- v0.11.0: elettrodomestici (cd_appliances) --></div>
   </section>
+
+
+<section class="page" id="page-appliances-main">
+  <div class="sub-tabs-container">
+    <div class="sub-tabs-energy">
+      <button class="sub-tab-btn appl-section-tab active" onclick="switchApplianceView('overview', event)">📊 Panoramica</button>
+      <button class="sub-tab-btn appl-section-tab" onclick="switchApplianceView('kitchen', event)">🍳 Cucina</button>
+      <button class="sub-tab-btn appl-section-tab" onclick="switchApplianceView('laundry', event)">🧺 Lavanderia</button>
+      <button class="sub-tab-btn appl-section-tab" onclick="switchApplianceView('home', event)">🏠 Casa</button>
+      <button class="sub-tab-btn appl-section-tab" onclick="switchApplianceView('other', event)">🔌 Altro</button>
+      <button class="sub-tab-btn appl-section-tab" onclick="switchApplianceView('consumption', event)">⚡ Consumi</button>
+      <button class="sub-tab-btn appl-section-tab" onclick="switchApplianceView('automations', event)">🤖 Automazioni</button>
+    </div>
+  </div>
+  <div class="appl-main-hero">
+    <div><div class="appl-main-title">🧺 Elettrodomestici</div><div class="appl-main-sub" id="appl-main-sub">Configura cd_appliances in config.js o dall'editor integrato.</div></div>
+    <button class="ed-btn-add appl-main-config" onclick="apriConfigEntita(); setTimeout(()=>editorSwitch('appliances'),250)">⚙️ Configura</button>
+  </div>
+  <div class="glance-grid appl-kpi-grid" id="appl-kpi-grid"></div>
+  <div class="appl-main-view active" id="appl-view-overview"><h3 class="section-title">Panoramica</h3><div class="appl-page-grid" id="appl-grid-overview"></div></div>
+  <div class="appl-main-view" id="appl-view-kitchen"><h3 class="section-title">Cucina</h3><div class="appl-page-grid" id="appl-grid-kitchen"></div></div>
+  <div class="appl-main-view" id="appl-view-laundry"><h3 class="section-title">Lavanderia</h3><div class="appl-page-grid" id="appl-grid-laundry"></div></div>
+  <div class="appl-main-view" id="appl-view-home"><h3 class="section-title">Casa</h3><div class="appl-page-grid" id="appl-grid-home"></div></div>
+  <div class="appl-main-view" id="appl-view-other"><h3 class="section-title">Altro</h3><div class="appl-page-grid" id="appl-grid-other"></div></div>
+  <div class="appl-main-view" id="appl-view-consumption"><h3 class="section-title">Consumi</h3><div class="ed-chart-card"><div class="ed-chart-header"><div class="ed-chart-title">📈 Consumo istantaneo</div></div><div class="appl-consumption-list" id="appl-consumption-list"></div></div></div>
+  <div class="appl-main-view" id="appl-view-automations"><h3 class="section-title">Automazioni</h3><div class="appl-page-grid" id="appl-grid-automations"></div></div>
+</section>
 
 <section class="page" id="page-energy">
     <div class="sub-tabs-container">
@@ -6116,7 +6173,7 @@ html[data-theme="dark"] .tc2-hum { background: rgba(14,165,233,0.16); color:#7dd
    localStorage (se presente) ha priorità, così puoi ancora testare in locale.
    ─────────────────────────────────────────────────────────────────── */
 /* ═══ v258: VERSIONE — visibile in console, wizard e pagina Config ═══ */
-const DASHBOARD_VERSION = '0.11.0';
+const DASHBOARD_VERSION = '0.11.1';
 console.log('%c🏠 Dashboard Modern v' + DASHBOARD_VERSION, 'font-size:14px; font-weight:bold; color:#0ea5e9;');
 
 /* CD_BAKED_START */
@@ -6358,6 +6415,80 @@ function apriApplianceDetail(i){
   document.getElementById('details-modal').classList.add('show');
 }
 
+
+function cdApplEntity(a, keys) {
+  for (const k of keys) {
+    const v = a && a[k];
+    if (typeof v === 'string' && v.includes('.')) return v;
+    if (v && typeof v.entity === 'string' && v.entity.includes('.')) return v.entity;
+  }
+  return null;
+}
+function cdApplVal(en, fallback) { const st = en && STATES[en]; if (!st) return fallback; const u = (st.attributes && st.attributes.unit_of_measurement) || ''; return String(st.state) + (u ? ' ' + u : ''); }
+function cdApplNum(en) { const st = en && STATES[en]; if (!st) return 0; const n = parseFloat(st.state); return isNaN(n) ? 0 : n; }
+function cdApplCategory(a) {
+  const c = String((a && a.category) || 'other').toLowerCase();
+  if (c === 'cucina') return 'kitchen';
+  if (c === 'lavanderia') return 'laundry';
+  if (c === 'casa') return 'home';
+  if (c === 'altro') return 'other';
+  return ['kitchen','laundry','home','other'].includes(c) ? c : 'other';
+}
+function cdApplConfiguredEntities(a) {
+  return [].concat(a && a.entities || [], [a && a.power, a && a.power_entity, a && a.energy, a && a.energy_today, a && a.daily_energy, a && a.duration, a && a.duration_entity, a && a.switch, a && a.switch_entity, a && a.history, a && a.history_entity])
+    .map(e => typeof e === 'string' ? e : (e && e.entity))
+    .filter(Boolean);
+}
+function cdApplMainCard(a) {
+  const st = cdApplStatus(a), cat = cdApplCategory(a);
+  const p = cdApplEntity(a, ['power','power_entity']);
+  const e = cdApplEntity(a, ['energy_today','daily_energy','energy']);
+  const d = cdApplEntity(a, ['duration','duration_entity']);
+  const sw = cdApplEntity(a, ['switch','switch_entity']);
+  const h = cdApplEntity(a, ['history','history_entity']) || p || e;
+  const nm = String(a.name || cdApplianceName(a.icon)).replace(/</g,'&lt;');
+  const cfg = cdApplConfiguredEntities(a).length;
+  return `<div class="appl-wide-card ${st.cls === 'run' ? 'on' : ''}"><div class="appl-wide-top"><div style="display:flex;gap:12px;min-width:0;"><span class="appl-ic">${cdApplianceIcon(a.icon,34)}</span><div style="min-width:0;"><div class="appl-wide-name">${nm}</div><div class="appl-wide-cat">${cat}</div></div></div><span class="appl-st ${st.cls}">${st.label}</span></div><div class="appl-metrics"><div class="appl-metric"><div class="appl-metric-lbl">Potenza</div><div class="appl-metric-val">${p ? cdApplVal(p,'—') : (st.w != null ? Math.round(st.w) + ' W' : '—')}</div></div><div class="appl-metric"><div class="appl-metric-lbl">Energia</div><div class="appl-metric-val">${e ? cdApplVal(e,'—') : '—'}</div></div><div class="appl-metric"><div class="appl-metric-lbl">Durata</div><div class="appl-metric-val">${d ? cdApplVal(d,'—') : '—'}</div></div></div><div class="appl-actions"><button class="appl-action-btn ${sw ? '' : 'disabled'}" onclick="event.stopPropagation(); toggle('${sw || ''}')">⏻ On/Off</button><button class="appl-action-btn ${h ? '' : 'disabled'}" onclick="apriStorico(event,'${h || ''}','${nm.replace(/'/g,'&#39;')}')">📈 Storico</button>${cfg ? '' : '<span class="appl-st off" style="align-self:center;">Non configurato</span>'}</div></div>`;
+}
+function switchApplianceView(view, ev) {
+  if (navigator.vibrate) navigator.vibrate(5);
+  document.querySelectorAll('.appl-section-tab').forEach(b => b.classList.remove('active'));
+  if (ev && ev.currentTarget) ev.currentTarget.classList.add('active');
+  document.querySelectorAll('.appl-main-view').forEach(v => v.classList.remove('active'));
+  document.getElementById('appl-view-' + view)?.classList.add('active');
+  renderApplianceSection(true);
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+function renderApplianceSection(force) {
+  const host = document.getElementById('appl-kpi-grid');
+  if (!host) return;
+  const list = getAppliances();
+  const sig = list.map(a => { const st = cdApplStatus(a); return [a.id, a.name, a.icon, cdApplCategory(a), st.cls, Math.round(st.w || 0), cdApplConfiguredEntities(a).map(en => en + ':' + (STATES[en] && STATES[en].state || '')).join(',')].join('|'); }).join('||');
+  const active = document.querySelector('.appl-main-view.active')?.id || 'appl-view-overview';
+  const fullSig = active + '::' + sig;
+  if (!force && host._sig === fullSig) return;
+  host._sig = fullSig;
+  const labs = ['Dispositivi accesi','Consumo istantaneo','Energia giornaliera','Avvisi'];
+  const on = list.filter(a => cdApplStatus(a).cls === 'run').length;
+  const watts = list.reduce((t, a) => t + (cdApplStatus(a).w || 0), 0);
+  const day = list.reduce((t, a) => t + cdApplNum(cdApplEntity(a, ['energy_today','daily_energy'])), 0);
+  const alerts = list.filter(a => !cdApplConfiguredEntities(a).length).length;
+  setHtml('appl-kpi-grid', [[labs[0], on, '🟢'], [labs[1], Math.round(watts) + ' W', '⚡'], [labs[2], (day ? day.toFixed(1) : '—') + ' kWh', '📅'], [labs[3], alerts, '⚠️']].map(x => `<div class="glance-card" style="--g-rgb:14,165,233;display:flex;"><div class="g-info"><span class="g-name">${x[0]}</span><span class="g-val">${x[1]}</span></div><div class="g-icon-wrap">${x[2]}</div></div>`).join(''));
+  setTxt('appl-main-sub', list.length ? 'Configura gli entity_id in cd_appliances: name, icon, category, power, energy, duration, switch, history.' : 'Nessun elettrodomestico configurato — Configura gli entity_id in cd_appliances: name, icon, category, power, energy, duration, switch, history.');
+  const cats = {
+    overview: list,
+    kitchen: list.filter(a => cdApplCategory(a) === 'kitchen'),
+    laundry: list.filter(a => cdApplCategory(a) === 'laundry'),
+    home: list.filter(a => cdApplCategory(a) === 'home'),
+    other: list.filter(a => cdApplCategory(a) === 'other')
+  };
+  Object.entries(cats).forEach(([k, arr]) => setHtml('appl-grid-' + k, arr.length ? arr.map(cdApplMainCard).join('') : `<div class="appl-empty">🧺 Nessun elettrodomestico in questa categoria</div>`));
+  const max = Math.max(1, ...list.map(a => cdApplStatus(a).w || 0));
+  setHtml('appl-consumption-list', list.length ? list.map(a => { const st = cdApplStatus(a), w = st.w || 0, nm = String(a.name || cdApplianceName(a.icon)).replace(/</g,'&lt;'); return `<div class="appl-cons-row"><div><div class="appl-wide-name">${nm}</div><div class="appl-cons-bar"><div class="appl-cons-fill" style="width:${Math.min(100, w / max * 100)}%"></div></div></div><div class="appl-pwr">${Math.round(w)} W</div></div>`; }).join('') : `<div class="appl-empty">Nessun elettrodomestico configurato</div>`);
+  const autos = list.filter(a => Array.isArray(a.automations) && a.automations.length);
+  setHtml('appl-grid-automations', autos.length ? autos.map(a => `<div class="appl-wide-card"><div class="appl-wide-name">🤖 ${a.name || cdApplianceName(a.icon)}</div><div class="appl-wide-cat">${a.automations.map(x => x.name || x.entity || x).join(' · ')}</div></div>`).join('') : `<div class="appl-empty">🤖 Nessuna automazione configurata</div>`);
+}
+
 /* ───────── EDITOR: tab Elettrodomestici ───────── */
 let _applEnts=[]; let _applEditIdx=null;
 function editorRenderAppliances(){
@@ -6403,11 +6534,11 @@ function edApplSave(){
   localStorage.setItem('cd_appliances',JSON.stringify(list));
   try{ cdMarkDirty(); cdSyncPush(); }catch(e){}
   _applEnts=[]; _applEditIdx=null;
-  editorSwitch('appliances'); try{ renderAppliances(); }catch(e){}
+  editorSwitch('appliances'); try{ renderAppliances(); renderApplianceSection(true); }catch(e){}
   edToast(item?'Elettrodomestico salvato':'Aggiunto');
 }
 function edApplEdit(i){ const a=getAppliances()[i]; if(!a) return; _applEditIdx=i; _applEnts=(a.entities||[]).map(e=>typeof e==='string'?e:e.entity).filter(Boolean); editorSwitch('appliances'); }
-function edApplDel(i){ const list=getAppliances(); if(i<0||i>=list.length) return; list.splice(i,1); localStorage.setItem('cd_appliances',JSON.stringify(list)); try{ cdMarkDirty(); cdSyncPush(); }catch(e){} try{ renderAppliances(); }catch(e){} editorSwitch('appliances'); edToast('Rimosso'); }
+function edApplDel(i){ const list=getAppliances(); if(i<0||i>=list.length) return; list.splice(i,1); localStorage.setItem('cd_appliances',JSON.stringify(list)); try{ cdMarkDirty(); cdSyncPush(); }catch(e){} try{ renderAppliances(); renderApplianceSection(true); }catch(e){} editorSwitch('appliances'); edToast('Rimosso'); }
 function edApplCancel(){ _applEditIdx=null; _applEnts=[]; editorSwitch('appliances'); }
 
 /* Picker degli elettrodomestici con immagini standard */
@@ -6898,6 +7029,7 @@ document.querySelectorAll('.tab').forEach(t => {
     document.body.scrollTop = 0;
     // Carica temperature al click sul tab stanze
     if (t.dataset.tab === 'temp') renderTemperature();
+    if (t.dataset.tab === 'appliances-main') renderApplianceSection();
   });
 });
 
@@ -11123,7 +11255,7 @@ async function cdCheckUpdate(isBoot) {
         const resp = await fetch(location.pathname + '?_upd=' + Date.now(), { cache: 'no-store' });
         if (!resp.ok) { if (isBoot) cdHideBoot(); return; }
         const src = await resp.text();
-        const m = src.match(/const DASHBOARD_VERSION = '([^']+)'/);
+        const m = src.match(/const\s+DASHBOARD_VERSION\s*=\s*'([^']+)'/);
         if (!m || m[1] === DASHBOARD_VERSION) { if (isBoot) cdHideBoot(); return; }
         const target = m[1];
         const params = new URLSearchParams(location.search);
@@ -11229,7 +11361,6 @@ function buildCamCards() {
     }).join('');
 }
 document.addEventListener('DOMContentLoaded', buildCamCards);
-document.addEventListener('DOMContentLoaded', () => { try { renderAppliances(); } catch(e){} });
 /* v259: nomi sezioni personalizzati applicati ai tab */
 document.addEventListener('DOMContentLoaded', () => {
     try {
@@ -11867,7 +11998,7 @@ function render() {
           if (card) card.style.display = v > 0 ? 'flex' : 'none';
       };
       try { cdLightList(); } catch(e) {}
-      try { renderAppliances(); } catch(e) {}
+      try { renderAppliances(); renderApplianceSection(); } catch(e) {}
       setGlance('luci',  cdCount('luci',  s => s.state === 'on'));
       setGlance('clima', cdCount('clima', s => !['off','unavailable','unknown'].includes(s.state)));
       setGlance('risc',  cdCount('risc',  s => ['heat','heating','on'].includes(s.state)));

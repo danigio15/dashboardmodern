@@ -1,7 +1,6 @@
 {
   "name": "Dashboard Modern",
   "render_readme": true,
-  "zip_release": true,
-  "filename": "dashboardmodern.zip",
+  "content_in_root": true,
   "homeassistant": "2024.6.0"
 }
